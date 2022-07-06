@@ -1,0 +1,23 @@
+{{ define "head" }}
+    <link rel="stylesheet" type="text/css" media="screen" href="/results/results.css" />
+{{ end }}
+{{ define "title" }}Results Menu{{ end }}
+{{ define "header" }}Results Menu{{ end }}
+{{ define "body" }}
+  <div id="results-menu">
+    Menu:
+    <ul>
+      <li>Get event rankings (MANUALLY RESOLVE TIES! Score total is provided)
+        <ul>
+          <button id="get-rankings-html-button">HTML</button>
+          <button id="get-rankings-csv-button">CSV</button>
+        </ul>
+      </li>
+    </ul>
+  </div>
+  <div id="content" class="container">
+  </div>
+{{ end }}
+{{ define "js" }}
+    <script src="/results/results.js"></script>
+{{ end }}

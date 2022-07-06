@@ -1,0 +1,34 @@
+.navbar {
+    color: #fff;
+    background-color: firebrick;
+}
+
+.btn-theme {
+    color: #fff;
+    background-color: firebrick;
+    border-color: firebrick;
+}
+
+.navbar-brand {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+#login-user, #login-pass {
+    width: 180px;
+}
+
+#header {
+    cursor: pointer;
+}
+
+.float-center-container {
+    float: right;
+    position: relative;
+    right: 50%;
+    text-align: left;
+  }
+  .float-center-container > .float-center {
+    position: relative;
+    left: 50%;
+  }

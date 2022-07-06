@@ -1,0 +1,2 @@
+CREATE USER tpzadmin ENCRYPTED PASSWORD 'tpzadmin';
+CREATE DATABASE tpz WITH OWNER = tpzadmin;

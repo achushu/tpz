@@ -1,0 +1,121 @@
+.navbar {
+    background-color: firebrick;
+}
+
+.btn-theme {
+  color: #fff;
+  background-color: firebrick;
+  border-color: firebrick;
+}
+
+#header {
+  cursor: pointer;
+}
+
+#ring-label {
+  width: 150px;
+}
+
+#role-label {
+  width: 200px;
+}
+
+#connection-status-label {
+  margin: 0 auto;
+}
+
+.panel {
+  padding: 10px 0;
+}
+
+#event-panel {
+  font-size: 20px;
+}
+
+.event-panel-spacing {
+  padding-left: 10px;
+}
+
+#next-competitor-button {
+  margin-left: 25px;
+}
+
+#final-score-container {
+  font-size: 1.5em;
+}
+
+#adjustment-panel {
+  margin-top: 1rem;
+}
+
+#adjust-minus {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+.score-input {
+  font-size: 2em;
+  width: 2.2em;
+}
+
+#score-hint {
+  font-weight: bold;
+}
+
+.deduction-code {
+  font-size: 2em;
+  width: 1.5em;
+  border-style: solid;
+  margin-right: 10px;
+}
+
+.deduction-focus {
+  border-color: firebrick;
+}
+
+.deduction-remove {
+  margin-right: 15px;
+}
+
+.deduction-invalid {
+  background-color: indianred;
+}
+
+.nandu thead td {
+  color: gray;
+  padding: 5px;
+}
+
+thead tr, tbody tr {
+  display: inline-flex;
+  cursor: pointer;
+}
+
+tbody tr {
+  background-color: lightgreen;
+  border-radius: 0.25rem;
+  border: 1px solid transparent;
+  margin-top: 1px;
+}
+
+#nandu-sheet {
+  width: 575px;
+}
+
+#nandu-sheet td, #nandu-sheet th {
+  border-top: none;
+}
+
+.nandu-code {
+  width: 70px;
+  text-align: right;
+}
+
+.nandu-name {
+  width: 460px;
+}
+
+.nandu-mark {
+  color: #555;
+  font-family: consolas, monospace;
+}

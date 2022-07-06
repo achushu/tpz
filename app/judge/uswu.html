@@ -1,0 +1,22 @@
+{{ define "head" }}
+    <link rel="stylesheet" type="text/css" media="screen" href="/judge/judge.css" />
+    <link rel="stylesheet" type="text/css" href="/static/scratchpad.css" />
+{{ end }}
+{{ define "title" }}USWU Judge{{ end }}
+{{ define "header" }}USWU - Judge{{ end }}
+{{ define "body" }}
+    <div id="content" class="container">
+    </div>
+    <div class="container">
+        <div><textarea id="scratchpad" placeholder="Scratch pad"></textarea></div>
+        <br/>
+        <button id="clear-scratchpad-button" class="btn btn-outline-secondary">Clear Notes</button>
+    </div>
+{{ end }}
+{{ define "js" }}
+    <script src="/static/notify.js"></script>
+    <script src="/static/scratchpad.js"></script>
+    <script src="/judge/common.js"></script>
+    <script>ringId = {{.}};</script>
+    <script src="/judge/uswu.js"></script>
+{{ end }}

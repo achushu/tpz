@@ -1,0 +1,21 @@
+competition:
+    name: 2022 Intercollege Wushu Games
+    colors:
+        primary: firebrick
+        secondary: white
+server:
+    port: 8000
+    home: './app'
+    static: './app/static'
+
+logging:
+    access: ""
+    api: ""
+    sockets: ""
+        
+database:
+    enabled: true
+    host: localhost:5432
+    user: tpzadmin
+    password: tpzadmin
+    dbname: tpz

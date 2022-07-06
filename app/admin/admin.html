@@ -1,0 +1,19 @@
+{{ define "head" }}
+    <link rel="stylesheet" type="text/css" media="screen" href="/admin/admin.css" />
+{{ end }}
+{{ define "title" }}Admin Menu{{ end }}
+{{ define "header" }}Admin Menu{{ end }}
+{{ define "body" }}
+  <div id="content" class="container">
+  </div>
+{{ end }}
+{{ define "js" }}
+<script src="/admin/admin.js"></script>
+<script>
+  (function() {
+    // "onready"
+    TPZ.init();
+    renderPage();
+  })();
+</script>
+{{ end }}

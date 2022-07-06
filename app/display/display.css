@@ -1,0 +1,54 @@
+body {
+  background-color: firebrick;
+  color: #fff;
+  overflow: hidden;
+}
+
+.display-main {
+  font-size: 8rem;
+}
+
+.display-smaller {
+  font-size: 2.5rem;
+}
+
+.container {
+  max-width: 100%;
+}
+
+.subtext {
+  font-size: 3rem;
+  color: lightgray;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+#competition-name-container {
+  top: -35px;
+}
+
+#competition-name {
+  font-size: 2.5em;
+  opacity: 30%;
+  line-height: 0;
+}
+
+#rank {
+  color: #f0f0f0;
+  z-index: 10;
+}
+
+#rank-container {
+  position: absolute;
+  bottom: 0;
+}
+
+#score {
+  font-weight: 550;
+  font-size: 8.5rem;
+  line-height: 1.2;
+}

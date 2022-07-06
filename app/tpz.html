@@ -1,0 +1,87 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/png" href="/static/favicon.svg">
+        <link rel="stylesheet" type="text/css" media="screen" href="/static/bootstrap.min.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="/static/tpz.css" />
+        {{template "head"}}
+
+        <title>{{template "title"}} | Ten.Zero</title>
+    </head>
+    <body>
+        <nav class="navbar navbar-fixed-top navbar-expand-lg navbar-dark">
+            <a class="navbar-brand" href="/"><img src="/static/tpz-brand.svg" height="40" width="174"></img></a>
+            <div class="collapse navbar-collapse"></div><!--spacer-->
+            <div class="navbar-text"></div><!--centered text-->
+            <div class="collapse navbar-collapse"></div><!--spacer-->
+            <div class="navbar-nav">
+                <div class="nav-item dropdown">
+                    {{if .Session}}
+                    <a id="user-panel" href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                            <b>{{.Session.Username}}</b> <span class="caret"></span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="/auth/logout">Logout</a>
+                        </div>
+                    {{else}}
+                    <a id="user-panel" href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                        <b>Sign in</b> <span class="caret"></span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <form class="form px-4 py-3" role="form" method="post" action="auth/login" accept-charset="UTF-8" id="login-nav">
+                            <div class="form-group">
+                                <label for="login-user">Username</label>
+                                <input type="text" class="form-control" id="login-user" placeholder="Username" name="user" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="login-password">Password</label>
+                                <input type="password" class="form-control" id="login-password" placeholder="Password" name="pass" required>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+                            </div>
+                        </form>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </nav>
+        <h1><span id="header">{{template "header"}}</span></h1>
+        <div id="main-content" class="container">
+            <p id="js-warn">Please enable Javascript in your browser!</p>
+            {{template "body" .Data}}
+        </div>
+
+        <!-- Javascript -->
+        <script src="/static/jquery.min.js"></script>
+        <script src="/static/bootstrap.min.js"></script>
+        <script src="/static/tpz.js"></script>
+        <script>
+        {{if not .Session}}
+            // show login dropdown if an area requires login
+            // and user has not logged in
+            $('.login-required').each(function() {
+                $(this).attr('href', '#');
+                $(this).click(function() {  
+                    window.setTimeout(function () {
+                        TPZ.loginRequired();
+                    }, 0);
+                });
+            });
+        {{end}}
+            // put the focus on the username field when dropdown is shown
+            $('#user-panel').on('shown.bs.dropdown', function () {
+                window.setTimeout(function () {
+                    document.getElementById('login-user').focus();
+                }, 0);
+            });
+        </script>
+        {{template "js" .Data}}
+    </body>
+</html>
+{{end}}
