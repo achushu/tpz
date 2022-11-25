@@ -1,17 +1,21 @@
 // Enforce strict Javascript rules
 "use strict";
 
-let content = $("#content");
+let content = TPZ.getElementById("content");
 let host;
 let ws;
 let clientId = "00000000";
 let ringId;
 let judgeRole;
+let judgeRuleset;
 
 let timerButton;
 let timerInterval;
 let currentEventId = 0;
+let currentEventRules;
+let currentExp;
 let currentCompetitorId = 0;
+let currentRoutineId = 0;
 let eventStartTime;
 
 let onEventChange;
@@ -64,7 +68,7 @@ function phoneHome() {
 }
 
 function getRuleBase(name) {
-    let base = name.toUpperCase();
+    let base = name.split(" ")[0].toUpperCase();
     let idx = base.indexOf("-2");
     if (idx > 0) {
         base = base.substring(0, idx);
@@ -114,6 +118,7 @@ function adjustScore(amount, reason) {
         amount: amount,
         reason: reason,
         judgeID: clientId,
+        routineID: currentRoutineId,
         ringID: parseInt(ringId),
     };
     TPZ.httpPostJson("/api/submit-adjustment", adj, function () {
@@ -184,17 +189,18 @@ function setPublishedStatus() {
 }
 
 function clearView() {
-    content.html("");
+    content.innerHTML = "";
 }
 
 function setupEventControlPanel() {
-    content.append(
+    let panel = TPZ.renderHtml(
         '<div id="event-control-panel" class="row justify-content-between panel">' +
             '<div class="col-8">Select: <select id="event-select" class="col-5 custom-select"></select>' +
             '<span class="event-panel-spacing"/>' +
             '<select id="competitor-select" class="col-4 custom-select"></select></div>' +
             '<div class="col-3"><button id="next-competitor-button" class="btn btn-theme">Next Competitor</button></div></div>'
     );
+    content.appendChild(panel);
 }
 
 function renderEventControlPanel(ringId, initEventId, initCompetitorId) {
@@ -208,24 +214,18 @@ function renderEventControlPanel(ringId, initEventId, initCompetitorId) {
             return;
         }
         let change = { id: parseInt(eventId) };
-        TPZ.httpPostJson(
-            "/api/" + ringId + "/change-event",
-            change,
-            function () {
-                if (onEventChange != undefined) {
-                    onEventChange();
-                }
-                setCompetitorList();
-                // event change means competitor change
-                competitorChanged();
+        TPZ.httpPostJson("/api/" + ringId + "/change-event", change, () => {
+            if (onEventChange != undefined) {
+                onEventChange();
             }
-        );
+            setCompetitorList();
+            // event change means competitor change
+            competitorChanged();
+        });
     });
     compSelect.addEventListener("change", function () {
         let competitorId = parseInt(this.value);
-        if (competitorId == currentCompetitorId) {
-            return;
-        }
+        if (competitorId == currentCompetitorId) return;
         let eventId = parseInt(eventSelect.value);
         let change = { event_id: eventId, competitor_id: competitorId };
         TPZ.httpPostJson(
@@ -294,6 +294,47 @@ function setCompetitorList() {
     );
 }
 
+function setNextCompetitorButton() {
+    let publishBtn = TPZ.getElementById("head-publish-score");
+
+    if (publishBtn.dataset.published != "true") {
+        // this score hasn't been published yet
+        // confirm we want to move on
+        TPZ.confirm("Results not finalized! Continue?", () => {
+            selectNextCompetitor();
+        });
+    } else {
+        selectNextCompetitor();
+    }
+}
+
+function selectNextCompetitor() {
+    let compSelect = document.getElementById("competitor-select");
+    let compIndex = compSelect.selectedIndex;
+    let eventSelect = document.getElementById("event-select");
+    let eventIndex = eventSelect.selectedIndex;
+
+    if (compIndex < compSelect.length - 1) {
+        compSelect.selectedIndex = compIndex + 1;
+        compSelect.dispatchEvent(new Event("change"));
+        if (
+            compIndex == compSelect.length - 1 &&
+            eventIndex == eventSelect.length - 1
+        ) {
+            nextButton.disabled = true;
+        }
+        return;
+    }
+
+    // move onto next event
+    if (eventIndex < eventSelect.length - 1) {
+        eventSelect.selectedIndex = eventIndex + 1;
+        eventSelect.dispatchEvent(new Event("change"));
+    } else {
+        TPZ.alert("Finished!");
+    }
+}
+
 function leftPadNumber(number, digits) {
     return ("0".repeat(digits) + number).slice(-1 * digits);
 }
@@ -342,29 +383,73 @@ function stopEventTimer() {
 }
 
 function setupTimerPanel() {
-    content.append('<div id="timer-panel" class="row panel"></div>');
+    let panel = TPZ.renderHtml(
+        '<div id="timer-panel" class="row panel"></div>'
+    );
+    content.appendChild(panel);
     renderTimerPanel();
 }
 
-function setupEventPanel() {
-    content.append(
-        '<div id="event-panel" class="panel">Now: <b id="current-event"></b> - ' +
-            '<b id="current-competitor"></b></div>'
+function setupHeadJudgePanel() {
+    let panel = TPZ.renderHtml(
+        '<div id="head-event-panel" class="panel"></div>'
     );
+    content.appendChild(panel);
 }
 
-function setupScorePanel(maxScore) {
-    content.append('<div id="score-panel" class="panel"></div>');
-    renderScorePanel(maxScore);
+function setupEventPanel() {
+    let panel = TPZ.renderHtml(
+        '<div id="event-panel" class="panel">Now: <b id="current-event"></b> - <b id="current-competitor"></b></div>'
+    );
+    content.append(panel);
 }
 
-function renderScorePanel(maxScore, exp) {
+function setupScorePanel() {
+    let panel = TPZ.renderHtml('<div id="score-panel" class="panel"></div>');
+    content.append(panel);
+    renderScorePanel();
+}
+
+function renderScorePanel(ruleset, exp) {
+    let maxScore = 10;
+
+    // if the event's ruleset matches the judge's scoring type
+    let correctRuleset = false;
+
+    if (judgeRuleset != undefined && ruleset != undefined) {
+        switch (judgeRuleset) {
+            case "IWUF":
+                // IWUF includes A-B compulsory scoring
+                maxScore = 5;
+                if (ruleset.startsWith("IWUF")) {
+                    correctRuleset = true;
+                    if (ruleset === "IWUF") {
+                        // strictly IWUF with difficulty scoring
+                        maxScore = 3;
+                    }
+                }
+                break;
+            case "USWU":
+                if (ruleset === "USWU") {
+                    correctRuleset = true;
+                }
+                break;
+        }
+    }
+
     TPZ.getElementById("score-panel").innerHTML =
+        '<p id="scoring-warning"></p>' +
         'Score: <div><input id="score-entry" type="text" class="score-input" />' +
         " / " +
         maxScore +
         ' <button id="score-submit" class="btn btn-theme">Submit</div>' +
         '<div><p id="score-hint"></p></div>';
+
+    if (!correctRuleset) {
+        TPZ.getElementById("scoring-warning").textContent =
+            "Not a " + judgeRuleset + " event!";
+    }
+
     if (exp != undefined) {
         let hint = "";
         if (exp == "beg") {
@@ -376,6 +461,7 @@ function renderScorePanel(maxScore, exp) {
         }
         TPZ.getElementById("score-hint").textContent = hint;
     }
+
     TPZ.getElementById("score-submit").addEventListener("click", function () {
         let score = TPZ.getElementById("score-entry").value;
         if (validateScore(score, maxScore)) {
@@ -394,6 +480,67 @@ function renderScorePanel(maxScore, exp) {
     });
 }
 
+function addScoreList() {
+    let headPanel = TPZ.getElementById("head-event-panel");
+    let scoreList = TPZ.renderHtml(
+        'Scores submitted (<span id="score-count">0</span>): <ul id="score-list"></ul>'
+    );
+    while (scoreList.length > 0) {
+        headPanel.appendChild(scoreList[0]);
+    }
+}
+
+function addAdjustmentPanel() {
+    let eventPanel = TPZ.getElementById("head-event-panel");
+    let adjPanel = TPZ.renderHtml(
+        '<div id="adjustment-panel">' +
+            '<p id="adjustment-label"></p><ul id="adjustment-list"></ul>' +
+            'Add adjustment: <span id="adjust-minus">&nbsp;-&nbsp;</span><input id="score-adjustment" type="text" class="score-input"/> ' +
+            'Reason: <input id="adjustment-reason" type="text" /> ' +
+            '<button id="add-adj-button" class="btn btn-secondary">Add</button></div>'
+    );
+    eventPanel.appendChild(adjPanel);
+    TPZ.addBreak(eventPanel);
+    TPZ.getElementById("add-adj-button").onclick = () => {
+        let adj = TPZ.getElementById("score-adjustment");
+        let adjValue = parseFloat(adj.value);
+        if (validateAdjustment(adjValue)) {
+            let reason = TPZ.getElementById("adjustment-reason");
+            adjustScore(adjValue, reason.value);
+            adj.value = "";
+            reason.value = "";
+        } else {
+            TPZ.alert("Please check the adjustment entered.");
+        }
+    };
+}
+
+function addFinalScoreContainer() {
+    let eventPanel = TPZ.getElementById("head-event-panel");
+    let finalScoreContainer = TPZ.renderHtml(
+        '<div id="final-score-container">' +
+            '<span id="final-score-label"></span><span id="final-score"></span></div>'
+    );
+    eventPanel.appendChild(finalScoreContainer);
+}
+
+function addPublishScoreButton() {
+    let eventPanel = TPZ.getElementById("head-event-panel");
+    let publishScoreBtn = TPZ.renderHtml(
+        '<button id="head-publish-score" class="btn btn-theme">Publish Score</button>'
+    );
+    eventPanel.append(publishScoreBtn);
+    TPZ.getElementById("head-publish-score").onclick = () => {
+        let adj = TPZ.getElementById("score-adjustment");
+        let reason = TPZ.getElementById("adjustment-reason");
+        if (adj.value != "" || reason.value != "") {
+            TPZ.alert("Please submit or clear the adjustment!");
+        } else {
+            TPZ.confirm("Publish results?", finalizeScore);
+        }
+    };
+}
+
 function disableScorePanel() {
     TPZ.getElementById("score-entry").disabled = true;
     TPZ.getElementById("score-submit").disabled = true;
@@ -406,22 +553,33 @@ function formatName(first, last) {
     return first + " " + last;
 }
 
-function getEventStatus() {
-    TPZ.httpGetJson("/api/" + ringId + "/current", function (data) {
-        displayCurrentEventInfo(
-            data.event_name,
-            formatName(data.fname, data.lname)
+function onGetCurrentStatusReady(data) {
+    if (currentRoutineId == data.routine_id) return;
+    if (data.event_id != undefined) {
+        currentEventId = data.event_id;
+        currentExp = data.event_exp;
+        currentCompetitorId = data.competitor_id;
+        currentRoutineId = data.routine_id;
+        TPZ.getElementById("current-event").textContent = data.event_name;
+        TPZ.getElementById("current-competitor").textContent = formatName(
+            data.fname,
+            data.lname
         );
-    });
+        currentEventRules = getRuleBase(data.rules);
+    }
 }
 
-function displayCurrentEventInfo(event, competitor) {
-    if (event != undefined) {
-        TPZ.getElementById("current-event").textContent = event;
-    }
-    if (competitor != undefined) {
-        TPZ.getElementById("current-competitor").textContent = competitor;
-    }
+function updateEventInfo(onReady, async = true) {
+    TPZ.httpGetJson(
+        "/api/" + ringId + "/current",
+        (data) => {
+            onGetCurrentStatusReady(data);
+            if (onReady) {
+                onReady(data);
+            }
+        },
+        async
+    );
 }
 
 function handleCommonActions(msg) {
@@ -440,7 +598,7 @@ function handleCommonActions(msg) {
 function competitorChanged() {
     // clear out the start time
     eventStartTime = undefined;
-    getEventStatus();
+    updateEventInfo(undefined, false);
     if (onCompetitorChange) {
         onCompetitorChange();
     }

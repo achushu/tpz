@@ -73,10 +73,10 @@ type Routine struct {
 
 // Score is a single score given by a judge for an event
 type Score struct {
-	ID      int    `json:"id"`
-	Routine int    `json:"routine_id"`
-	Judge   string `json:"judge_tag"`
-	Score   string `json:"score"`
+	ID      int     `json:"id"`
+	Routine int     `json:"routine_id"`
+	Judge   string  `json:"judge_tag"`
+	Score   float64 `json:"score"`
 }
 
 // Adjustment is a score change (typically a deduction)
@@ -87,4 +87,36 @@ type Adjustment struct {
 	Judge   string  `json:"judge_tag"`
 	Amount  float64 `json:"amount"`
 	Reason  string  `json:"reason"`
+}
+
+type DeductionCode struct {
+	Code  string  `json:"code"`
+	Value float64 `json:"value"`
+	Name  string  `json:"name"`
+	//	ShortName string  `json:"short"`
+}
+
+type NanduCode struct {
+	Code  string  `json:"code"`
+	Value float64 `json:"value"`
+	Name  string  `json:"name"`
+	//	ShortName string  `json:"short"`
+}
+
+// DeductionMark is a single deduction given by a judge for an event
+type DeductionMark struct {
+	ID        int    `json:"id"`
+	Routine   int    `json:"routine_id"`
+	Judge     string `json:"judge_tag"`
+	Code      string `json:"code"`
+	Timestamp int64  `json:"timestamp"`
+}
+
+// Nandu is a single mark given by a judge for an event
+type Nandu struct {
+	ID      int       `json:"id"`
+	Judge   string    `json:"judge_tag"`
+	Code    NanduCode `json:"code"`
+	Index   int       `json:"index"`
+	Success bool      `json:"success"`
 }

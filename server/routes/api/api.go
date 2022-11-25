@@ -49,6 +49,48 @@ func init() {
 	})
 }
 
+var emptyJson = []byte{123, 125} // {}
+
+func jsonResponse(v any, w http.ResponseWriter) {
+	res, err := json.Marshal(v)
+	if err != nil {
+		routes.RenderError(w, errors.NewInternalError(err))
+		return
+	}
+	_, err = w.Write(res)
+	if err != nil {
+		log.HttpError("error responding to request:", err)
+	}
+}
+
+func getRingOrError(ringID int, w http.ResponseWriter) *data.RingState {
+	ring := data.GetRing(ringID)
+	if ring == nil {
+		err := errors.NewRingError(ringID)
+		routes.RenderError(w, errors.NewInternalError(err))
+		log.HttpError(err)
+	}
+	return ring
+}
+
+func decodeBodyOrError(v any, w http.ResponseWriter, r *http.Request) bool {
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(v); err != nil {
+		routes.RenderError(w, errors.NewInternalError(err))
+		log.HttpError("error parsing data:", err)
+		return false
+	}
+	return true
+}
+
+// changer holds values that may be POSTed
+type changer struct {
+	ID           int `json:"id"`
+	EventID      int `json:"event_id"`
+	CompetitorID int `json:"competitor_id"`
+	RingID       int `json:"ring_id"`
+}
+
 func competitionName(w http.ResponseWriter, r *http.Request) {
 	_, err := w.Write([]byte(config.Settings.Competition.Name))
 	if err != nil {
@@ -210,7 +252,7 @@ func overallRankings(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			for _, v := range scoreMap {
-				scores = append(scores, v)
+				scores = append(scores, v.Score)
 			}
 		}
 		rankings[i]["scores"] = scores

@@ -3,12 +3,14 @@ let pollId = 0;
 let pollMode = false;
 let ccId = 0;
 
+judgeRuleset = "USWU";
+
 let notifyArgs = {
-    onopen: function () {
+    onopen: () => {
         console.log("connected");
         registerJudge(ringId, "uwsu");
     },
-    onmessage: function (serverMsg) {
+    onmessage: (serverMsg) => {
         console.log(serverMsg);
         let msg = parseMessage(serverMsg.data);
         switch (msg.action) {
@@ -16,10 +18,10 @@ let notifyArgs = {
                 handleCommonActions(msg);
                 break;
         }
-    }
+    },
 };
 
-$(document).ready(function () {
+window.onload = () => {
     TPZ.init();
     setClientId();
     prepareView();
@@ -27,53 +29,37 @@ $(document).ready(function () {
 
     // phone home for settings changes
     phoneHome();
-    ccId = setInterval(function () {
+    ccId = setInterval(() => {
         phoneHome();
     }, 15000);
 
     // allow for polling as fallback
-    pollId = setInterval(function () {
+    pollId = setInterval(() => {
         if (pollMode) {
             console.log("polling...");
             updateEventPanel();
         }
     }, 3000);
-});
+};
 
 function prepareView() {
     clearView();
     setupEventPanel();
-    setupScorePanel(maxScore);
+    setupScorePanel();
     initScratchPad();
     onCompetitorChange = updateEventPanel;
     onCompetitorChange();
 }
 
 function updateEventPanel() {
-    TPZ.httpGetJson("/api/" + ringId + "/current", function (data) {
-        if (
-            currentEventId == data.event_id &&
-            currentCompetitorId == data.competitor_id
-        )
-            return;
-        currentEventId = data.event_id;
-        currentCompetitorId = data.competitor_id;
-        displayCurrentEventInfo(
-            data.event_name,
-            formatName(data.fname, data.lname)
-        );
-        let ruleBase = getRuleBase(data.rules.split(" ")[0]);
-        if (ruleBase === "USWU") {
-            renderScorePanel(maxScore, data.event_exp);
-            if (data.scores != undefined) {
-                let saved = data.scores[clientId];
-                if (saved != undefined) {
-                    TPZ.getElementById("score-entry").value = saved;
-                    disableScorePanel();
-                }
+    updateEventInfo((data) => {
+        renderScorePanel(currentEventRules, currentExp);
+        if (data.scores != undefined) {
+            let saved = data.scores[clientId];
+            if (saved != undefined) {
+                TPZ.getElementById("score-entry").value = saved;
+                disableScorePanel();
             }
-        } else {
-            TPZ.getElementById("score-panel").textContent = "Not a USWU event";
         }
     });
 }

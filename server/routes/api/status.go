@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -14,18 +13,18 @@ import (
 )
 
 func init() {
-	ringStatusHandler := routes.Log(http.HandlerFunc(ringStatus))
-	ringEventHandler := routes.Log(http.HandlerFunc(ringEvent))
-	ringCurrentHandler := routes.Log(http.HandlerFunc(ringStatus))
-	displayInfoHandler := routes.Log(http.HandlerFunc(displayInfo))
-	eventCompetitorsHandler := routes.Log(http.HandlerFunc(getEventCompetitors))
+	ringStatusRoute := routes.Log(http.HandlerFunc(ringStatus))
+	ringEventRoute := routes.Log(http.HandlerFunc(ringEvent))
+	ringCurrentRoute := routes.Log(http.HandlerFunc(ringStatus))
+	displayInfoRoute := routes.Log(http.HandlerFunc(displayInfo))
+	eventCompetitorsRoute := routes.Log(http.HandlerFunc(getEventCompetitors))
 
 	routes.AddSubroute(namespace, []routes.Route{
-		routes.New("/{ringID:\\d+}/status", ringStatusHandler),
-		routes.New("/{ringID:\\d+}/event", ringEventHandler),
-		routes.New("/{ringID:\\d+}/current", ringCurrentHandler),
-		routes.New("/{ringID:\\d+}/display-info", displayInfoHandler),
-		routes.New("/{ringID:\\d+}/event-competitors", eventCompetitorsHandler),
+		routes.New("/{ringID:\\d+}/status", ringStatusRoute),
+		routes.New("/{ringID:\\d+}/event", ringEventRoute),
+		routes.New("/{ringID:\\d+}/current", ringCurrentRoute),
+		routes.New("/{ringID:\\d+}/display-info", displayInfoRoute),
+		routes.New("/{ringID:\\d+}/event-competitors", eventCompetitorsRoute),
 	})
 }
 
@@ -49,15 +48,7 @@ func ringEvent(w http.ResponseWriter, r *http.Request) {
 		info["event_exp"] = event.Experience.StringShort()
 		info["rules"] = event.Ruleset.String()
 	}
-	res, err := json.Marshal(info)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		return
-	}
-	_, err = w.Write(res)
-	if err != nil {
-		log.HttpError("error responding to request:", err)
-	}
+	jsonResponse(info, w)
 }
 
 func ringStatus(w http.ResponseWriter, r *http.Request) {
@@ -86,22 +77,14 @@ func ringStatus(w http.ResponseWriter, r *http.Request) {
 		info["competitor_id"] = comp.ID
 		info["fname"] = comp.FirstName
 		info["lname"] = comp.LastName
-		info["routine"] = current.Routine.ID
+		info["routine_id"] = current.Routine.ID
 		if len(current.Scores) > 0 {
 			info["scores"] = current.Scores
 			total, _ := current.CalculateScore()
 			info["total"] = data.FormatScore(total)
 		}
 	}
-	res, err := json.Marshal(info)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		return
-	}
-	_, err = w.Write(res)
-	if err != nil {
-		log.HttpError("error responding to request:", err)
-	}
+	jsonResponse(info, w)
 }
 
 func displayInfo(w http.ResponseWriter, r *http.Request) {
@@ -139,17 +122,7 @@ func displayInfo(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-
-	res, err := json.Marshal(info)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		return
-	}
-
-	_, err = w.Write(res)
-	if err != nil {
-		log.HttpError("error responding to request:", err)
-	}
+	jsonResponse(info, w)
 }
 
 func findNextTwoCompetitors(current *data.RingState) (next, prepare *data.Competitor, err error) {
@@ -208,13 +181,5 @@ func getEventCompetitors(w http.ResponseWriter, r *http.Request) {
 		routes.RenderError(w, errors.NewInternalError(err))
 		return
 	}
-	res, err := json.Marshal(comps)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		return
-	}
-	_, err = w.Write(res)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-	}
+	jsonResponse(comps, w)
 }

@@ -1,5 +1,5 @@
 // Enforce strict Javascript rules
-"use strict";
+("use strict");
 
 let itemId;
 

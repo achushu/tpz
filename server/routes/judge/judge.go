@@ -20,17 +20,17 @@ const (
 )
 
 func init() {
-	mainHandler := routes.LoginRequired(http.HandlerFunc(main))
-	socketHandler := routes.LoginRequired(http.HandlerFunc(createWebSocket))
-	judgePanelHandler := routes.LoginRequired(http.HandlerFunc(judgePanel))
+	mainRoute := routes.LoginRequired(http.HandlerFunc(main))
+	socketRoute := routes.LoginRequired(http.HandlerFunc(createWebSocket))
+	judgePanelRoute := routes.LoginRequired(http.HandlerFunc(judgePanel))
 
 	routes.AddSubroute(namespace, []routes.Route{
-		routes.New("/server", socketHandler),
-		routes.New("/{\\w+\\.[css|js]}", mainHandler),
-		routes.New("/{panel}", judgePanelHandler),
-		routes.New("/{ringID:\\d+}/{panel}", judgePanelHandler),
-		routes.New("/", mainHandler),
-		routes.New("", mainHandler)},
+		routes.New("/server", socketRoute),
+		routes.New("/{\\w+\\.[css|js]}", mainRoute),
+		routes.New("/{panel}", judgePanelRoute),
+		routes.New("/{ringID:\\d+}/{panel}", judgePanelRoute),
+		routes.New("/", mainRoute),
+		routes.New("", mainRoute)},
 	)
 }
 
@@ -46,7 +46,7 @@ func main(w http.ResponseWriter, r *http.Request) {
 		layout := judge.Layout(s)
 		err := routes.RenderTemplate(w, judge.Content(), layout)
 		if err != nil {
-			log.HttpError("server/judge - error rendering template:", err)
+			log.HttpError("server/judge - error rendering template: ", err)
 		}
 	} else {
 		// Serve the other resources
@@ -80,10 +80,10 @@ func createWebSocket(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleMessage(conn *sockets.Connection, msg sockets.Message) {
-	log.Ws("server/judge -", "received message:", msg.Action)
+	log.Ws("server/judge - ", "received message: ", msg.Action)
 	action, err := sockets.ToAction(msg.Action)
 	if err != nil {
-		log.WsError("server/judge -", "received invalid action:", msg.Action)
+		log.WsError("server/judge - ", "received invalid action: ", msg.Action)
 		return
 	}
 

@@ -31,8 +31,9 @@ type RingState struct {
 	Routine     *Routine
 	StartTime   time.Time
 	StopTime    time.Time
-	Scores      map[string]float64
-	adjustments []Adjustment
+	Scores      map[string]*Score
+	Adjustments []*Adjustment
+	Deductions  map[string][]*DeductionMark
 	RuleName    string
 
 	headJudge *Judge
@@ -65,7 +66,7 @@ func AddRing(ring *Ring) {
 		Ring:      ring,
 		judges:    make([]*Judge, 0, 10),
 		listeners: make([]*Listener, 0, 2),
-		Scores:    make(map[string]float64),
+		Scores:    make(map[string]*Score),
 	})
 }
 
@@ -175,8 +176,9 @@ func (r *RingState) SetCompetitor(newComp *Competitor, event *Event) {
 		return
 	}
 	// Reset the state
-	r.Scores = make(map[string]float64)
-	r.adjustments = make([]Adjustment, 0)
+	r.Scores = make(map[string]*Score)
+	r.Adjustments = make([]*Adjustment, 0)
+	r.Deductions = make(map[string][]*DeductionMark)
 	r.Routine = routine
 
 	// get any saved state
@@ -186,9 +188,20 @@ func (r *RingState) SetCompetitor(newComp *Competitor, event *Event) {
 		out.Errorf("error retrieving scores for competitor %d: %s\n", r.Competitor.ID, err)
 	}
 	if adjs, err := GetAdjustments(routine.ID); err == nil {
-		r.adjustments = adjs
+		r.Adjustments = adjs
 	} else {
 		out.Errorf("error retrieving adjustments for competitor %d: %s\n", r.Competitor.ID, err)
+	}
+	if deds, err := GetDeductions(routine.ID); err == nil {
+		for _, d := range deds {
+			j := d.Judge
+			jd := r.Deductions[j]
+			if jd == nil {
+				jd = make([]*DeductionMark, 0)
+			}
+			jd = append(jd, d)
+			r.Deductions[j] = jd
+		}
 	}
 }
 
@@ -203,11 +216,15 @@ func (r *RingState) SetEventStop(stopTime time.Time) {
 }
 
 func (r *RingState) SetPerformanceScore(judgeTag string, score float64) {
-	r.Scores[judgeTag] = score
+	r.Scores[judgeTag] = &Score{
+		Routine: r.Routine.ID,
+		Judge:   judgeTag,
+		Score:   score,
+	}
 }
 
-func (r *RingState) PerformanceScores() []float64 {
-	scores := make([]float64, 0, len(r.Scores))
+func (r *RingState) PerformanceScores() []*Score {
+	scores := make([]*Score, 0, len(r.Scores))
 	for _, v := range r.Scores {
 		scores = append(scores, v)
 	}
@@ -215,16 +232,27 @@ func (r *RingState) PerformanceScores() []float64 {
 }
 
 func (r *RingState) SetAdjustment(judgeTag string, amount float64, reason string) {
-	adj := Adjustment{
-		Judge:  judgeTag,
-		Amount: amount,
-		Reason: reason,
+	adj := &Adjustment{
+		Routine: r.Routine.ID,
+		Judge:   judgeTag,
+		Amount:  amount,
+		Reason:  reason,
 	}
-	r.adjustments = append(r.adjustments, adj)
+	r.Adjustments = append(r.Adjustments, adj)
 }
 
-func (r *RingState) Adjustments() []Adjustment {
-	return r.adjustments
+func (r *RingState) SetDeduction(judgeTag string, code string, timestamp int64) {
+	judgeDeductions := r.Deductions[judgeTag]
+	if judgeDeductions == nil {
+		judgeDeductions = make([]*DeductionMark, 0)
+	}
+	judgeDeductions = append(judgeDeductions, &DeductionMark{
+		Routine:   r.Routine.ID,
+		Judge:     judgeTag,
+		Code:      code,
+		Timestamp: timestamp,
+	})
+	r.Deductions[judgeTag] = judgeDeductions
 }
 
 func (r *RingState) Duration() time.Duration {

@@ -307,7 +307,7 @@ func GetRoutine(eventID, competitorID int) (*Routine, error) {
 	return constructRoutine(res[0]), nil
 }
 
-func saveScore(score string, routineID int, judgeTag string) (err error) {
+func saveScore(score float64, routineID int, judgeTag string) (err error) {
 	stmt := "INSERT INTO scores (routine_id, judge_tag, score) VALUES ($1, $2, $3)"
 	values := []interface{}{routineID, judgeTag, score}
 	_, err = Query(stmt, values)
@@ -335,35 +335,85 @@ func GetFinalScore(eventID, competitorID int) (string, error) {
 	return string(sBytes), nil
 }
 
-func saveAdjustment(amount float64, reason string, routineID int, judgeTag string) (err error) {
+func SaveAdjustment(amount float64, reason string, routineID int, judgeTag string) (err error) {
 	stmt := "INSERT INTO adjustments (routine_id, judge_tag, amount, reason) VALUES ($1, $2, $3, $4)"
 	values := []interface{}{routineID, judgeTag, amount, reason}
 	_, err = Query(stmt, values)
 	return err
 }
 
-func GetScores(routineID int) (map[string]float64, error) {
+func constructDeductionMark(v map[string]interface{}) *DeductionMark {
+	return &DeductionMark{
+		ID:        types.AssertInt(v["id"]),
+		Routine:   types.AssertInt(v["routine_id"]),
+		Judge:     types.AssertString(v["judge_tag"]),
+		Code:      types.AssertString(v["code"]),
+		Timestamp: int64(types.AssertInt(v["ts"])),
+	}
+}
+
+func SaveDeductionMark(routineID int, timestamp int, code string, judgeTag string) (err error) {
+	stmt := "INSERT INTO deductions (routine_id, code, judge_tag, ts) VALUES ($1, $2, $3, $4)"
+	values := []interface{}{routineID, code, judgeTag, timestamp}
+	_, err = Query(stmt, values)
+	return err
+}
+
+func GetDeductions(routineID int) ([]*DeductionMark, error) {
+	stmt := "SELECT * FROM deductions WHERE routine_id = $1"
+	values := []interface{}{routineID}
+	res, err := Query(stmt, values)
+	if err != nil {
+		return nil, err
+	}
+	list := make([]*DeductionMark, len(res))
+	for i, v := range res {
+		list[i] = constructDeductionMark(v)
+	}
+	return list, nil
+}
+
+func constructScore(v map[string]interface{}) (*Score, error) {
+	scoreStr := string(types.AssertByteSlice(v["score"]))
+	score, err := types.ParseFloat64(scoreStr)
+	if err != nil {
+		return nil, err
+	}
+	return &Score{
+		ID:      types.AssertInt(v["id"]),
+		Routine: types.AssertInt(v["routine_id"]),
+		Judge:   types.AssertString(v["judge_tag"]),
+		Score:   score,
+	}, nil
+}
+
+func GetScores(routineID int) (map[string]*Score, error) {
 	stmt := "SELECT * FROM scores WHERE routine_id = $1"
 	values := []interface{}{routineID}
-	scores := make(map[string]float64)
+	scores := make(map[string]*Score)
 	res, err := Query(stmt, values)
 	for _, row := range res {
-		judge := types.AssertString(row["judge_tag"])
-		sBytes := types.AssertByteSlice(row["score"])
-		score, err := types.ParseFloat64(string(sBytes))
+		score, err := constructScore(row)
 		if err != nil {
-			return scores, err
+			return nil, err
 		}
-		scores[judge] = score
+		scores[score.Judge] = score
 	}
 
 	return scores, err
 }
 
-func GetAdjustments(routineID int) ([]Adjustment, error) {
+func DeleteScore(id int) (err error) {
+	stmt := "DELETE * FROM score WHERE id = $1"
+	values := []interface{}{id}
+	_, err = Query(stmt, values)
+	return err
+}
+
+func GetAdjustments(routineID int) ([]*Adjustment, error) {
 	stmt := "SELECT * FROM adjustments WHERE routine_id = $1"
 	values := []interface{}{routineID}
-	adjs := make([]Adjustment, 0)
+	adjs := make([]*Adjustment, 0)
 	res, err := Query(stmt, values)
 	for _, row := range res {
 		aBytes := types.AssertByteSlice(row["amount"])
@@ -371,7 +421,7 @@ func GetAdjustments(routineID int) ([]Adjustment, error) {
 		if err != nil {
 			return adjs, err
 		}
-		adj := Adjustment{
+		adj := &Adjustment{
 			ID:      types.AssertInt(row["id"]),
 			Routine: types.AssertInt(row["routine_id"]),
 			Judge:   types.AssertString(row["judge_tag"]),

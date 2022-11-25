@@ -33,15 +33,15 @@ var TPZ = (function () {
     }
     */
 
-    function clearJSWarning() {
-        getElementById("js-warn").remove();
-    }
-
     /* =================== public methods ================== */
     // main init method
     function init() {
         //cacheDom();
         //bindEvents();
+    }
+
+    function clearJSWarning() {
+        getElementById("js-warn").remove();
     }
 
     function getElementById(id) {
@@ -53,6 +53,12 @@ var TPZ = (function () {
         */
         var ele = document.getElementById(id);
         //DOM[id] = ele;
+        return ele;
+    }
+
+    // get the first element with the given class
+    function getElementByClass(c) {
+        var ele = document.getElementsByClassName(c)[0];
         return ele;
     }
 
@@ -93,9 +99,9 @@ var TPZ = (function () {
         return template.content.childNodes;
     }
 
-    function httpGet(url, onReady) {
+    function httpGet(url, onReady, async = true) {
         var r = new XMLHttpRequest();
-        r.open("GET", url, true);
+        r.open("GET", url, async);
         r.onreadystatechange = function () {
             if (r.readyState != 4 || r.status != 200) return;
             onReady(r.responseText);
@@ -103,9 +109,9 @@ var TPZ = (function () {
         r.send();
     }
 
-    function httpGetJson(url, onReady) {
+    function httpGetJson(url, onReady, async = true) {
         var r = new XMLHttpRequest();
-        r.open("GET", url, true);
+        r.open("GET", url, async);
         r.onreadystatechange = function () {
             if (r.readyState != 4 || r.status != 200) return;
             onReady(JSON.parse(r.responseText));
@@ -113,9 +119,9 @@ var TPZ = (function () {
         r.send();
     }
 
-    function httpPostJson(url, data, onReady) {
+    function httpPostJson(url, data, onReady, async = true) {
         var r = new XMLHttpRequest();
-        r.open("POST", url, true);
+        r.open("POST", url, async);
         if (onReady) {
             r.onreadystatechange = function () {
                 if (r.readyState != 4 || r.status != 200) return;
@@ -199,14 +205,20 @@ var TPZ = (function () {
         modal.remove();
     }
 
+    function addBreak(node) {
+        node.appendChild(renderHtml("<br/>"));
+    }
+
     /* =============== export public methods =============== */
     return {
+        addBreak: addBreak,
         alert: alert,
         confirm: confirm,
         appendToPanel: appendToPanel,
         clearPanel: clearPanel,
         getAuthId: getAuthId,
         getElementById: getElementById,
+        getElementByClass: getElementByClass,
         httpGet: httpGet,
         httpGetJson: httpGetJson,
         httpPostJson: httpPostJson,

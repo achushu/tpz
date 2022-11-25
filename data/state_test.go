@@ -59,7 +59,7 @@ func TestAdjustments(t *testing.T) {
 	r := data.GetRing(rData.ID)
 	r.SetAdjustment("abc", 0.1, "test")
 	r.SetAdjustment("abc", 0.5, "big test")
-	adjs := r.Adjustments()
+	adjs := r.Adjustments
 	req := 2
 	max := 2
 	count := 0

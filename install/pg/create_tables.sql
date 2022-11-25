@@ -91,3 +91,11 @@ CREATE TABLE adjustments (
 	amount decimal (3,2) not null,
 	reason varchar default ''
 );
+
+CREATE TABLE deductions (
+	id serial primary key,
+	routine_id integer references routines (id) on delete cascade,
+	judge_tag varchar,
+	ts bigint,
+	code varchar not null
+);

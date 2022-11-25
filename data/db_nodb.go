@@ -163,15 +163,51 @@ func GetRoutine(eventID, competitorID int) (*Routine, error) {
 	}
 	return nil, errors.ErrNotFound
 }
-func GetScores(routineID int) (map[string]float64, error) {
-	return nil, errors.ErrNotImplemented
+
+func SaveDeductionMark(routineID int, timestamp int, code string, judgeTag string) error {
+	id := len(deductions)
+	d := &DeductionMark{
+		ID:        id,
+		Routine:   routineID,
+		Judge:     judgeTag,
+		Code:      code,
+		Timestamp: int64(timestamp),
+	}
+	deductions = append(deductions, d)
+	return nil
 }
 
-func GetAdjustments(routineID int) ([]Adjustment, error) {
-	return nil, errors.ErrNotImplemented
+func GetDeductions(routineID int) ([]*DeductionMark, error) {
+	res := make([]*DeductionMark, 0)
+	for _, v := range deductions {
+		if v.Routine == routineID {
+			res = append(res, v)
+		}
+	}
+	return res, nil
 }
 
-func saveScore(score string, routineID int, judgeTag string) error {
+func GetScores(routineID int) (map[string]*Score, error) {
+	res := make(map[string]*Score)
+	for _, v := range scores {
+		if v.Routine == routineID {
+			res[v.Judge] = v
+		}
+	}
+	return res, nil
+}
+
+func GetAdjustments(routineID int) ([]*Adjustment, error) {
+	res := make([]*Adjustment, 0)
+	for _, v := range adjustments {
+		if v.Routine == routineID {
+			res = append(res, v)
+		}
+	}
+	return res, nil
+}
+
+func saveScore(score float64, routineID int, judgeTag string) error {
 	id := len(scores)
 	s := &Score{
 		ID:      id,
@@ -180,6 +216,10 @@ func saveScore(score string, routineID int, judgeTag string) error {
 		Score:   score,
 	}
 	scores = append(scores, s)
+	return nil
+}
+
+func DeleteScore(id int) error {
 	return nil
 }
 
@@ -202,7 +242,7 @@ func GetFinalScore(eventID, competitorID int) (string, error) {
 	return e.FinalScore, nil
 }
 
-func saveAdjustment(amount float64, reason string, routineID int, judgeTag string) error {
+func SaveAdjustment(amount float64, reason string, routineID int, judgeTag string) error {
 	id := len(adjustments)
 	a := &Adjustment{
 		ID:      id,
@@ -255,6 +295,77 @@ func ChangeEventRules(eventID, rulesetID int) error {
  * Mocked database
  */
 var (
+	Alice = &Competitor{
+		ID:         1,
+		FirstName:  "Alice",
+		LastName:   "A.",
+		Gender:     Female,
+		Experience: Advanced,
+		AgeGroup:   Adult,
+	}
+	Becky = &Competitor{
+		ID:         2,
+		FirstName:  "Becky",
+		LastName:   "B.",
+		Gender:     Female,
+		Experience: Advanced,
+		AgeGroup:   Adult,
+	}
+	Chelsea = &Competitor{
+		ID:         3,
+		FirstName:  "Chelsea",
+		LastName:   "C.",
+		Gender:     Female,
+		Experience: Advanced,
+		AgeGroup:   Adult,
+	}
+	Avery = &Competitor{
+		ID:         4,
+		FirstName:  "Avery",
+		LastName:   "A.",
+		Gender:     Male,
+		Experience: Beginner,
+		AgeGroup:   Adult,
+	}
+
+	AdvCQF = &Event{
+		ID:         2,
+		Ring:       1,
+		Name:       "Changquan F (USWU)",
+		Order:      0,
+		Ruleset:    USWU,
+		Style:      Changquan,
+		Experience: Advanced,
+	}
+	BegCQM = &Event{
+		ID:         1,
+		Ring:       1,
+		Name:       "Changquan M (USWU)",
+		Order:      1,
+		Ruleset:    USWU,
+		Style:      Changquan,
+		Experience: Beginner,
+	}
+	IWUFCQF = &Event{
+		ID:         3,
+		Ring:       2,
+		Name:       "Changquan F (IWUF)",
+		Order:      0,
+		Ruleset:    IWUF,
+		Style:      Changquan,
+		Experience: Advanced,
+	}
+	IWUFABNQM = &Event{
+		ID:         4,
+		Ring:       2,
+		Name:       "Nanquan M (IWUF-AB)",
+		Order:      1,
+		Ruleset:    IWUFAB,
+		Style:      Nanquan,
+		Experience: Advanced,
+	}
+)
+var (
 	allUsers = []*User{
 		{
 			ID:       1,
@@ -269,103 +380,57 @@ var (
 	}
 
 	allCompetitors = []*Competitor{
-		{
-			ID:         1,
-			FirstName:  "Alice",
-			LastName:   "A.",
-			Gender:     Female,
-			Experience: Advanced,
-			AgeGroup:   Adult,
-			Team:       "TPZ",
-			Email:      "aaf@tpz.com",
-		},
-		{
-			ID:         2,
-			FirstName:  "Becky",
-			LastName:   "B.",
-			Gender:     Female,
-			Experience: Advanced,
-			AgeGroup:   Adult,
-			Team:       "TPZ",
-			Email:      "bbf@tpz.com",
-		},
-		{
-			ID:         3,
-			FirstName:  "Chelsea",
-			LastName:   "C.",
-			Gender:     Female,
-			Experience: Advanced,
-			AgeGroup:   Adult,
-			Team:       "TPZ",
-			Email:      "ccf@tpz.com",
-		},
-		{
-			ID:         4,
-			FirstName:  "Avery",
-			LastName:   "A.",
-			Gender:     Male,
-			Experience: Beginner,
-			AgeGroup:   Adult,
-			Team:       "TPZ",
-			Email:      "aam@tpz.com",
-		},
+		Alice, Becky, Chelsea, Avery,
 	}
 	allEvents = []*Event{
-		{
-			ID:         2,
-			Ring:       1,
-			Name:       "Changquan F (USWU)",
-			Order:      0,
-			Ruleset:    USWU,
-			Style:      Changquan,
-			Experience: Advanced,
-		},
-		{
-			ID:         1,
-			Ring:       1,
-			Name:       "Changquan M (USWU)",
-			Order:      1,
-			Ruleset:    USWU,
-			Style:      Changquan,
-			Experience: Beginner,
-		},
+		AdvCQF,
+		BegCQM,
+		IWUFCQF,
+		IWUFABNQM,
 	}
 	routines = []*Routine{
 		// Changquan F
 		{
 			ID:         2,
-			Event:      2,
+			Event:      AdvCQF.ID,
+			Competitor: Becky.ID,
 			Order:      1,
-			Competitor: 2,
-			FinalScore: "",
-			Duration:   "",
 		},
 		{
 			ID:         3,
-			Event:      2,
+			Event:      AdvCQF.ID,
+			Competitor: Chelsea.ID,
 			Order:      2,
-			Competitor: 3,
-			FinalScore: "",
-			Duration:   "",
 		},
 		{
 			ID:         1,
-			Event:      2,
+			Event:      AdvCQF.ID,
+			Competitor: Alice.ID,
 			Order:      3,
-			Competitor: 1,
-			FinalScore: "",
-			Duration:   "",
 		},
 		// Changquan M
 		{
 			ID:         4,
-			Event:      1,
+			Event:      BegCQM.ID,
+			Competitor: Avery.ID,
 			Order:      1,
-			Competitor: 4,
-			FinalScore: "",
-			Duration:   "",
+		},
+		// Changquan F IWUF
+		{
+			ID:         5,
+			Event:      IWUFCQF.ID,
+			Competitor: Alice.ID,
+			Order:      1,
+		},
+		// Nanquan M IWUF-AB
+		{
+			ID:         6,
+			Event:      IWUFABNQM.ID,
+			Competitor: Avery.ID,
+			Order:      1,
 		},
 	}
-	scores      = make([]*Score, 0, 10)
-	adjustments = make([]*Adjustment, 0, 10)
+	scores      = make([]*Score, 0)
+	adjustments = make([]*Adjustment, 0)
+	deductions  = make([]*DeductionMark, 0)
 )

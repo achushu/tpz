@@ -15,16 +15,6 @@ import (
 	"github.com/achushu/tpz/server/sockets"
 )
 
-var emptyJson = []byte{123, 125} // {}
-
-// changer holds values that may be POSTed
-type changer struct {
-	ID           int `json:"id"`
-	EventID      int `json:"event_id"`
-	CompetitorID int `json:"competitor_id"`
-	RingID       int `json:"ring_id"`
-}
-
 func init() {
 	getSettingsHandler := routes.Log(http.HandlerFunc(getSettings))
 	setSettingsHandler := routes.LoginRequired(http.HandlerFunc(setSettings))
@@ -65,10 +55,7 @@ type settingsChange struct {
 func setSettings(w http.ResponseWriter, r *http.Request) {
 	var s settingsChange
 
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&s); err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		log.HttpError("error parsing data:", err)
+	if !decodeBodyOrError(&s, w, r) {
 		return
 	}
 	defer r.Body.Close()
@@ -83,10 +70,7 @@ func setSettings(w http.ResponseWriter, r *http.Request) {
 func addToEvent(w http.ResponseWriter, r *http.Request) {
 	var c changer
 
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&c); err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		log.HttpError("error parsing data:", err)
+	if !decodeBodyOrError(&c, w, r) {
 		return
 	}
 	defer r.Body.Close()
@@ -104,10 +88,7 @@ func addToEvent(w http.ResponseWriter, r *http.Request) {
 func removeFromEvent(w http.ResponseWriter, r *http.Request) {
 	var c changer
 
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&c); err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		log.HttpError("error parsing data:", err)
+	if !decodeBodyOrError(&c, w, r) {
 		return
 	}
 	defer r.Body.Close()
@@ -124,24 +105,17 @@ func removeFromEvent(w http.ResponseWriter, r *http.Request) {
 
 func changeEvent(w http.ResponseWriter, r *http.Request) {
 	var (
-		c   changer
-		msg []byte
-		err error
+		ring *data.RingState
+		c    changer
+		msg  []byte
 	)
 
 	vars := mux.Vars(r)
 	ringID := types.Atoi(vars["ringID"])
-	ring := data.GetRing(ringID)
-	if ring == nil {
-		err = errors.NewRingError(ringID)
-		routes.RenderError(w, errors.NewInternalError(err))
-		log.HttpError(err)
+	if ring = getRingOrError(ringID, w); ring == nil {
+		return
 	}
-
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&c); err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		log.HttpError("error parsing data:", err)
+	if !decodeBodyOrError(&c, w, r) {
 		return
 	}
 	defer r.Body.Close()
@@ -186,24 +160,16 @@ func changeEvent(w http.ResponseWriter, r *http.Request) {
 
 func changeCompetitor(w http.ResponseWriter, r *http.Request) {
 	var (
-		c   changer
-		err error
+		ring *data.RingState
+		c    changer
 	)
 
 	vars := mux.Vars(r)
 	ringID := types.Atoi(vars["ringID"])
-	ring := data.GetRing(ringID)
-	if ring == nil {
-		err = errors.NewRingError(ringID)
-		routes.RenderError(w, errors.NewInternalError(err))
-		log.HttpError(err)
+	if ring = getRingOrError(ringID, w); ring == nil {
+		return
 	}
-
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&c); err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		log.HttpError("error parsing data:", err)
-		w.Write(emptyJson)
+	if !decodeBodyOrError(&c, w, r) {
 		return
 	}
 	defer r.Body.Close()
@@ -240,10 +206,7 @@ func changeCompetitor(w http.ResponseWriter, r *http.Request) {
 func moveEvent(w http.ResponseWriter, r *http.Request) {
 	var c changer
 
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&c); err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		log.HttpError("error parsing data:", err)
+	if !decodeBodyOrError(&c, w, r) {
 		return
 	}
 	defer r.Body.Close()

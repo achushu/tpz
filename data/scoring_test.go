@@ -7,7 +7,11 @@ import (
 )
 
 func TestAdjustedAverage3Scores(t *testing.T) {
-	scores := []float64{7.35, 7.45, 7.70}
+	scores := []*Score{
+		{Score: 7.35},
+		{Score: 7.45},
+		{Score: 7.70},
+	}
 	exp := types.RoundFloat((7.35+7.45+7.70)/float64(3), 0.001)
 	res := AdjustedAverage(scores)
 	if res != exp {
@@ -16,7 +20,12 @@ func TestAdjustedAverage3Scores(t *testing.T) {
 }
 
 func TestAdjustedAverage4Scores(t *testing.T) {
-	scores := []float64{7.35, 7.45, 7.70, 7.95}
+	scores := []*Score{
+		{Score: 7.35},
+		{Score: 7.45},
+		{Score: 7.70},
+		{Score: 7.95},
+	}
 	exp := types.RoundFloat((7.45+7.70)/float64(2), 0.001)
 	res := AdjustedAverage(scores)
 	if res != exp {
@@ -25,7 +34,13 @@ func TestAdjustedAverage4Scores(t *testing.T) {
 }
 
 func TestAdjustedAverage5Scores(t *testing.T) {
-	scores := []float64{7.95, 7.35, 7.45, 7.55, 7.70}
+	scores := []*Score{
+		{Score: 7.95},
+		{Score: 7.35},
+		{Score: 7.45},
+		{Score: 7.55},
+		{Score: 7.70},
+	}
 	exp := types.RoundFloat((7.45+7.55+7.70)/float64(3), 0.001)
 	res := AdjustedAverage(scores)
 	if res != exp {
