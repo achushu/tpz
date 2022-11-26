@@ -103,7 +103,7 @@ func FormatScore(score float64) string {
 
 type DeductionResult struct {
 	*DeductionMark
-	Applied bool
+	Applied bool `json:"applied"`
 }
 
 var deductionWindow = int64(1000 * 3) // 3 second window

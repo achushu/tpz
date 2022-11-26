@@ -2,7 +2,9 @@ package api
 
 import (
 	"fmt"
+	"hash/fnv"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 
@@ -142,6 +144,13 @@ type deduction struct {
 	RingID    int    `json:"ringID"`
 }
 
+func generateDeductionID(judgeID string, timestamp int64) int {
+	hash := fnv.New32a()
+	hash.Write([]byte(judgeID))
+	hash.Write([]byte(strconv.FormatInt(timestamp, 10)))
+	return int(hash.Sum32())
+}
+
 func submitDeduction(w http.ResponseWriter, r *http.Request) {
 	var (
 		ring *data.RingState
@@ -157,13 +166,39 @@ func submitDeduction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := data.SaveDeductionMark(ded.RoutineID, ded.Timestamp, ded.Code, ded.JudgeID); err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		out.Errorln("error saving deduction:", err, "\n", ded)
-		return
+	id := generateDeductionID(ded.JudgeID, int64(ded.Timestamp))
+	dm := &data.DeductionMark{
+		ID:        id,
+		Routine:   ded.RoutineID,
+		Judge:     ded.JudgeID,
+		Code:      ded.Code,
+		Timestamp: int64(ded.Timestamp),
 	}
-
-	ring.SetDeduction(ded.JudgeID, ded.Code, int64(ded.Timestamp))
+	switch r.Method {
+	case "POST":
+		if err := data.SaveDeductionMark(dm); err != nil {
+			routes.RenderError(w, errors.NewInternalError(err))
+			out.Errorln("error saving deduction:", err, "\n", ded)
+			return
+		}
+		ring.SetDeduction(dm)
+	case "UPDATE":
+		out.Debugf("update deduction %d to %s", id, ded.Code)
+		if err := data.UpdateDeductionMark(id, ded.Code); err != nil {
+			routes.RenderError(w, errors.NewInternalError(err))
+			out.Errorln("error updating deduction:", err, "\n", ded)
+			return
+		}
+		ring.UpdateDeduction(dm.Judge, id, ded.Code)
+	case "DELETE":
+		out.Debugf("delete deduction %d", id)
+		if err := data.RemoveDeductionMark(id); err != nil {
+			routes.RenderError(w, errors.NewInternalError(err))
+			out.Errorln("error deleting deduction:", err, "\n", ded)
+			return
+		}
+		ring.DeleteDeduction(dm.Judge, dm.ID)
+	}
 
 	w.Write(emptyJson)
 }

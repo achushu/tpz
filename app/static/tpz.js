@@ -120,8 +120,12 @@ var TPZ = (function () {
     }
 
     function httpPostJson(url, data, onReady, async = true) {
+        httpSendJson(url, "POST", data, onReady, async);
+    }
+
+    function httpSendJson(url, method, data, onReady, async = true) {
         var r = new XMLHttpRequest();
-        r.open("POST", url, async);
+        r.open(method, url, async);
         if (onReady) {
             r.onreadystatechange = function () {
                 if (r.readyState != 4 || r.status != 200) return;
@@ -222,6 +226,7 @@ var TPZ = (function () {
         httpGet: httpGet,
         httpGetJson: httpGetJson,
         httpPostJson: httpPostJson,
+        httpSendJson: httpSendJson,
         loginRequired: loginRequired,
         renderHtml: renderHtml,
         init: init,

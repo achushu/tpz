@@ -164,16 +164,31 @@ func GetRoutine(eventID, competitorID int) (*Routine, error) {
 	return nil, errors.ErrNotFound
 }
 
-func SaveDeductionMark(routineID int, timestamp int, code string, judgeTag string) error {
-	id := len(deductions)
-	d := &DeductionMark{
-		ID:        id,
-		Routine:   routineID,
-		Judge:     judgeTag,
-		Code:      code,
-		Timestamp: int64(timestamp),
+func SaveDeductionMark(dm *DeductionMark) error {
+	deductions = append(deductions, dm)
+	return nil
+}
+
+func UpdateDeductionMark(id int, code string) error {
+	for _, d := range deductions {
+		if d.ID == id {
+			d.Code = code
+		}
 	}
-	deductions = append(deductions, d)
+	return nil
+}
+
+func RemoveDeductionMark(id int) error {
+	var idx = -1
+	for i, d := range deductions {
+		if d.ID == id {
+			idx = i
+			break
+		}
+	}
+	if idx != -1 {
+		deductions = append(deductions[:idx], deductions[idx+1:]...)
+	}
 	return nil
 }
 

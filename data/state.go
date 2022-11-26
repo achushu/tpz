@@ -241,18 +241,44 @@ func (r *RingState) SetAdjustment(judgeTag string, amount float64, reason string
 	r.Adjustments = append(r.Adjustments, adj)
 }
 
-func (r *RingState) SetDeduction(judgeTag string, code string, timestamp int64) {
+func (r *RingState) SetDeduction(dm *DeductionMark) {
+	judgeTag := dm.Judge
 	judgeDeductions := r.Deductions[judgeTag]
 	if judgeDeductions == nil {
 		judgeDeductions = make([]*DeductionMark, 0)
 	}
-	judgeDeductions = append(judgeDeductions, &DeductionMark{
-		Routine:   r.Routine.ID,
-		Judge:     judgeTag,
-		Code:      code,
-		Timestamp: timestamp,
-	})
+	judgeDeductions = append(judgeDeductions, dm)
 	r.Deductions[judgeTag] = judgeDeductions
+}
+
+func (r *RingState) UpdateDeduction(judgeTag string, id int, code string) {
+	jd := r.Deductions[judgeTag]
+	if jd == nil {
+		return
+	}
+	for _, d := range jd {
+		if d.ID == id {
+			d.Code = code
+		}
+	}
+}
+
+func (r *RingState) DeleteDeduction(judgeTag string, id int) {
+	var idx = -1
+	jd := r.Deductions[judgeTag]
+	if jd == nil {
+		return
+	}
+	for i, d := range jd {
+		if d.ID == id {
+			idx = i
+			break
+		}
+	}
+	if idx != -1 {
+		jd = append(jd[:idx], jd[idx+1:]...)
+	}
+	r.Deductions[judgeTag] = jd
 }
 
 func (r *RingState) Duration() time.Duration {
