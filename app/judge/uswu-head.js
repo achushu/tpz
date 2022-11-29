@@ -11,8 +11,8 @@ let notifyArgs = {
         registerJudge(ringId, "uswu-head");
     },
     onmessage: (serverMsg) => {
+        console.log(serverMsg);
         let msg = parseMessage(serverMsg.data);
-
         // take role specific actions
         switch (msg.action) {
             case "submit-score":

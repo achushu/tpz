@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/achushu/libs/out"
 	"github.com/achushu/libs/types"
@@ -16,6 +17,28 @@ func (r *RingState) CalculateScore() (result float64, components map[string]floa
 	}
 	rules := r.Event.Ruleset
 	switch rules {
+	case IWUFAB:
+		fallthrough
+	case IWUF:
+		scores := r.PerformanceScores()
+		perfScore := AdjustedAverage(scores)
+		result += perfScore
+		deductions := DetermineDeductions(r.Deductions)["result"]
+		techScore := 5.0
+		for _, v := range deductions {
+			d := ToDeduction(v.Code, r.Event.Style)
+			techScore -= d.Value
+		}
+		result += techScore
+		components = map[string]float64{
+			"a": techScore,
+			"b": perfScore,
+		}
+		if rules == IWUF {
+			difficulty := CalculateDifficulty(DetermineNandu(r.NanduScores))
+			result += difficulty
+			components["c"] = difficulty
+		}
 	case USWU:
 		scores := r.PerformanceScores()
 		result = AdjustedAverage(scores)
@@ -207,4 +230,161 @@ func matchEarliestDeduction(deductions [][]*DeductionMark) ([]*DeductionMark, bo
 		}
 	}
 	return res, matched
+}
+
+func (r *RingState) ParseNanduScores(judgeTag string, results []bool) {
+	nandu := make([]Nandu, 0)
+	seq := GetNanduSequence(r.Nandusheet, r.Event.Style)
+	for i, v := range results {
+		n := Nandu{
+			Index:   i,
+			Success: v,
+			Code:    seq[i],
+		}
+		nandu = append(nandu, n)
+	}
+	r.NanduScores[judgeTag] = nandu
+}
+
+func CalculateDifficulty(nandu []Nandu) float64 {
+	const (
+		moveCap       = 1.4
+		connectionCap = 0.6
+	)
+	var (
+		result         = 0.0
+		moveUsed       = 0.0
+		connectionUsed = 0.0
+	)
+	if nandu == nil {
+		return 0
+	}
+
+	for _, v := range nandu {
+		isConn := IsConnection(v.Code.Code)
+		value := v.Code.Value
+		potential := value
+		overlimit := 0.0
+		if isConn {
+			connectionUsed += value
+			overlimit = connectionUsed - connectionCap
+		} else {
+			moveUsed += value
+			overlimit = moveUsed - moveCap
+		}
+		if overlimit > 0 {
+			potential -= overlimit
+			if potential < 0 {
+				potential = 0
+			}
+		}
+		if v.Success {
+			result += potential
+		}
+		out.Debugf("nandu: %s - success: %t - potential: %f\n", v.Code.Code, v.Success, potential)
+	}
+	return types.RoundFloat(result, 0.01)
+}
+
+func GetNanduSequence(sheet *Nandusheet, style Style) []NanduCode {
+	sequence := make([]NanduCode, 0, 16)
+
+	sections := []string{
+		sheet.Segment1,
+		sheet.Segment2,
+		sheet.Segment3,
+		sheet.Segment4,
+	}
+	for _, section := range sections {
+		combos := parseNanduString(section)
+		for _, combo := range combos {
+			sequence = append(sequence, parseNanduCombo(combo, style)...)
+		}
+	}
+	return sequence
+}
+
+func parseNanduString(s string) []string {
+	return strings.Split(s, ",")
+}
+
+func parseNanduCombo(s string, style Style) []NanduCode {
+	// Possible formats: 312A+335A(B), 323A+4A, 415A, 323A+312A(A)+3A
+	// ex1: base: 323A, conn: (A); base: 312A, conn: 3A
+	// ex2: base: 312A, conn: (B); base: 335A, conn: none
+	if s == "" {
+		return []NanduCode{}
+	}
+	components := strings.Split(s, "+")
+	base := ToNanduCode(components[0], style)
+	if base == InvalidNanduCode {
+		out.Errorln("data/state - ", "could not find nandu code ", components[0])
+	}
+	connections := make([]NanduCode, 0, 2)
+	if len(components) > 1 {
+		for i := 1; i < len(components); i++ {
+			component := components[i]
+			dynIdx := strings.Index(component, "(") // Index of a dynamic connection -- eg: (A)
+			if dynIdx > -1 {
+				// get both parts
+				c := ToNanduCode(component[dynIdx:], style)
+				if c == InvalidNanduCode {
+					out.Errorln("data/state - ", "could not find nandu code ", component[dynIdx:])
+				}
+				connections = append(connections, c)
+				c = ToNanduCode(component[:dynIdx], style)
+				if c == InvalidNanduCode {
+					out.Errorln("data/state - ", "could not find nandu code ", component[:dynIdx])
+				}
+				connections = append(connections, c)
+			} else {
+				c := ToNanduCode(component, style)
+				if c == InvalidNanduCode {
+					out.Errorln("data/state - ", "could not find nandu code ", component[:dynIdx])
+				}
+				connections = append(connections, c)
+			}
+		}
+	}
+	return append([]NanduCode{base}, connections...)
+}
+
+func DetermineNandu(judgeScores map[string][]Nandu) []Nandu {
+	var numCJudges = len(judgeScores)
+	if numCJudges == 0 {
+		return nil
+	}
+	nanduResults := make([][]Nandu, 0)
+	for _, v := range judgeScores {
+		nanduResults = append(nanduResults, v)
+	}
+
+	// Determine the final result for successful nandu
+	finalResult := make([]Nandu, len(nanduResults[0]))
+	for i, v := range nanduResults[0] {
+		finalResult[i].Index = i
+		finalResult[i].Code = v.Code
+	}
+	j1 := nanduResults[0]
+	if numCJudges >= 3 {
+		j2 := nanduResults[1]
+		j3 := nanduResults[2]
+		for i, j1i := range j1 {
+			finalResult[i].Success = (j1i.Success && j2[i].Success) ||
+				(j1i.Success && j3[i].Success) ||
+				(j2[i].Success && j3[i].Success)
+		}
+	} else if numCJudges == 2 {
+		j2 := nanduResults[1]
+		for i, j1i := range j1 {
+			finalResult[i].Success = j1i.Success || j2[i].Success
+		}
+	} else {
+		for i, j1i := range j1 {
+			finalResult[i].Success = j1i.Success
+		}
+	}
+
+	out.Debugf("finalResult: %v\n", finalResult)
+	return finalResult
 }

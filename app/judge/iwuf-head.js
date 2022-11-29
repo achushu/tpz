@@ -12,14 +12,35 @@ let notifyArgs = {
     },
     onmessage: (serverMsg) => {
         console.log(serverMsg);
-        // Notify.send(event.data);
-        // let msg = parseMessage(event.data);
-        // handleCommonActions(msg);
+        let msg = parseMessage(serverMsg.data);
+        // take role specific actions
+        switch (msg.action) {
+            case "submit-score":
+                getScores();
+                break;
+            case "submit-deductions":
+                getDeductions();
+                break;
+            case "submit-nandu":
+                getNanduScores();
+                break;
+            case "notify-competitor":
+                // do nothing
+                // XHR reaction to response takes care of it
+                break;
+            default:
+                handleCommonActions(msg);
+                break;
+        }
     },
 };
 
 function getDeductions() {
     TPZ.httpGetJson("/api/" + ringId + "/get-deductions", displayDeductions);
+}
+
+function getNanduScores() {
+    TPZ.httpGetJson("/api/" + ringId + "/get-nandu-scores", displayNandu);
 }
 
 function displayDeductions(data) {
@@ -56,6 +77,23 @@ function displayDeductions(data) {
     }
 }
 
+function displayNandu(data) {
+    let marks = data["marks"];
+    $("#nandu-list").empty();
+    for (let judge in marks) {
+        let submittedNandu = marks[judge];
+        let nanduDisplay = "";
+        for (let i in submittedNandu) {
+            if (submittedNandu[i]) {
+                nanduDisplay += "o";
+            } else {
+                nanduDisplay += "x";
+            }
+        }
+        $("#nandu-list").append("<li>" + nanduDisplay + "</li>");
+    }
+}
+
 window.onload = () => {
     TPZ.init();
     setClientId();
@@ -72,11 +110,10 @@ window.onload = () => {
         if (pollMode) {
             console.log("polling...");
             getScores();
+            getDeductions();
+            getNanduScores();
         }
     }, 3000);
-    getDeductionId = setInterval(() => {
-        getDeductions();
-    }, 1000);
 
     prepareView();
 };

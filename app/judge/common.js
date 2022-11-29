@@ -121,20 +121,20 @@ function adjustScore(amount, reason) {
         routineID: currentRoutineId,
         ringID: parseInt(ringId),
     };
-    TPZ.httpPostJson("/api/submit-adjustment", adj, function () {
+    TPZ.httpPostJson("/api/submit-adjustment", adj, () => {
         getScores();
     });
 }
 
 function getScores() {
     // get latest score list
-    TPZ.httpGetJson("/api/" + ringId + "/get-scores", function (data) {
+    TPZ.httpGetJson("/api/" + ringId + "/get-scores", (data) => {
         let scoreList = TPZ.getElementById("score-list");
         // Clear the list
         scoreList.innerHTML = "";
         let scoreCount = 0;
         for (let k in data.scores) {
-            let score = data.scores[k];
+            let score = data.scores[k].score;
             let item = TPZ.renderHtml("<li>" + score + "</li>");
             scoreList.appendChild(item);
             scoreCount += 1;
@@ -176,7 +176,7 @@ function getScores() {
 
 function finalizeScore() {
     let data = { ringID: parseInt(ringId) };
-    TPZ.httpPostJson("/api/finalize-score", data, function () {
+    TPZ.httpPostJson("/api/finalize-score", data, () => {
         setPublishedStatus();
     });
 }
@@ -208,8 +208,8 @@ function renderEventControlPanel(ringId, initEventId, initCompetitorId) {
     let compSelect = TPZ.getElementById("competitor-select");
     compSelect.dataset.init = initCompetitorId;
 
-    eventSelect.addEventListener("change", function () {
-        let eventId = this.value;
+    eventSelect.addEventListener("change", () => {
+        let eventId = eventSelect.value;
         if (eventId === currentEventId) {
             return;
         }
@@ -223,7 +223,7 @@ function renderEventControlPanel(ringId, initEventId, initCompetitorId) {
             competitorChanged();
         });
     });
-    compSelect.addEventListener("change", function () {
+    compSelect.addEventListener("change", () => {
         let competitorId = parseInt(this.value);
         if (competitorId == currentCompetitorId) return;
         let eventId = parseInt(eventSelect.value);
@@ -238,7 +238,7 @@ function renderEventControlPanel(ringId, initEventId, initCompetitorId) {
     });
 
     // get events in this ring
-    TPZ.httpGetJson("/api/events-in-ring/" + ringId, function (eventList) {
+    TPZ.httpGetJson("/api/events-in-ring/" + ringId, (eventList) => {
         for (let i = 0; i < eventList.length; i += 1) {
             let event = eventList[i];
             let option = document.createElement("option");
@@ -445,7 +445,7 @@ function renderScorePanel(ruleset, exp) {
         ' <button id="score-submit" class="btn btn-theme">Submit</div>' +
         '<div><p id="score-hint"></p></div>';
 
-    if (!correctRuleset) {
+    if (judgeRuleset != undefined && !correctRuleset) {
         TPZ.getElementById("scoring-warning").textContent =
             "Not a " + judgeRuleset + " event!";
     }
@@ -533,7 +533,7 @@ function addPublishScoreButton() {
     TPZ.getElementById("head-publish-score").onclick = () => {
         let adj = TPZ.getElementById("score-adjustment");
         let reason = TPZ.getElementById("adjustment-reason");
-        if (adj.value != "" || reason.value != "") {
+        if (adj != undefined && (adj.value != "" || reason.value != "")) {
             TPZ.alert("Please submit or clear the adjustment!");
         } else {
             TPZ.confirm("Publish results?", finalizeScore);

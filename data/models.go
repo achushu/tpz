@@ -120,3 +120,12 @@ type Nandu struct {
 	Index   int       `json:"index"`
 	Success bool      `json:"success"`
 }
+
+type Nandusheet struct {
+	ID       int    `json:"id"`
+	Routine  int    `json:"routine_id"`
+	Segment1 string `json:"segment1"`
+	Segment2 string `json:"segment2"`
+	Segment3 string `json:"segment3"`
+	Segment4 string `json:"segment4"`
+}

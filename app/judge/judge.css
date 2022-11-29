@@ -138,3 +138,12 @@ tbody tr {
   color: #555;
   font-family: consolas, monospace;
 }
+
+.nandu-success {
+  background-color: lightgreen;
+}
+
+.nandu-fail {
+  background-color: lightcoral;
+  text-decoration: line-through;
+}

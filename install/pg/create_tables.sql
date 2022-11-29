@@ -99,3 +99,10 @@ CREATE TABLE deductions (
 	ts bigint,
 	code varchar not null
 );
+
+CREATE TABLE nandu_results (
+	id integer primary key,
+	routine_id integer references routines (id) on delete cascade,
+	judge_tag varchar,
+	result varchar,
+)

@@ -1,63 +1,68 @@
 judgeRuleset = "IWUF";
 
-window.onload = () => {
-    TPZ.init();
-    Notify.connect("/judge/server");
-    Notify.setOnOpen(() => {
+let currentEventName;
+
+let notifyArgs = {
+    onopen: () => {
         console.log("connected");
         registerJudge(ringId, "iwuf-b");
-    });
-    Notify.setOnMessage((event) => {
-        console.log(event);
-    });
+    },
+    onmessage: (serverMsg) => {
+        console.log(serverMsg);
+        let msg = parseMessage(serverMsg.data);
+        switch (msg.action) {
+            default:
+                handleCommonActions(msg);
+                break;
+        }
+    },
+};
+
+window.onload = () => {
+    TPZ.init();
+    Notify.connect("/judge/server", notifyArgs);
     prepareView();
 };
 
 function prepareView() {
     clearView();
-    renderEventPanel();
+    setupEventPanel();
     setupNanduPanel();
     initScratchPad();
     onCompetitorChange = () => {
-        let ruleBase = getRuleBase(currentEvent.rules);
-        if (ruleBase === "IWUF-AB") {
-            $("#nandu-panel").text("No C judge for this event");
-        } else if (ruleBase !== "IWUF") {
-            $("#nandu-panel").text("Not an IWUF event");
-        }
+        updateEventInfo((data) => {
+            currentEventName = data.event_name;
+            if (currentEventRules === "IWUF-AB") {
+                $("#nandu-panel").text("No C judge for this event");
+            } else if (currentEventRules !== "IWUF") {
+                $("#nandu-panel").text("Not an IWUF event");
+            } else {
+                let ns = [
+                    data.nandusheet["segment1"],
+                    data.nandusheet["segment2"],
+                    data.nandusheet["segment3"],
+                    data.nandusheet["segment4"],
+                ];
+                renderNanduPanel(ns);
+            }
+        });
     };
-    Notify.setOnMessage((event) => {
-        let msg = parseMessage(event.data);
-        switch (msg.action) {
-            case "notify-competitor":
-                handleCommonActions(msg);
-                currentCompetitor = msg.params[0];
-                renderNanduPanel(currentCompetitor.nandusheet);
-                break;
-            case "ring-status":
-                handleCommonActions(msg);
-                currentCompetitor = msg.params[0].competitor;
-                currentCompetitor.nandusheet = msg.params[0].nandusheet;
-                renderNanduPanel(currentCompetitor.nandusheet);
-                break;
-            default:
-                handleCommonActions(msg);
-                break;
-        }
-    });
+    onCompetitorChange();
 }
 
 let nanduNum = 0;
 function renderNanduPanel(nandusheet) {
     TPZ.getElementById("nandu-panel").innerHTML =
-        '<div id="nandu-sheet"></div><button type="button" class="btn btn-primary" id="score-submit">Submit</button>';
+        "<p>Click skill to toggle success / failure</p>" +
+        '<div id="nandu-sheet"></div>' +
+        '<button type="button" class="btn btn-primary" id="score-submit">Submit</button>';
     for (let i in nandusheet) {
         // Create the table describing the form section
         let sId = parseInt(i) + 1;
-        let sectionTable = TPZ.renderHTML(
+        let sectionTable = TPZ.renderHtml(
             '<table class="table nandu" id="' +
                 sId +
-                '"><thead><tr><td class="nandu-code"/><td>Section ' +
+                '"><thead><tr><td class="nandu-code"/><td>S' +
                 sId +
                 '</td><td class="nandu-mark"/></tr></thead><tbody></tbody></table>'
         );
@@ -77,38 +82,54 @@ function renderNanduPanel(nandusheet) {
                 combo.base.code,
                 combo.base.name
             );
-            sectionTable.append(baseNandu);
+            sectionTable.appendChild(baseNandu);
             // Add in any connections
             for (let j in combo.connections) {
                 nanduId = "n" + nanduNum;
                 nanduNum += 1;
-                let nanduComponent = createNanduComponent(
+                let nanduConn = createNanduComponent(
                     nanduId,
                     combo.connections[j].code,
                     combo.connections[j].name
                 );
-                sectionTable.append(nanduComponent);
+                sectionTable.appendChild(nanduConn);
             }
         });
     }
 
     $("#score-submit").click(() => {
-        let score = $("#score-entry").val();
-        if (confirm("Submit results?")) {
+        TPZ.confirm("Submit results?", () => {
             // tally the results
             let results = [];
-            $(".nandu-component").each(() => {
-                results.push($(this).data("success"));
+            let components = document.getElementsByClassName("nandu-component");
+            for (let i = 0; i < components.length; i++) {
+                let c = components[i];
+                if (
+                    c.dataset.success === undefined ||
+                    c.dataset.success === "true"
+                ) {
+                    // consider an unmarked skill to be a success
+                    results.push(true);
+                } else {
+                    results.push(false);
+                }
+            }
+            let scorecard = {
+                routineID: currentRoutineId,
+                judgeID: clientId,
+                result: results,
+                ringID: parseInt(ringId),
+            };
+            TPZ.httpPostJson("/api/submit-nandu", scorecard, () => {
+                $(".nandu-mark").attr("disabled", true);
+                $("#score-submit").attr("disabled", true);
             });
-            notify({ action: "submit-nandu", params: [results] });
-            $(".nandu-mark").attr("disabled", true);
-            $("#score-submit").attr("disabled", true);
-        }
+        });
     });
 }
 
 function createNanduComponent(id, code, name) {
-    let n = $(
+    let n = TPZ.renderHtml(
         '<tr id="' +
             id +
             '" class="nandu-component"><th scope="row" class="nandu-code">' +
@@ -117,24 +138,21 @@ function createNanduComponent(id, code, name) {
             name +
             '</td><td class="nandu-mark">+/-</td></tr>'
     );
-    n.data("success", true);
-    n.click(() => {
+    n.addEventListener("click", () => {
         // Store completion success as a data value
-        let success = $(this).data("success");
+        let success = n.dataset.success;
         if (success === undefined) {
             success = true;
         } else {
-            success = !success;
+            success = !(success === "true");
         }
-        $(this).data("success", success);
+        n.dataset.success = success;
         if (success) {
-            $(this)
-                .css("background-color", "lightgreen")
-                .css("text-decoration", "");
+            n.classList.remove("nandu-fail");
+            n.classList.add("nandu-success");
         } else {
-            $(this)
-                .css("background-color", "lightcoral")
-                .css("text-decoration", "line-through");
+            n.classList.add("nandu-fail");
+            n.classList.remove("nandu-success");
         }
     });
     return n;
@@ -258,7 +276,7 @@ function parseNanduCombo(s) {
 }
 
 function getNanduComponent(code) {
-    let isTaiji = currentEvent.name.toLowerCase().indexOf("taiji") > 0;
+    let isTaiji = currentEventName.toLowerCase().indexOf("taiji") > 0;
     if (isTaiji) {
         // Check for taiji specific nandu codes first
         let t = taiji_codes[code];

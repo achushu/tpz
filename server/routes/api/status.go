@@ -83,6 +83,10 @@ func ringStatus(w http.ResponseWriter, r *http.Request) {
 			total, _ := current.CalculateScore()
 			info["total"] = data.FormatScore(total)
 		}
+		ns, err := data.GetNandusheet(current.Routine.ID)
+		if err == nil && ns != nil {
+			info["nandusheet"] = ns
+		}
 	}
 	jsonResponse(info, w)
 }

@@ -230,6 +230,48 @@ func (t Style) MarshalJSON() ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
+func ToDeduction(code string, style Style) DeductionCode {
+	var (
+		d  DeductionCode
+		ok bool
+	)
+	if d, ok = GeneralDeductions[code]; ok {
+		return d
+	}
+	switch style.Category() {
+	case Northern:
+		d, ok = NorthernDeductions[code]
+	case Southern:
+		d, ok = SouthernDeductions[code]
+	case Taiji:
+		d, ok = TaijiDeductions[code]
+	}
+	if ok {
+		return d
+	}
+	return InvalidDeduction
+}
+
+func ToNanduCode(code string, style Style) NanduCode {
+	var (
+		n  NanduCode
+		ok bool
+	)
+	if style.Category() == Taiji {
+		// some taiji nandu codes overlap w/ standard codes
+		if n, ok = TaijiNanduCodes[code]; ok {
+			return n
+		}
+	}
+	if n, ok = NanduCodes[code]; ok {
+		return n
+	}
+	if n, ok = NanduConnectionCodes[code]; ok {
+		return n
+	}
+	return InvalidNanduCode
+}
+
 func IsConnection(code string) bool {
 	_, ok := NanduConnectionCodes[code]
 	return ok
@@ -330,8 +372,8 @@ var (
 		"88": {"88", 0.2, ""},
 	}
 
-	InvalidNandu = NanduCode{"", 0.0, ""}
-	NanduCodes   = map[string]NanduCode{
+	InvalidNanduCode = NanduCode{"", 0.0, ""}
+	NanduCodes       = map[string]NanduCode{
 		"111A": {"111A", 0.2, "standing leg to head"},
 		"112A": {"112A", 0.2, "side kick and hold leg"},
 		"113A": {"113A", 0.2, "backward balance"},

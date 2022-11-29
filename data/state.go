@@ -34,6 +34,9 @@ type RingState struct {
 	Scores      map[string]*Score
 	Adjustments []*Adjustment
 	Deductions  map[string][]*DeductionMark
+	Nandusheet  *Nandusheet
+	NanduScores map[string][]Nandu
+	NanduResult string
 	RuleName    string
 
 	headJudge *Judge
@@ -178,7 +181,10 @@ func (r *RingState) SetCompetitor(newComp *Competitor, event *Event) {
 	// Reset the state
 	r.Scores = make(map[string]*Score)
 	r.Adjustments = make([]*Adjustment, 0)
-	r.Deductions = make(map[string][]*DeductionMark)
+	r.Deductions = nil
+	r.Nandusheet = nil
+	r.NanduScores = nil
+	r.NanduResult = ""
 	r.Routine = routine
 
 	// get any saved state
@@ -192,15 +198,30 @@ func (r *RingState) SetCompetitor(newComp *Competitor, event *Event) {
 	} else {
 		out.Errorf("error retrieving adjustments for competitor %d: %s\n", r.Competitor.ID, err)
 	}
-	if deds, err := GetDeductions(routine.ID); err == nil {
-		for _, d := range deds {
-			j := d.Judge
-			jd := r.Deductions[j]
-			if jd == nil {
-				jd = make([]*DeductionMark, 0)
+	if event.Ruleset != USWU {
+		r.Deductions = make(map[string][]*DeductionMark)
+		r.NanduScores = make(map[string][]Nandu)
+		if deds, err := GetDeductions(routine.ID); err != nil {
+			out.Errorf("error retrieving deductions for competitor %d: %s\n", r.Competitor.ID, err)
+		} else {
+			for _, d := range deds {
+				j := d.Judge
+				jd := r.Deductions[j]
+				if jd == nil {
+					jd = make([]*DeductionMark, 0)
+				}
+				jd = append(jd, d)
+				r.Deductions[j] = jd
 			}
-			jd = append(jd, d)
-			r.Deductions[j] = jd
+		}
+		if r.Nandusheet, err = GetNandusheet(routine.ID); err != nil {
+			out.Errorf("error retrieving nandu sheet for competitor %d: %s\n", r.Competitor.ID, err)
+		}
+		nr, _ := GetNanduResults(routine.ID)
+		if nr != nil {
+			for judge, marks := range nr {
+				r.ParseNanduScores(judge, NanduMarksToSlice(marks))
+			}
 		}
 	}
 }
@@ -289,4 +310,28 @@ func (r *RingState) Duration() time.Duration {
 		return time.Since(r.StartTime)
 	}
 	return r.StopTime.Sub(r.StartTime)
+}
+
+func NanduMarksToSlice(marks string) []bool {
+	res := make([]bool, 0)
+	for _, mark := range marks {
+		if mark == 'o' {
+			res = append(res, true)
+		} else {
+			res = append(res, false)
+		}
+	}
+	return res
+}
+
+func SliceToNanduMarks(s []bool) string {
+	res := ""
+	for _, v := range s {
+		if v {
+			res += "o"
+		} else {
+			res += "x"
+		}
+	}
+	return res
 }

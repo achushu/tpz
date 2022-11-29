@@ -20,19 +20,23 @@ import (
 func init() {
 	getScoresRoute := routes.Log(http.HandlerFunc(getScores))
 	getDeductionsRoute := routes.Log(http.HandlerFunc(getDeductions))
+	getNanduScoresRoute := routes.Log(http.HandlerFunc(getNanduScores))
 	submitScoreRoute := routes.LoginRequired(http.HandlerFunc(submitScore))
 	deleteScoreRoute := routes.LoginRequired(http.HandlerFunc(deleteScore))
 	submitAdjustmentRoute := routes.LoginRequired(http.HandlerFunc(submitAdjustment))
 	submitDeductionRoute := routes.LoginRequired(http.HandlerFunc(submitDeduction))
+	submitNanduRoute := routes.LoginRequired(http.HandlerFunc(submitNandu))
 	finalizeScoreRoute := routes.LoginRequired(http.HandlerFunc(finalizeScore))
 
 	routes.AddSubroute(namespace, []routes.Route{
 		routes.New("/{ringID:\\d+}/get-scores", getScoresRoute),
 		routes.New("/{ringID:\\d+}/get-deductions", getDeductionsRoute),
+		routes.New("/{ringID:\\d+}/get-nandu-scores", getNanduScoresRoute),
 		routes.New("/submit-score", submitScoreRoute),
 		routes.New("/delete-score/{id:\\d+}", deleteScoreRoute),
 		routes.New("/submit-adjustment", submitAdjustmentRoute),
 		routes.New("/submit-deduction", submitDeductionRoute),
+		routes.New("/submit-nandu", submitNanduRoute),
 		routes.New("/finalize-score", finalizeScoreRoute),
 	})
 }
@@ -155,6 +159,8 @@ func submitDeduction(w http.ResponseWriter, r *http.Request) {
 	var (
 		ring *data.RingState
 		ded  deduction
+		msg  []byte
+		err  error
 	)
 
 	if !decodeBodyOrError(&ded, w, r) {
@@ -176,6 +182,7 @@ func submitDeduction(w http.ResponseWriter, r *http.Request) {
 	}
 	switch r.Method {
 	case "POST":
+		out.Debugf("%s save deduction %d - code %s", dm.Judge, id, dm.Code)
 		if err := data.SaveDeductionMark(dm); err != nil {
 			routes.RenderError(w, errors.NewInternalError(err))
 			out.Errorln("error saving deduction:", err, "\n", ded)
@@ -183,7 +190,7 @@ func submitDeduction(w http.ResponseWriter, r *http.Request) {
 		}
 		ring.SetDeduction(dm)
 	case "UPDATE":
-		out.Debugf("update deduction %d to %s", id, ded.Code)
+		out.Debugf("%s update deduction %d to code %s", dm.Judge, id, dm.Code)
 		if err := data.UpdateDeductionMark(id, ded.Code); err != nil {
 			routes.RenderError(w, errors.NewInternalError(err))
 			out.Errorln("error updating deduction:", err, "\n", ded)
@@ -191,7 +198,7 @@ func submitDeduction(w http.ResponseWriter, r *http.Request) {
 		}
 		ring.UpdateDeduction(dm.Judge, id, ded.Code)
 	case "DELETE":
-		out.Debugf("delete deduction %d", id)
+		out.Debugf("%s delete deduction %d", dm.Judge, id)
 		if err := data.RemoveDeductionMark(id); err != nil {
 			routes.RenderError(w, errors.NewInternalError(err))
 			out.Errorln("error deleting deduction:", err, "\n", ded)
@@ -199,8 +206,87 @@ func submitDeduction(w http.ResponseWriter, r *http.Request) {
 		}
 		ring.DeleteDeduction(dm.Judge, dm.ID)
 	}
+	msg, err = sockets.ConstructMessage(sockets.SubmitDeductions, nil)
+	if err != nil {
+		log.WsError("could not construct submit-deduction notification", err)
+	}
+	err = sockets.NotifyHeadJudge(msg, ded.RingID)
+	if err != nil {
+		log.WsError("could not notify head judge", err)
+	}
 
 	w.Write(emptyJson)
+}
+
+type nanduResult struct {
+	Routine int    `json:"routineID"`
+	Judge   string `json:"judgeID"`
+	Result  []bool `json:"result"`
+	RingID  int    `json:"ringID"`
+}
+
+func submitNandu(w http.ResponseWriter, r *http.Request) {
+	var (
+		ring *data.RingState
+		nan  nanduResult
+		msg  []byte
+		err  error
+	)
+
+	if !decodeBodyOrError(&nan, w, r) {
+		return
+	}
+	defer r.Body.Close()
+
+	if ring = getRingOrError(nan.RingID, w); ring == nil {
+		return
+	}
+
+	switch r.Method {
+	case "POST":
+		out.Debugf("%s save nandu results %s", nan.Judge, nan.Result)
+		ring.ParseNanduScores(nan.Judge, nan.Result)
+		marks := data.SliceToNanduMarks(nan.Result)
+		if err := data.SaveNanduScore(nan.Routine, nan.Judge, marks); err != nil {
+			routes.RenderError(w, errors.NewInternalError(err))
+			out.Errorln("error saving nandu result:", err, "\n", nan)
+			return
+		}
+	}
+	msg, err = sockets.ConstructMessage(sockets.SubmitNandu, nil)
+	if err != nil {
+		log.WsError("could not construct submit-nandu notification", err)
+	}
+	err = sockets.NotifyHeadJudge(msg, nan.RingID)
+	if err != nil {
+		log.WsError("could not notify head judge", err)
+	}
+
+	w.Write(emptyJson)
+}
+
+func getNanduScores(w http.ResponseWriter, r *http.Request) {
+	var ring *data.RingState
+
+	vars := mux.Vars(r)
+	ringID := types.Atoi(vars["ringID"])
+
+	if ring = getRingOrError(ringID, w); ring == nil {
+		return
+	}
+	marks := make(map[string][]bool)
+	for judge, scores := range ring.NanduScores {
+		judgeMarks := make([]bool, 0)
+		for _, v := range scores {
+			judgeMarks = append(judgeMarks, v.Success)
+		}
+		marks[judge] = judgeMarks
+	}
+	info := map[string]interface{}{
+		"marks":  marks,
+		"result": ring.NanduResult,
+	}
+	jsonResponse(info, w)
 }
 
 func getScores(w http.ResponseWriter, r *http.Request) {

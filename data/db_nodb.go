@@ -238,6 +238,32 @@ func DeleteScore(id int) error {
 	return nil
 }
 
+func GetNandusheet(routineID int) (*Nandusheet, error) {
+	for _, v := range nanduSheets {
+		if v.Routine == routineID {
+			return v, nil
+		}
+	}
+	return nil, nil
+}
+
+func SaveNanduScore(routineID int, judgeID string, result string) (err error) {
+	nr, ok := nanduresults[routineID]
+	if !ok {
+		nr = make(map[string]string)
+	}
+	nr[judgeID] = result
+	nanduresults[routineID] = nr
+	return
+}
+
+func GetNanduResults(routineID int) (map[string]string, error) {
+	if r, ok := nanduresults[routineID]; ok {
+		return r, nil
+	}
+	return nil, nil
+}
+
 func SaveFinalScore(score, total string, elapsed string, eventID, competitorID int) error {
 	e, err := GetRoutine(eventID, competitorID)
 	if err != nil {
@@ -445,7 +471,19 @@ var (
 			Order:      1,
 		},
 	}
-	scores      = make([]*Score, 0)
-	adjustments = make([]*Adjustment, 0)
-	deductions  = make([]*DeductionMark, 0)
+
+	nanduSheets = []*Nandusheet{
+		{
+			ID:       1,
+			Routine:  5,
+			Segment1: "312A+6A,324B+1B,312A+335A(B),323A+1A",
+			Segment2: "324A+1A",
+			Segment3: "",
+			Segment4: "333A",
+		},
+	}
+	scores       = make([]*Score, 0)
+	adjustments  = make([]*Adjustment, 0)
+	deductions   = make([]*DeductionMark, 0)
+	nanduresults = make(map[int]map[string]string)
 )

@@ -387,6 +387,51 @@ func GetDeductions(routineID int) ([]*DeductionMark, error) {
 	return list, nil
 }
 
+func GetNandusheet(routineID int) (*Nandusheet, error) {
+	stmt := "SELECT * FROM nandu_sheets WHERE routine_id = $1"
+	values := []interface{}{routineID}
+	res, err := Query(stmt, values)
+	if err != nil {
+		return nil, err
+	}
+	if len(res) == 0 {
+		return nil, errors.ErrNotFound
+	}
+	v := res[0]
+	return &Nandusheet{
+		Segment1: types.AssertString(v["segment1"]),
+		Segment2: types.AssertString(v["segment2"]),
+		Segment3: types.AssertString(v["segment3"]),
+		Segment4: types.AssertString(v["segment4"]),
+	}, nil
+}
+
+func SaveNanduScore(routineID int, judgeID string, result string) (err error) {
+	stmt := "INSERT INTO nandu_results (routine_id, judge_tag, result) VALUES ($1, $2, $3)"
+	values := []interface{}{routineID, judgeID, result}
+	_, err = Query(stmt, values)
+	return err
+}
+
+func GetNanduResults(routineID int) (map[string]string, error) {
+	stmt := "SELECT * FROM nandu_results WHERE routine_id = $1"
+	values := []interface{}{routineID}
+	res, err := Query(stmt, values)
+	if err != nil {
+		return nil, err
+	}
+	if len(res) == 0 {
+		return nil, nil
+	}
+	nandu := make(map[string]string)
+	for _, v := range res {
+		judge := types.AssertString(v["judge_tag"])
+		scores := types.AssertString(v["result"])
+		nandu[judge] = scores
+	}
+	return nandu, nil
+}
+
 func constructScore(v map[string]interface{}) (*Score, error) {
 	scoreStr := string(types.AssertByteSlice(v["score"]))
 	score, err := types.ParseFloat64(scoreStr)
