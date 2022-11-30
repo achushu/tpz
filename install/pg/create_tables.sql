@@ -100,9 +100,18 @@ CREATE TABLE deductions (
 	code varchar not null
 );
 
+CREATE TABLE nandu_sheets (
+	id serial primary key,
+	routine_id integer references routines (id) on delete cascade,
+	segment1 varchar,
+	segment2 varchar,
+	segment3 varchar,
+	segment4 varchar
+);
+
 CREATE TABLE nandu_results (
-	id integer primary key,
+	id serial primary key,
 	routine_id integer references routines (id) on delete cascade,
 	judge_tag varchar,
-	result varchar,
-)
+	result varchar
+);

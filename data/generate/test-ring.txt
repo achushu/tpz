@@ -1,0 +1,30 @@
+Test Ring
+Adult I Adv NQ Nandu M
+    A Chung
+    * 324B+1A,323A+312A(A)+3A;415A;324A+3C;
+Adult I Adv CQ Nandu F
+    S Feng
+    * 324A+6A,312A+335A(B),323A+1A;324A+1A,312A+6A;;333A+6A
+    T Zhang
+    * 324B+1B,312A+335A(B),323A+1A;312A+6A,335A;;333A+6A
+Adult I Adv CQ Nandu M
+    J Benedik
+    H Hong
+Adult I Adv Taiji Nandu M
+    C Mozafari
+Adult I Adv JS M
+    J Tang
+Adult I Adv NQ M
+    J Pang
+Adult I Adv CQ M
+    C Tran
+Adult I Adv Taiji BH M
+    A Wang
+Adult I Adv CQ F
+    Z Zhao
+Adult I Int Other Weapon F
+    J Voon
+Adult I Int N Trad Weapon F
+    N Tran
+Adult I Int CQ F
+    A Hammerash

@@ -354,7 +354,7 @@ func constructDeductionMark(v map[string]interface{}) *DeductionMark {
 
 func SaveDeductionMark(dm *DeductionMark) (err error) {
 	stmt := "INSERT INTO deductions (id, routine_id, code, judge_tag, ts) VALUES ($1, $2, $3, $4, $5)"
-	values := []interface{}{dm.Routine, dm.Code, dm.Judge, dm.Timestamp}
+	values := []interface{}{dm.ID, dm.Routine, dm.Code, dm.Judge, dm.Timestamp}
 	_, err = Query(stmt, values)
 	return err
 }
@@ -727,9 +727,7 @@ func MapToAgeGroup(dbID int) AgeGroup {
 }
 
 func MapToRuleset(dbID int) Ruleset {
-	switch dbID {
-	case 1:
-		return USWU
-	}
-	return USWU
+	// pg is 1-indexed
+	x := dbID - 1
+	return Ruleset(x)
 }

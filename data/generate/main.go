@@ -5,16 +5,25 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/achushu/tpz/data"
 )
 
-const (
-	ring1Filename = "input/iwg-2022_ring1.txt"
-	ring2Filename = "input/iwg-2022_ring2.txt"
+var inputFiles = []string{
+	"input/uwg-2022-ring1-AM.txt",
+	"input/uwg-2022-ring2-AM.txt",
+	"input/uwg-2022-ring1-PM.txt",
+	"input/uwg-2022-ring2-PM.txt",
+	"input/test-ring.txt",
+}
 
+const (
 	resultFilename     = "output/competition.sql"
+	ringFilename       = "output/rings.sql"
 	eventFilename      = "output/events.sql"
 	competitorFilename = "output/competitors.sql"
 	routineFilename    = "output/routines.sql"
+	nanduFilename      = "output/nandu.sql"
 )
 
 type EventDetails struct {
@@ -27,9 +36,15 @@ type EventDetails struct {
 }
 
 var (
+	// intermediary files
+	intFilenames = []string{
+		ringFilename, eventFilename, competitorFilename, routineFilename, nanduFilename,
+	}
+	ringFile       *os.File
 	competitorFile *os.File
 	routineFile    *os.File
 	eventFile      *os.File
+	nanduFile      *os.File
 
 	ringID     = 1
 	eventID    = 1
@@ -37,38 +52,26 @@ var (
 	compID     = 1
 	compOrder  = 1
 
-	currentEvent EventDetails
+	currentEvent  EventDetails
+	lastRoutineID = 0
 
 	competitorMap = map[string]int{}
-
-	expMap = map[string]int{
-		"Beg": 1,
-		"Int": 2,
-		"Adv": 3,
-	}
-
-	genderMap = map[string]int{
-		"F": 1,
-		"M": 2,
-	}
-
-	ruleMap = map[string]int{
-		"USWU": 1,
-	}
 )
 
 func styleMap(styleName string) int {
-	if strings.HasPrefix(styleName, "N.") {
-		return 0
-	}
-	if strings.HasPrefix(styleName, "S.") {
-		return 1
-	}
-	if strings.HasPrefix(styleName, "N") {
+	switch styleName {
+	case "NQ":
+		fallthrough
+	case "ND":
+		fallthrough
+	case "NG":
 		return 1
 	}
 	if strings.Contains(styleName, "Taiji") {
 		return 2
+	}
+	if styleName[0] == 'S' {
+		return 1
 	}
 	return 0
 }
@@ -88,20 +91,12 @@ func main() {
 }
 
 func combineFiles() error {
-	if err := cat(eventFilename, resultFilename); err != nil {
-		return err
+	for _, f := range intFilenames {
+		if err := cat(f, resultFilename); err != nil {
+			return err
+		}
+		os.Remove(f)
 	}
-	if err := cat(competitorFilename, resultFilename); err != nil {
-		return err
-	}
-	if err := cat(routineFilename, resultFilename); err != nil {
-		return err
-	}
-
-	os.Remove(eventFilename)
-	os.Remove(competitorFilename)
-	os.Remove(routineFilename)
-
 	return nil
 }
 
@@ -127,66 +122,93 @@ func cat(src, dst string) error {
 }
 
 func processInput() (err error) {
+	ringFile, err = os.OpenFile(ringFilename, os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		return
+	}
+	ringFile.WriteString("INSERT INTO rings (id, name) VALUES\n")
+
 	eventFile, err = os.OpenFile(eventFilename, os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		return
 	}
-	defer eventFile.Close()
 	eventFile.WriteString("INSERT INTO events (ring_id, name, ruleset_id, event_order, style, experience_id) VALUES\n")
 
 	competitorFile, err = os.OpenFile(competitorFilename, os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		return
 	}
-	defer competitorFile.Close()
 	competitorFile.WriteString("INSERT INTO competitors (last_name, first_name, gender_id, experience_id) VALUES\n")
 
 	routineFile, err = os.OpenFile(routineFilename, os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		return
 	}
-	defer routineFile.Close()
 	routineFile.WriteString("INSERT INTO routines (event_id, event_order, competitor_id) VALUES\n")
 
-	r1file, err := os.Open(ring1Filename)
+	nanduFile, err = os.OpenFile(nanduFilename, os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
-	b := bufio.NewScanner(r1file)
-	for b.Scan() {
-		processLine(b.Text())
-	}
-	r1file.Close()
+	nanduFile.WriteString("INSERT INTO nandu_sheets (routine_id, segment1, segment2, segment3, segment4) VALUES\n")
 
-	r2file, err := os.Open(ring2Filename)
-	if err != nil {
-		fmt.Println(err)
-		return
+	for i, input := range inputFiles {
+		var f *os.File
+		eventOrder = 1
+		ringID = i + 1
+		f, err = os.Open(input)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		b := bufio.NewScanner(f)
+		line := 0
+		for b.Scan() {
+			if line == 0 {
+				ringFile.WriteString(fmt.Sprintf("  (%d, '%s'),\n", ringID, b.Text()))
+			} else {
+				processLine(b.Text())
+			}
+			line++
+		}
+		f.Close()
 	}
-	eventOrder = 1
-	ringID = 2
-	b = bufio.NewScanner(r2file)
-	for b.Scan() {
-		processLine(b.Text())
+
+	intFiles := []*os.File{
+		ringFile, competitorFile, routineFile, eventFile, nanduFile,
 	}
-	r2file.Close()
 
 	// replace last commas with a semi-colon
-	eventFile.Seek(-2, 2)
-	eventFile.WriteString(";")
-	competitorFile.Seek(-2, 2)
-	competitorFile.WriteString(";")
-	routineFile.Seek(-2, 2)
-	routineFile.WriteString(";")
+	for _, f := range intFiles {
+		if _, err = f.Seek(-2, 2); err != nil {
+			fmt.Println("error seeking file:", err)
+		}
+		if _, err = f.WriteString(";"); err != nil {
+			fmt.Println("error finishing SQL file:", err)
+		}
+		f.Close()
+	}
 
 	return
 }
 
 func processLine(line string) {
 	if strings.HasPrefix(line, "\t") || strings.HasPrefix(line, "    ") {
-		// competitor
 		name := strings.TrimSpace(line)
+		if name[0] == '*' {
+			seq := strings.Split(strings.TrimSpace(name[1:]), ";")
+			if len(seq) < 4 {
+				fmt.Printf("nandu sequence %s is incomplete!", seq)
+			}
+			// nandu sequence
+			nanduFile.WriteString(
+				fmt.Sprintf("  (%d, '%s', '%s', '%s', '%s'),\n",
+					lastRoutineID,
+					seq[0], seq[1], seq[2], seq[3],
+				))
+			return
+		}
+		// competitor
 		cID, ok := competitorMap[name]
 		if !ok {
 			cID = compID
@@ -198,63 +220,83 @@ func processLine(line string) {
 			compID++
 		}
 		routineFile.WriteString(fmt.Sprintf("  (%d, %d, %d),\n", currentEvent.ID, compOrder, cID))
+		lastRoutineID++
 		compOrder++
-	} else {
-		// event
-		line = strings.TrimSpace(line)
-		currentEvent = parseEvent(line)
-		eventName := expandEvent(line)
-		eventFile.WriteString(fmt.Sprintf("  (%d, '%s', %d, %d, %d, %d),\n", ringID, eventName, currentEvent.Rules, eventOrder, currentEvent.Style, currentEvent.Experience))
-		eventID++
-		eventOrder++
-		compOrder = 1
+		return
 	}
+	// event
+	line = strings.TrimSpace(line)
+	currentEvent = parseEvent(line)
+	eventName := expandEvent(line)
+	eventFile.WriteString(fmt.Sprintf("  (%d, '%s', %d, %d, %d, %d),\n", ringID, eventName, currentEvent.Rules, eventOrder, currentEvent.Style, currentEvent.Experience))
+	eventID++
+	eventOrder++
+	compOrder = 1
 }
 
 func expandEvent(name string) string {
-	//exp = strings.Replace(name, "Beg", "Beginner", 1)
-	//exp = strings.Replace(exp, "Int", "Intermediate", 1)
-	//exp = strings.Replace(exp, "Adv", "Advanced", 1)
-
-	name = strings.Replace(name, "CQ", "Changquan", 1)
-	name = strings.Replace(name, "NQ", "Nanquan", 1)
-	name = strings.Replace(name, "TJ", "Taiji", 1)
-	name = strings.Replace(name, "GS", "Gunshu", 1)
-	name = strings.Replace(name, "DS", "Daoshu", 1)
-	name = strings.Replace(name, "JS", "Jianshu", 1)
-	name = strings.Replace(name, "QS", "Qiangshu", 1)
-	name = strings.Replace(name, "NG", "Nangun", 1)
-	name = strings.Replace(name, "ND", "Nandao", 1)
-
+	/*
+		exp = strings.Replace(name, "Beg", "Beginner", 1)
+		exp = strings.Replace(exp, "Int", "Intermediate", 1)
+		exp = strings.Replace(exp, "Adv", "Advanced", 1)
+	*/
+	/*
+		name = strings.Replace(name, "CQ", "Changquan", 1)
+		name = strings.Replace(name, "NQ", "Nanquan", 1)
+		name = strings.Replace(name, "TJ", "Taiji", 1)
+		name = strings.Replace(name, "GS", "Gunshu", 1)
+		name = strings.Replace(name, "DS", "Daoshu", 1)
+		name = strings.Replace(name, "JS", "Jianshu", 1)
+		name = strings.Replace(name, "QS", "Qiangshu", 1)
+		name = strings.Replace(name, "NG", "Nangun", 1)
+		name = strings.Replace(name, "ND", "Nandao", 1)
+	*/
 	return name
 }
 
 func parseEvent(eventName string) EventDetails {
+	var (
+		exp data.Experience
+	)
+	// ex: Group A Adv CQ Comp M
 	tokens := strings.Split(strings.TrimSpace(eventName), " ")
-	i := 0
+	idx := 0
 
-	exp := tokens[i]
-	i++
-
-	style := tokens[i]
-	if style == "Other" || style == "Taiji" || style == "TJ" {
-		i++
-		style += " " + tokens[i]
-	} else if style == "N" || style == "S" {
-		i++
-		style += " " + tokens[i] + " " + tokens[i+1]
-		i++
+	// find the exp
+	for ; idx < len(tokens); idx++ {
+		t := tokens[idx]
+		if e := data.ToExperience(t); e != data.InvalidExperience {
+			exp = e
+			break
+		}
 	}
-	i++
 
-	rules := "USWU"
-	gender := tokens[i]
+	ageName := strings.Join(tokens[:idx], " ")
+	age := data.ToAgeGroup(ageName)
+
+	idx++ // idx is past age group
+
+	styleEndIdx := len(tokens) - 1
+
+	rules := data.USWU
+	if strings.Contains(eventName, "Nandu") {
+		rules = data.IWUF
+		styleEndIdx-- // "Nandu" occurs before gender
+	} else if strings.Contains(eventName, "Comp") {
+		rules = data.IWUFAB
+		styleEndIdx-- // "Comp" occurs before gender
+	}
+
+	gender := data.ToGender(tokens[len(tokens)-1])
+
+	styleName := strings.Join(tokens[idx:styleEndIdx], " ")
 
 	return EventDetails{
 		ID:         eventID,
-		Experience: expMap[exp],
-		Style:      styleMap(style),
-		Rules:      ruleMap[rules],
-		Gender:     genderMap[gender],
+		Age:        int(age) + 1,
+		Experience: int(exp) + 1,
+		Style:      styleMap(styleName),
+		Rules:      int(rules) + 1,
+		Gender:     int(gender) + 1,
 	}
 }

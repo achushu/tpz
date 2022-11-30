@@ -9,7 +9,7 @@ import (
 // SetupTestEnv adjusts the running environment so that file searches
 // behave as they would in normal operation.
 func SetupTestEnv(t *testing.T) {
-	apphome := "tpz-lite"
+	apphome := "tpz"
 	pwd, err := os.Getwd()
 	if err != nil {
 		t.Fatalf("error setting up test: %s", err)

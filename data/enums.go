@@ -3,6 +3,7 @@ package data
 import (
 	"bytes"
 	"strconv"
+	"strings"
 )
 
 /*
@@ -17,6 +18,7 @@ const (
 	Beginner Experience = iota
 	Intermediate
 	Advanced
+	InvalidExperience
 )
 
 var AllExperiences = []Experience{Beginner, Intermediate, Advanced}
@@ -45,6 +47,24 @@ func (t Experience) StringShort() string {
 	return t.String()
 }
 
+func ToExperience(s string) Experience {
+	switch strings.ToLower(s) {
+	case Beginner.String():
+		fallthrough
+	case Beginner.StringShort():
+		return Beginner
+	case Intermediate.String():
+		fallthrough
+	case Intermediate.StringShort():
+		return Intermediate
+	case Advanced.String():
+		fallthrough
+	case Advanced.StringShort():
+		return Advanced
+	}
+	return InvalidExperience
+}
+
 type AgeGroup int
 
 const (
@@ -55,6 +75,7 @@ const (
 	GroupA
 	Adult
 	AdultII
+	InvalidAge
 )
 
 var AllAgeGroups = []AgeGroup{Child, Youth, GroupC, GroupB, GroupA, Adult, AdultII}
@@ -62,21 +83,41 @@ var AllAgeGroups = []AgeGroup{Child, Youth, GroupC, GroupB, GroupA, Adult, Adult
 func (t AgeGroup) String() string {
 	switch t {
 	case Child:
-		return "Child"
+		return "child"
 	case Youth:
-		return "Youth"
+		return "youth"
 	case GroupC:
-		return "Group C"
+		return "group c"
 	case GroupB:
-		return "Group B"
+		return "group b"
 	case GroupA:
-		return "Group A"
+		return "group a"
 	case Adult:
-		return "Adult"
+		return "adult i"
 	case AdultII:
-		return "Adult II"
+		return "adult ii"
 	}
 	return "Age Group(" + strconv.Itoa(int(t)) + ")"
+}
+
+func ToAgeGroup(s string) AgeGroup {
+	switch strings.ToLower(s) {
+	case Child.String():
+		return Child
+	case Youth.String():
+		return Youth
+	case GroupC.String():
+		return GroupC
+	case GroupB.String():
+		return GroupB
+	case GroupA.String():
+		return GroupA
+	case Adult.String():
+		return Adult
+	case AdultII.String():
+		return AdultII
+	}
+	return InvalidAge
 }
 
 type Gender int
@@ -84,6 +125,7 @@ type Gender int
 const (
 	Female Gender = iota
 	Male
+	OtherGender
 )
 
 var AllGenders = []Gender{Female, Male}
@@ -108,6 +150,24 @@ func (t Gender) StringShort() string {
 	return t.String()
 }
 
+func ToGender(s string) Gender {
+	if len(s) == 1 {
+		switch strings.ToUpper(s) {
+		case Female.StringShort():
+			return Female
+		case Male.StringShort():
+			return Male
+		}
+	}
+	switch strings.ToLower(s) {
+	case Female.String():
+		return Female
+	case Male.String():
+		return Male
+	}
+	return OtherGender
+}
+
 type Ruleset int
 
 const (
@@ -116,7 +176,7 @@ const (
 	IWUFAB
 )
 
-var AllRulesets = []Ruleset{USWU}
+var AllRulesets = []Ruleset{USWU, IWUF, IWUFAB}
 
 func (t Ruleset) String() string {
 	switch t {
@@ -146,13 +206,13 @@ const (
 	Taijijian
 )
 
-var AllStyles = []Style{Changquan, Daoshu, Jianshu, Gunshu, Qiangshu, Nanquan, Nandao, Nangun, Taijiquan, Taijijian}
-
 const (
 	Northern Category = iota
 	Southern
 	Taiji
 )
+
+var AllStyles = []Style{Changquan, Daoshu, Jianshu, Gunshu, Qiangshu, Nanquan, Nandao, Nangun, Taijiquan, Taijijian}
 
 func (t Style) String() string {
 	switch t {

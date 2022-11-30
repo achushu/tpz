@@ -8,6 +8,7 @@ DIST_PATH=${PROJ_HOME}/dist
 STAGING_AREA=${DIST_PATH}/${APPNAME}
 CONFIG_FILE=${PROJ_HOME}/config/config.yml
 INSTALL_FILES=${PROJ_HOME}/install
+AUTOGEN_FILES=${PROJ_HOME}/data/generate/output
 ARTIFACTS=${CONFIG_FILE} ${INSTALL_FILES}
 
 VERSION=$(shell git describe --tags --abbrev=0)

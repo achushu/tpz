@@ -20,7 +20,6 @@ func WriteCategoriesFile(filename string) error {
 	}
 	defer f.Close()
 
-	f.WriteString(DefaultRings(2))
 	f.WriteString(EventTypes())
 	f.WriteString(Rulesets())
 	f.WriteString(Experiences())
@@ -29,26 +28,10 @@ func WriteCategoriesFile(filename string) error {
 	return nil
 }
 
-func DefaultRings(count int) string {
-	var s strings.Builder
-
-	s.WriteString("INSERT INTO rings (name) VALUES\n")
-	eol := ","
-	for i := 0; i < count; i++ {
-		id := i + 1
-		if i == count-1 {
-			eol = EndStmt
-		}
-		s.WriteString(fmt.Sprintf("\t('Ring %d')%s\n", id, eol))
-	}
-
-	return s.String()
-}
-
 func Rulesets() string {
 	var s strings.Builder
 
-	s.WriteString("INSERT INTO rulesets (id, name) VALUES\n")
+	s.WriteString("INSERT INTO rulesets (name) VALUES\n")
 	eol := ","
 	count := len(data.AllRulesets)
 	for i, v := range data.AllRulesets {

@@ -6,7 +6,7 @@ ARG GOPKG=go${GOVER}.linux-amd64.tar.gz
 RUN apt update -qq
 RUN apt upgrade -qq -y
 
-RUN apt install -y -qq wget
+RUN apt install -y -qq wget rsync cmake git
 RUN wget https://go.dev/dl/${GOPKG}
 RUN tar -xf ${GOPKG} && mv go /usr/local
 

@@ -46,9 +46,14 @@ func TestScore(t *testing.T) {
 	expectedScores := []float64{score}
 	data.AddRing(rData)
 	r := data.GetRing(rData.ID)
+	r.Routine = &data.Routine{}
 	r.SetPerformanceScore(judgeTag, score)
 	actualScores := r.PerformanceScores()
-	if !reflect.DeepEqual(expectedScores, actualScores) {
+	got := make([]float64, 0)
+	for _, s := range actualScores {
+		got = append(got, s.Score)
+	}
+	if !reflect.DeepEqual(expectedScores, got) {
 		t.Errorf("unexpected scores -- want: %v; got: %v\n", expectedScores, actualScores)
 	}
 }
@@ -57,6 +62,7 @@ func TestAdjustments(t *testing.T) {
 	data.ClearState()
 	data.AddRing(rData)
 	r := data.GetRing(rData.ID)
+	r.Routine = &data.Routine{}
 	r.SetAdjustment("abc", 0.1, "test")
 	r.SetAdjustment("abc", 0.5, "big test")
 	adjs := r.Adjustments
