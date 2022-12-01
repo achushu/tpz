@@ -31,7 +31,7 @@ let notifyArgs = {
             default:
                 break;
         }
-    }
+    },
 };
 
 // TODO: Unify with judge/common.js
@@ -267,16 +267,34 @@ function displayScoresMode(scoreInfo) {
     footer.css("opacity", "0%");
     let ruleBase = getRuleBase(ruleset.split(" ")[0]);
     let finalScore = scoreInfo.final;
-    let adjustments = scoreInfo.adjustments;
     finalScoreDisplay.textContent = finalScore;
-    if (ruleBase === "USWU") {
-        let scoreBreakdown = scoreInfo.scores;
-        let bDisplay = [];
-        for (let i = 0; i < scoreBreakdown.length; i += 1) {
-            bDisplay.push(scoreBreakdown[i].toFixed(2));
-        }
-        BScoreBreakdown.textContent = bDisplay.join(", ");
+    let scoreBreakdown = scoreInfo.scores;
+    let bDisplay = [];
+    for (let i in scoreBreakdown) {
+        bDisplay.push(scoreBreakdown[i].score.toFixed(2));
     }
+    BScoreBreakdown.textContent = bDisplay.join(", ");
+    if (ruleBase != "USWU") {
+        AScore.textContent = "A: " + scoreInfo.components["a"].toFixed(2);
+        BScore.textContent = "B: " + scoreInfo.components["b"].toFixed(2);
+
+        // get deductions
+        displayDeductions();
+        if (ruleBase == "IWUF") {
+            CScore.textContent = "C: " + scoreInfo.components["c"].toFixed(2);
+            // get nandu
+            displayNandu();
+        }
+    }
+
+    // get adjustments
+    displayAdjustments(scoreInfo.adjustments);
+
+    // get current rank
+    displayRank();
+}
+
+function displayAdjustments(adjustments) {
     if (adjustments && adjustments.length > 0) {
         Adjs.textContent = "Adjustments: ";
         let adjDisplay = [];
@@ -286,7 +304,28 @@ function displayScoresMode(scoreInfo) {
         }
         AdjsBreakdown.innerHTML = adjDisplay.join(", ");
     }
-    // get current rank
+}
+
+function displayDeductions() {
+    TPZ.httpGetJson("/api/" + ringId + "/get-deductions", function (data) {
+        let deductions = data.deductions.result;
+        let list = [];
+        for (let i in deductions) {
+            list.push(deductions[i]["code"]);
+        }
+        AScoreBreakdown.textContent = list.join(", ");
+    });
+}
+
+function displayNandu() {
+    TPZ.httpGetJson("/api/" + ringId + "/get-nandu-scores", function (data) {
+        CScoreBreakdown.textContent = data.result
+            .replace(/o/gi, "o ")
+            .replace(/x/gi, "x ");
+    });
+}
+
+function displayRank() {
     TPZ.httpGetJson("/api/event-ranks/" + currentEventId, function (rows) {
         for (let i = 0; i < rows.length; i++) {
             let row = rows[i];

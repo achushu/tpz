@@ -36,7 +36,7 @@ type RingState struct {
 	Deductions  map[string][]*DeductionMark
 	Nandusheet  *Nandusheet
 	NanduScores map[string][]Nandu
-	NanduResult string
+	NanduResult []Nandu
 	RuleName    string
 
 	headJudge *Judge
@@ -184,7 +184,7 @@ func (r *RingState) SetCompetitor(newComp *Competitor, event *Event) {
 	r.Deductions = nil
 	r.Nandusheet = nil
 	r.NanduScores = nil
-	r.NanduResult = ""
+	r.NanduResult = nil
 	r.Routine = routine
 
 	// get any saved state
@@ -201,6 +201,7 @@ func (r *RingState) SetCompetitor(newComp *Competitor, event *Event) {
 	if event.Ruleset != USWU {
 		r.Deductions = make(map[string][]*DeductionMark)
 		r.NanduScores = make(map[string][]Nandu)
+		r.NanduResult = make([]Nandu, 0)
 		if deds, err := GetDeductions(routine.ID); err != nil {
 			out.Errorf("error retrieving deductions for competitor %d: %s\n", r.Competitor.ID, err)
 		} else {

@@ -42,10 +42,11 @@ dist:
 	cp -r ${ARTIFACTS} ${STAGING_AREA}
 	GOOS=linux go build ${LDFLAGS} -trimpath -tags pg -o ${STAGING_AREA}/${BINARY} .
 	# User management tool
-	# GOOS=linux go build -trimpath -o ${STAGING_AREA}/createuser tools/user/main.go
+	GOOS=linux go build -trimpath -o ${STAGING_AREA}/createuser user/main.go
 
 	# Package everything
 	sleep 5
+	chmod +x ${STAGING_AREA}/${BINARY} ${STAGING_AREA}/createuser
 	tar -C ${DIST_PATH}/ -czpf ${LINUX_ARCHIVE} ${APPNAME}
 	rm -rf ${DIST_PATH}/*
 	mv ${LINUX_ARCHIVE} ${DIST_PATH}/

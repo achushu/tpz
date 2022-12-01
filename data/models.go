@@ -1,6 +1,10 @@
 package data
 
-import "time"
+import (
+	"hash/fnv"
+	"strconv"
+	"time"
+)
 
 /*
  * DATABASE MODELS
@@ -110,6 +114,24 @@ type DeductionMark struct {
 	Judge     string `json:"judge_tag"`
 	Code      string `json:"code"`
 	Timestamp int64  `json:"timestamp"`
+}
+
+func generateDeductionID(judgeID string, timestamp int64) int {
+	hash := fnv.New32a()
+	hash.Write([]byte(judgeID))
+	hash.Write([]byte(strconv.FormatInt(timestamp, 10)))
+	return int(hash.Sum32())
+}
+
+func NewDeductionMark(routineID int, judgeID, code string, timestamp int64) *DeductionMark {
+	id := generateDeductionID(judgeID, timestamp)
+	return &DeductionMark{
+		ID:        id,
+		Routine:   routineID,
+		Judge:     judgeID,
+		Code:      code,
+		Timestamp: timestamp,
+	}
 }
 
 // Nandu is a single mark given by a judge for an event

@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/achushu/libs/out"
@@ -24,18 +25,15 @@ func (r *RingState) CalculateScore() (result float64, components map[string]floa
 		perfScore := AdjustedAverage(scores)
 		result += perfScore
 		deductions := DetermineDeductions(r.Deductions)["result"]
-		techScore := 5.0
-		for _, v := range deductions {
-			d := ToDeduction(v.Code, r.Event.Style)
-			techScore -= d.Value
-		}
+		techScore := ToTechnicalScore(deductions, r.Event.Style)
 		result += techScore
 		components = map[string]float64{
 			"a": techScore,
 			"b": perfScore,
 		}
 		if rules == IWUF {
-			difficulty := CalculateDifficulty(DetermineNandu(r.NanduScores))
+			r.NanduResult = DetermineNandu(r.NanduScores)
+			difficulty := CalculateDifficulty(r.NanduResult)
 			result += difficulty
 			components["c"] = difficulty
 		}
@@ -129,40 +127,84 @@ type DeductionResult struct {
 	Applied bool `json:"applied"`
 }
 
+// DeductionSheet implements the Sort interface
+type DeductionSheet []*DeductionMark
+
+func (t DeductionSheet) Len() int {
+	return len(t)
+}
+
+func (t DeductionSheet) Less(i, j int) bool {
+	a := t[i]
+	b := t[j]
+	return a.Timestamp < b.Timestamp
+}
+
+func (t DeductionSheet) Swap(i, j int) {
+	tmp := t[i]
+	t[i] = t[j]
+	t[j] = tmp
+}
+
 var deductionWindow = int64(1000 * 3) // 3 second window
 func DetermineDeductions(deductions map[string][]*DeductionMark) map[string][]DeductionResult {
 	var (
 		res = make(map[string][]DeductionResult)
 	)
+	res["result"] = make([]DeductionResult, 0)
+
 	// Need to clone the values here so that the original objects aren't destroyed
 	allDeductions := make([][]*DeductionMark, 0, 3)
-	for _, d := range deductions {
+	for k, d := range deductions {
 		dList := make([]*DeductionMark, len(d))
 		copy(dList, d)
+		// sort the deductions by timestamp
+		sort.Sort(DeductionSheet(dList))
 		allDeductions = append(allDeductions, dList)
+
+		// also copy to results
+		res[k] = make([]DeductionResult, 0)
+		for _, v := range dList {
+			res[k] = append(res[k], DeductionResult{v, false})
+		}
 	}
-	// TODO: Sort the deduction arrays by timestamp first
-	// (should already be chronological but can't be too safe)
+
 	count := deductionsRemaining(allDeductions)
 	for count > 0 {
-		matches, match := matchEarliestDeduction(allDeductions)
-		dres := false
-		if match {
-			dres = true
-			d := matches[0]
-			if res["result"] == nil {
-				res["result"] = make([]DeductionResult, 0, 1)
+		matches, foundMatch := matchEarliestDeduction(allDeductions)
+		if foundMatch {
+			match := matches[0]
+			res["result"] = append(res["result"], DeductionResult{match, true})
+			out.Debugf("match found: %s\n", match.Code)
+			fmt.Printf("current results: %d\n", len(res["result"]))
+			fmt.Printf("matches:\n")
+			for i, m := range matches {
+				fmt.Printf("\t%d: %v\n", i, m)
 			}
-			res["result"] = append(res["result"], DeductionResult{d, dres})
-			out.Debugf("match found: %s\n", d.Code)
-		}
-		for _, d := range matches {
-			res[d.Judge] = append(res[d.Judge], DeductionResult{d, dres})
+
+			// mark each judge's deduction as applied
+			for _, m := range matches {
+				for i, v := range res[m.Judge] {
+					if v.ID == m.ID {
+						fmt.Printf("match: %v; mark: %v\n", m, v.DeductionMark)
+						res[m.Judge][i].Applied = true
+					}
+				}
+			}
 		}
 		count = deductionsRemaining(allDeductions)
 	}
 
 	return res
+}
+
+func ToTechnicalScore(deductions []DeductionResult, style Style) float64 {
+	techScore := 5.0
+	for _, v := range deductions {
+		d := ToDeduction(v.Code, style)
+		techScore -= d.Value
+	}
+	return techScore
 }
 
 func deductionsRemaining(deductions [][]*DeductionMark) int {
@@ -219,8 +261,8 @@ func matchEarliestDeduction(deductions [][]*DeductionMark) ([]*DeductionMark, bo
 				// we have a match
 				matched = true
 				// remove it
-				deductions[i] = append(dList[:j], dList[j+1:]...)
 				res = append(res, dList[j])
+				deductions[i] = append(dList[:j], dList[j+1:]...)
 				// move on to the next judge
 				break
 			} else if d.Timestamp > cutoffTime {

@@ -2,9 +2,7 @@ package api
 
 import (
 	"fmt"
-	"hash/fnv"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 
@@ -148,13 +146,6 @@ type deduction struct {
 	RingID    int    `json:"ringID"`
 }
 
-func generateDeductionID(judgeID string, timestamp int64) int {
-	hash := fnv.New32a()
-	hash.Write([]byte(judgeID))
-	hash.Write([]byte(strconv.FormatInt(timestamp, 10)))
-	return int(hash.Sum32())
-}
-
 func submitDeduction(w http.ResponseWriter, r *http.Request) {
 	var (
 		ring *data.RingState
@@ -172,17 +163,10 @@ func submitDeduction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := generateDeductionID(ded.JudgeID, int64(ded.Timestamp))
-	dm := &data.DeductionMark{
-		ID:        id,
-		Routine:   ded.RoutineID,
-		Judge:     ded.JudgeID,
-		Code:      ded.Code,
-		Timestamp: int64(ded.Timestamp),
-	}
+	dm := data.NewDeductionMark(ded.RoutineID, ded.JudgeID, ded.Code, int64(ded.Timestamp))
 	switch r.Method {
 	case "POST":
-		out.Debugf("%s save deduction %d - code %s", dm.Judge, id, dm.Code)
+		out.Debugf("%s save deduction %d - code %s\n", dm.Judge, dm.ID, dm.Code)
 		if err := data.SaveDeductionMark(dm); err != nil {
 			routes.RenderError(w, errors.NewInternalError(err))
 			out.Errorln("error saving deduction:", err, "\n", ded)
@@ -190,16 +174,16 @@ func submitDeduction(w http.ResponseWriter, r *http.Request) {
 		}
 		ring.SetDeduction(dm)
 	case "UPDATE":
-		out.Debugf("%s update deduction %d to code %s", dm.Judge, id, dm.Code)
-		if err := data.UpdateDeductionMark(id, ded.Code); err != nil {
+		out.Debugf("%s update deduction %d to code %s\n", dm.Judge, dm.ID, dm.Code)
+		if err := data.UpdateDeductionMark(dm.ID, ded.Code); err != nil {
 			routes.RenderError(w, errors.NewInternalError(err))
 			out.Errorln("error updating deduction:", err, "\n", ded)
 			return
 		}
-		ring.UpdateDeduction(dm.Judge, id, ded.Code)
+		ring.UpdateDeduction(dm.Judge, dm.ID, ded.Code)
 	case "DELETE":
-		out.Debugf("%s delete deduction %d", dm.Judge, id)
-		if err := data.RemoveDeductionMark(id); err != nil {
+		out.Debugf("%s delete deduction %d\n", dm.Judge, dm.ID)
+		if err := data.RemoveDeductionMark(dm.ID); err != nil {
 			routes.RenderError(w, errors.NewInternalError(err))
 			out.Errorln("error deleting deduction:", err, "\n", ded)
 			return
@@ -245,6 +229,7 @@ func submitNandu(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
 		ring.ParseNanduScores(nan.Judge, nan.Result)
+		ring.NanduResult = data.DetermineNandu(ring.NanduScores)
 		marks := data.SliceToNanduMarks(nan.Result)
 		out.Debugf("%s save nandu results %s", nan.Judge, marks)
 		if err := data.SaveNanduScore(nan.Routine, nan.Judge, marks); err != nil {
@@ -282,9 +267,13 @@ func getNanduScores(w http.ResponseWriter, r *http.Request) {
 		}
 		marks[judge] = judgeMarks
 	}
+	result := make([]bool, 0)
+	for _, v := range ring.NanduResult {
+		result = append(result, v.Success)
+	}
 	info := map[string]interface{}{
 		"marks":  marks,
-		"result": ring.NanduResult,
+		"result": data.SliceToNanduMarks(result),
 	}
 	jsonResponse(info, w)
 }
@@ -303,8 +292,9 @@ func getScores(w http.ResponseWriter, r *http.Request) {
 		"adjustments": ring.Adjustments,
 	}
 	if len(ring.Scores) != 0 {
-		calc, _ := ring.CalculateScore()
+		calc, components := ring.CalculateScore()
 		info["calc"] = data.FormatScore(calc)
+		info["components"] = components
 		var total float64
 		for _, v := range ring.Scores {
 			total += v.Score
@@ -330,8 +320,10 @@ func getDeductions(w http.ResponseWriter, r *http.Request) {
 	if ring = getRingOrError(ringID, w); ring == nil {
 		return
 	}
+	deductions := data.DetermineDeductions(ring.Deductions)
 	info := map[string]interface{}{
-		"deductions": data.DetermineDeductions(ring.Deductions),
+		"deductions": deductions,
+		"score":      data.ToTechnicalScore(deductions["result"], ring.Event.Style),
 	}
 	jsonResponse(info, w)
 }

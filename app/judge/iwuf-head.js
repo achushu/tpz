@@ -65,32 +65,40 @@ function displayDeductions(data) {
             table.appendChild(dRow);
         }
         dRow.innerHTML = "";
+        // sort the deductions by time
+        deductions.sort((a, b) => {
+            return a.timestamp < b.timestamp ? -1 : 1;
+        });
         for (let i in deductions) {
             let d = deductions[i];
-            let applied = "";
-            if (d.applied) {
-                applied = ' class="applied"';
-            }
-            let cell = TPZ.renderHtml("<td" + applied + ">" + d.code + "</td>");
+            let cell = TPZ.renderHtml("<td>" + d.code + "</td>");
             dRow.appendChild(cell);
+            if (d.applied) {
+                cell.classList.add("applied");
+            }
         }
     }
 }
 
 function displayNandu(data) {
     let marks = data["marks"];
-    $("#nandu-list").empty();
+    let table = TPZ.getElementById("nandu-results");
+    table.innerHTML = "";
     for (let judge in marks) {
+        let row = TPZ.renderHtml("<tr></tr>");
         let submittedNandu = marks[judge];
-        let nanduDisplay = "";
         for (let i in submittedNandu) {
             if (submittedNandu[i]) {
-                nanduDisplay += "o";
+                row.appendChild(
+                    TPZ.renderHtml('<td class="nandu-success">&#x2705;</td>')
+                );
             } else {
-                nanduDisplay += "x";
+                row.appendChild(
+                    TPZ.renderHtml('<td class="nandu-fail">&#x274C;</td>')
+                );
             }
         }
-        $("#nandu-list").append("<li>" + nanduDisplay + "</li>");
+        table.appendChild(row);
     }
 }
 
@@ -131,12 +139,30 @@ function prepareView() {
         //TPZ.httpGetJson("/api/" + ringId + "/event", (data) => {});
     };
 
-    onCompetitorChange = () => {
+    onCompetitorChange = (data) => {
         renderIWUFHeadScorePanel();
         renderTimerPanel();
         renderScorePanel(currentEventRules);
         // get previously saved data (if any)
         getScores();
+        if (data != undefined) {
+            let ns = data.nandusheet;
+            if (ns != undefined) {
+                let codes = [];
+                codes.push(...splitNanduSegment(ns.segment1));
+                codes.push(...splitNanduSegment(ns.segment2));
+                codes.push(...splitNanduSegment(ns.segment3));
+                codes.push(...splitNanduSegment(ns.segment4));
+
+                let nanduCodes = TPZ.getElementById("nandu-codes");
+                for (i in codes) {
+                    let cell = TPZ.renderHtml("<th>" + codes[i] + "</th>");
+                    nanduCodes.appendChild(cell);
+                }
+            }
+        }
+        getDeductions();
+        getNanduScores();
     };
 
     // get the current event / competitor
@@ -161,6 +187,17 @@ function prepareView() {
     });
 }
 
+function splitNanduSegment(seg) {
+    if (seg == "") {
+        return [];
+    }
+    // break down a section of nandu codes into individual components
+    // replace all separators with commas and split on the commas
+    seg = seg.replaceAll("+", ",");
+    seg = seg.replaceAll("(", ",(");
+    return seg.split(",");
+}
+
 function setupIWUFHeadScorePanel() {
     setupHeadJudgePanel();
     renderIWUFHeadScorePanel();
@@ -169,13 +206,22 @@ function setupIWUFHeadScorePanel() {
 function renderIWUFHeadScorePanel() {
     let headPanel = TPZ.getElementById("head-event-panel");
     headPanel.innerHTML = "";
-    let acPanel = TPZ.renderHtml(
+    let deductionsPanel = TPZ.renderHtml(
         'Deductions: <span id="deduction-results"></span>' +
-            '<table id="deduction-table"><caption>Timeline</caption></table>' +
-            '<p id="nandu-label">Nandu: </p><ul id="nandu-list"></ul>'
+            '<table id="deduction-table"><caption>Timeline</caption></table>'
     );
-    while (acPanel.length > 0) {
-        headPanel.appendChild(acPanel[0]);
+    while (deductionsPanel.length > 0) {
+        headPanel.appendChild(deductionsPanel[0]);
+    }
+    if (currentEventRules == "IWUF") {
+        let nanduPanel = TPZ.renderHtml(
+            '<p id="nandu-label">Nandu: </p><ul id="nandu-list"></ul>' +
+                '<table id="nandu-table"><thead><tr id="nandu-codes"></tr></thead>' +
+                '<tbody id="nandu-results"></tbody></table>'
+        );
+        while (nanduPanel.length > 0) {
+            headPanel.appendChild(nanduPanel[0]);
+        }
     }
     addScoreList();
     addAdjustmentPanel();

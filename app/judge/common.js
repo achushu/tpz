@@ -224,7 +224,7 @@ function renderEventControlPanel(ringId, initEventId, initCompetitorId) {
         });
     });
     compSelect.addEventListener("change", () => {
-        let competitorId = parseInt(this.value);
+        let competitorId = parseInt(compSelect.value);
         if (competitorId == currentCompetitorId) return;
         let eventId = parseInt(eventSelect.value);
         let change = { event_id: eventId, competitor_id: competitorId };
@@ -598,8 +598,5 @@ function handleCommonActions(msg) {
 function competitorChanged() {
     // clear out the start time
     eventStartTime = undefined;
-    updateEventInfo(undefined, false);
-    if (onCompetitorChange) {
-        onCompetitorChange();
-    }
+    updateEventInfo(onCompetitorChange, false);
 }

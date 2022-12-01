@@ -136,7 +136,7 @@ function createNanduComponent(id, code, name) {
             code +
             '</th><td class="nandu-name">' +
             name +
-            '</td><td class="nandu-mark">+/-</td></tr>'
+            '</td><td class="nandu-mark"></td></tr>'
     );
     n.addEventListener("click", () => {
         // Store completion success as a data value
@@ -150,9 +150,11 @@ function createNanduComponent(id, code, name) {
         if (success) {
             n.classList.remove("nandu-fail");
             n.classList.add("nandu-success");
+            n.querySelector(".nandu-mark").innerHTML = "&#x2705";
         } else {
             n.classList.add("nandu-fail");
             n.classList.remove("nandu-success");
+            n.querySelector(".nandu-mark").innerHTML = "&#x274C";
         }
     });
     return n;

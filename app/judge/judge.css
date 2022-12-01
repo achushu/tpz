@@ -111,10 +111,18 @@ thead tr, tbody tr {
 }
 
 tbody tr {
-  background-color: lightgreen;
   border-radius: 0.25rem;
   border: 1px solid transparent;
   margin-top: 1px;
+}
+
+#nandu-table th, #nandu-table td {
+  border: 1px solid gray;
+}
+
+#nandu-table tr {
+  display: table-row;
+  text-align: center;
 }
 
 #nandu-sheet {
@@ -145,5 +153,4 @@ tbody tr {
 
 .nandu-fail {
   background-color: lightcoral;
-  text-decoration: line-through;
 }
