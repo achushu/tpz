@@ -291,7 +291,7 @@ function displayScoresMode(scoreInfo) {
     displayAdjustments(scoreInfo.adjustments);
 
     // get current rank
-    displayRank();
+    displayRank(finalScore);
 }
 
 function displayAdjustments(adjustments) {
@@ -325,7 +325,7 @@ function displayNandu() {
     });
 }
 
-function displayRank() {
+function displayRank(finalScore) {
     TPZ.httpGetJson("/api/event-ranks/" + currentEventId, function (rows) {
         for (let i = 0; i < rows.length; i++) {
             let row = rows[i];

@@ -93,7 +93,7 @@ CREATE TABLE adjustments (
 );
 
 CREATE TABLE deductions (
-	id integer primary key,
+	id bigint primary key,
 	routine_id integer references routines (id) on delete cascade,
 	judge_tag varchar,
 	ts bigint,

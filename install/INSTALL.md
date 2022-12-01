@@ -25,3 +25,7 @@ Installation package can be found in `dist/` in the host project home
 `sudo -u postgres ./reset_database.sh`
 `cd ~/ten-point-zero/`
 `./createuser`
+
+## Run
+
+`./tpz server config.yml`

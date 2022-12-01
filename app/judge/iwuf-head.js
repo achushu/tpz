@@ -193,8 +193,9 @@ function splitNanduSegment(seg) {
     }
     // break down a section of nandu codes into individual components
     // replace all separators with commas and split on the commas
-    seg = seg.replaceAll("+", ",");
-    seg = seg.replaceAll("(", ",(");
+    // (String.replaceAll() may be a bit too new for some clients...)
+    seg = seg.replace(/\+/gi, ",");
+    seg = seg.replace(/\(/gi, ",(");
     return seg.split(",");
 }
 

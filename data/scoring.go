@@ -175,9 +175,7 @@ func DetermineDeductions(deductions map[string][]*DeductionMark) map[string][]De
 		if foundMatch {
 			match := matches[0]
 			res["result"] = append(res["result"], DeductionResult{match, true})
-			out.Debugf("match found: %s\n", match.Code)
-			fmt.Printf("current results: %d\n", len(res["result"]))
-			fmt.Printf("matches:\n")
+
 			for i, m := range matches {
 				fmt.Printf("\t%d: %v\n", i, m)
 			}
@@ -186,7 +184,6 @@ func DetermineDeductions(deductions map[string][]*DeductionMark) map[string][]De
 			for _, m := range matches {
 				for i, v := range res[m.Judge] {
 					if v.ID == m.ID {
-						fmt.Printf("match: %v; mark: %v\n", m, v.DeductionMark)
 						res[m.Judge][i].Applied = true
 					}
 				}
