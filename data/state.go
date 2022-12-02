@@ -215,13 +215,15 @@ func (r *RingState) SetCompetitor(newComp *Competitor, event *Event) {
 				r.Deductions[j] = jd
 			}
 		}
-		if r.Nandusheet, err = GetNandusheet(routine.ID); err != nil {
-			out.Errorf("error retrieving nandu sheet for competitor %d: %s\n", r.Competitor.ID, err)
-		}
-		nr, _ := GetNanduResults(routine.ID)
-		if nr != nil {
-			for judge, marks := range nr {
-				r.ParseNanduScores(judge, NanduMarksToSlice(marks))
+		if event.Ruleset == IWUF {
+			if r.Nandusheet, err = GetNandusheet(routine.ID); err != nil {
+				out.Errorf("error retrieving nandu sheet for competitor %d: %s\n", r.Competitor.ID, err)
+			}
+			nr, _ := GetNanduResults(routine.ID)
+			if nr != nil {
+				for judge, marks := range nr {
+					r.ParseNanduScores(judge, NanduMarksToSlice(marks))
+				}
 			}
 		}
 	}

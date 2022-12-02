@@ -154,6 +154,7 @@ function markDeduction() {
     let dbox = TPZ.getElementById(deductId);
     codebox = dbox.querySelector(".deduction-code");
     codebox.addEventListener("input", () => {
+        dbox.dataset.changed = true;
         dbox.querySelector(".deduction-submitted").innerHTML = "";
     });
     codebox.addEventListener("keydown", (event) => {
@@ -193,6 +194,9 @@ function markDeduction() {
 }
 
 function submitDeduction(deductElement) {
+    if (deductElement.dataset.changed == "false") {
+        return;
+    }
     let label = deductElement.querySelector(".deduction-label").textContent;
     let code = deductElement.querySelector(".deduction-code").value;
     if (code === "") {
@@ -212,7 +216,7 @@ function submitDeduction(deductElement) {
         ringID: parseInt(ringId),
     };
     let method = "POST";
-    if (deductElement.dataset.submitted) {
+    if (deductElement.dataset.submitted == "true") {
         // this deduction has been submitted before
         // send an update
         method = "UPDATE";
@@ -220,6 +224,7 @@ function submitDeduction(deductElement) {
     TPZ.httpSendJson("/api/submit-deduction", method, ded, () => {
         deductElement.querySelector(".deduction-submitted").innerHTML =
             "&#x2705;";
+        deductElement.dataset.changed = false;
         deductElement.dataset.submitted = true;
     });
 }
@@ -228,7 +233,7 @@ function removeDeduction(deductId) {
     let dbox = TPZ.getElementById(deductId);
     let label = dbox.querySelector(".deduction-label").textContent;
     if (confirm("Remove deduction #" + label + "?")) {
-        if (dbox.dataset.submitted) {
+        if (dbox.dataset.submitted == "true") {
             let ded = {
                 timestamp: parseInt(dbox.dataset.ts),
                 judgeID: clientId,

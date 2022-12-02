@@ -57,7 +57,7 @@ function updateEventPanel() {
         if (data.scores != undefined) {
             let saved = data.scores[clientId];
             if (saved != undefined) {
-                TPZ.getElementById("score-entry").value = saved;
+                TPZ.getElementById("score-entry").value = saved.score;
                 disableScorePanel();
             }
         }

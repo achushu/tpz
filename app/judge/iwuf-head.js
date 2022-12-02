@@ -36,11 +36,17 @@ let notifyArgs = {
 };
 
 function getDeductions() {
-    TPZ.httpGetJson("/api/" + ringId + "/get-deductions", displayDeductions);
+    TPZ.httpGetJson("/api/" + ringId + "/get-deductions", () => {
+        displayDeductions();
+        getScores();
+    });
 }
 
 function getNanduScores() {
-    TPZ.httpGetJson("/api/" + ringId + "/get-nandu-scores", displayNandu);
+    TPZ.httpGetJson("/api/" + ringId + "/get-nandu-scores", () => {
+        displayNandu();
+        getScores();
+    });
 }
 
 function displayDeductions(data) {
@@ -173,7 +179,7 @@ function prepareView() {
             if (data.scores != undefined) {
                 let saved = data.scores[clientId];
                 if (saved != undefined) {
-                    TPZ.getElementById("score-entry").value = saved;
+                    TPZ.getElementById("score-entry").value = saved.score;
                     disableScorePanel();
                 }
             }

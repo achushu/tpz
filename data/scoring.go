@@ -176,10 +176,6 @@ func DetermineDeductions(deductions map[string][]*DeductionMark) map[string][]De
 			match := matches[0]
 			res["result"] = append(res["result"], DeductionResult{match, true})
 
-			for i, m := range matches {
-				fmt.Printf("\t%d: %v\n", i, m)
-			}
-
 			// mark each judge's deduction as applied
 			for _, m := range matches {
 				for i, v := range res[m.Judge] {

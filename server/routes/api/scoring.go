@@ -166,7 +166,7 @@ func submitDeduction(w http.ResponseWriter, r *http.Request) {
 	dm := data.NewDeductionMark(ded.RoutineID, ded.JudgeID, ded.Code, int64(ded.Timestamp))
 	switch r.Method {
 	case "POST":
-		out.Debugf("%s save deduction %d - code %s\n", dm.Judge, dm.ID, dm.Code)
+		out.Printf("%s save deduction %d - code %s\n", dm.Judge, dm.ID, dm.Code)
 		if err := data.SaveDeductionMark(dm); err != nil {
 			routes.RenderError(w, errors.NewInternalError(err))
 			out.Errorln("error saving deduction:", err, "\n", ded)
@@ -174,7 +174,7 @@ func submitDeduction(w http.ResponseWriter, r *http.Request) {
 		}
 		ring.SetDeduction(dm)
 	case "UPDATE":
-		out.Debugf("%s update deduction %d to code %s\n", dm.Judge, dm.ID, dm.Code)
+		out.Printf("%s update deduction %d to code %s\n", dm.Judge, dm.ID, dm.Code)
 		if err := data.UpdateDeductionMark(dm.ID, ded.Code); err != nil {
 			routes.RenderError(w, errors.NewInternalError(err))
 			out.Errorln("error updating deduction:", err, "\n", ded)
@@ -182,7 +182,7 @@ func submitDeduction(w http.ResponseWriter, r *http.Request) {
 		}
 		ring.UpdateDeduction(dm.Judge, dm.ID, ded.Code)
 	case "DELETE":
-		out.Debugf("%s delete deduction %d\n", dm.Judge, dm.ID)
+		out.Printf("%s delete deduction %d\n", dm.Judge, dm.ID)
 		if err := data.RemoveDeductionMark(dm.ID); err != nil {
 			routes.RenderError(w, errors.NewInternalError(err))
 			out.Errorln("error deleting deduction:", err, "\n", ded)
