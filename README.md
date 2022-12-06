@@ -59,7 +59,7 @@ NOTE: The installer will create a user, `tpzadmin` to administer the `tpz` datab
 
 ## Recommended Hardware and Setup
 
-- Wired connections for each computer OR a wireless router per ring
+- Wired LAN to ensure stable connectivity between all nodes
 
 ## Competitions
 
@@ -69,23 +69,7 @@ This software has been used at the following competitions:
 - Terpwushu 14th University Wushu Games 2018
 - Terpwushu 15th University Wushu Games 2019
 - Terpwushu Intercollege Wushu Games 2022
-
-## Usability Statistics
-
-### 14th UWG (2018)
-
-Time per competitor (seconds):
-
-- average: 135.5
-- median: 136.7
-- stdev: 32.2
-
-Time to produce score (seconds):
-
-- average: 31.4
-- median: 28.6
-
-stdev: 13.0
+- Terpwushu 16th University Wushu Games 2022
 
 ## Build
 
@@ -132,7 +116,3 @@ Build the binary with these tags to alter normal behavior
 ### Authentication
 
 User passwords are hashed first with SHA-512 and followed by bcrypt
-
-### Known Issues
-
-- Excessive websockets connections lost / general slow response when router is overburdened

@@ -7,7 +7,7 @@ Adult I Adv CQ Nandu F
     * 324A+6A,312A+335A(B),323A+1A;324A+1A,312A+6A;;333A+6A
     T Zhang
     * 324B+1B,312A+335A(B),323A+1A;312A+6A,335A;;333A+6A
-Adult I Adv CQ Nandu M
+Adult I Adv CQ Comp M
     J Benedik
     H Hong
 Adult I Adv Taiji Nandu M

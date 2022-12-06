@@ -9,6 +9,7 @@ Each file in `input/` should represent a compeition ring with the events and the
 For events with nandu (degree of difficulty skills), place the code sequence in the line following the competitor's name, starting with an asterisk `*`. Separate each combo with a comma `,` and each section with a semi-colon `;`.
 
 Format as follows:
+
 ```
 <ring name>
 <event 1>
@@ -26,6 +27,7 @@ Format as follows:
 ```
 
 Nandu example:
+
 ```
 Adult I Adv CQ Nandu M
     John Doe

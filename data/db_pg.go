@@ -367,7 +367,7 @@ func UpdateDeductionMark(id int, code string) (err error) {
 }
 
 func RemoveDeductionMark(id int) (err error) {
-	stmt := "DELETE * FROM deductions WHERE id = $1"
+	stmt := "DELETE FROM deductions WHERE id = $1"
 	values := []interface{}{id}
 	_, err = Query(stmt, values)
 	return err
@@ -463,7 +463,7 @@ func GetScores(routineID int) (map[string]*Score, error) {
 }
 
 func DeleteScore(id int) (err error) {
-	stmt := "DELETE * FROM score WHERE id = $1"
+	stmt := "DELETE FROM score WHERE id = $1"
 	values := []interface{}{id}
 	_, err = Query(stmt, values)
 	return err

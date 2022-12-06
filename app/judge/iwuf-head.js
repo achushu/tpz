@@ -36,16 +36,16 @@ let notifyArgs = {
 };
 
 function getDeductions() {
-    TPZ.httpGetJson("/api/" + ringId + "/get-deductions", () => {
-        displayDeductions();
-        getScores();
+    TPZ.httpGetJson("/api/" + ringId + "/get-deductions", (data) => {
+        displayDeductions(data);
+        getScores(data);
     });
 }
 
 function getNanduScores() {
-    TPZ.httpGetJson("/api/" + ringId + "/get-nandu-scores", () => {
-        displayNandu();
-        getScores();
+    TPZ.httpGetJson("/api/" + ringId + "/get-nandu-scores", (data) => {
+        displayNandu(data);
+        getScores(data);
     });
 }
 
