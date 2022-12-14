@@ -44,6 +44,24 @@ var TPZ = (function () {
         getElementById("js-warn").remove();
     }
 
+    function loginRequired() {
+        $("#user-panel").dropdown("show");
+    }
+
+    function getAuthId() {
+        let cookies = decodeURIComponent(document.cookie).split(";");
+        for (let i = 0; i < cookies.length; i += 1) {
+            let c = cookies[i];
+            let [k, v] = c.split("=");
+            if (k == "tpzTag") {
+                return v;
+            }
+        }
+        return undefined;
+    }
+
+    /* DOM manipulation */
+
     function getElementById(id) {
         /* no caching for now
         var ele = DOM[id];
@@ -60,22 +78,6 @@ var TPZ = (function () {
     function getElementByClass(c) {
         var ele = document.getElementsByClassName(c)[0];
         return ele;
-    }
-
-    function loginRequired() {
-        $("#user-panel").dropdown("show");
-    }
-
-    function getAuthId() {
-        let cookies = decodeURIComponent(document.cookie).split(";");
-        for (let i = 0; i < cookies.length; i += 1) {
-            let c = cookies[i];
-            let [k, v] = c.split("=");
-            if (k == "tpzTag") {
-                return v;
-            }
-        }
-        return undefined;
     }
 
     function appendToPanel(element) {
@@ -99,41 +101,40 @@ var TPZ = (function () {
         return template.content.childNodes;
     }
 
-    function httpGet(url, onReady, async = true) {
-        var r = new XMLHttpRequest();
-        r.open("GET", url, async);
-        r.onreadystatechange = function () {
-            if (r.readyState != 4 || r.status != 200) return;
-            onReady(r.responseText);
-        };
-        r.send();
-    }
-
-    function httpGetJson(url, onReady, async = true) {
-        var r = new XMLHttpRequest();
-        r.open("GET", url, async);
-        r.onreadystatechange = function () {
-            if (r.readyState != 4 || r.status != 200) return;
-            onReady(JSON.parse(r.responseText));
-        };
-        r.send();
-    }
-
-    function httpPostJson(url, data, onReady, async = true) {
-        httpSendJson(url, "POST", data, onReady, async);
-    }
-
-    function httpSendJson(url, method, data, onReady, async = true) {
-        var r = new XMLHttpRequest();
-        r.open(method, url, async);
-        if (onReady) {
-            r.onreadystatechange = function () {
-                if (r.readyState != 4 || r.status != 200) return;
-                onReady(JSON.parse(r.responseText));
-            };
+    function appendElements(dst, children) {
+        if (children.length === undefined) {
+            dst.appendChild(children);
+            return;
         }
-        r.setRequestHeader("Content-Type", "application/json");
-        r.send(JSON.stringify(data));
+        while (children.length > 0) {
+            dst.appendChild(children[0]);
+        }
+    }
+
+    function setHeader(text) {
+        getElementById("header").textContent = text;
+    }
+
+    function setTitle(text) {
+        document.getElementsByTagName(
+            "title"
+        )[0].textContent = `${text} | Ten.Zero`;
+    }
+
+    function createRadioGroup(id) {
+        return TPZ.renderHtml(
+            `<div id="${id}" class="btn-group btn-group-toggle btn-group-vertical" data-toggle="buttons"></div>`
+        );
+    }
+
+    function createRadioItem(name, data) {
+        let item = TPZ.renderHtml(
+            `<label class="btn btn-theme"><input type="radio">${name}</label>`
+        );
+        for (let k in data) {
+            item.dataset[k] = data[k];
+        }
+        return item;
     }
 
     function alert(text) {
@@ -209,17 +210,69 @@ var TPZ = (function () {
         modal.remove();
     }
 
-    function addBreak(node) {
-        node.appendChild(renderHtml("<br/>"));
+    /* AJAX queries */
+
+    function httpGet(url, onReady, async = true) {
+        var r = new XMLHttpRequest();
+        r.open("GET", url, async);
+        r.onreadystatechange = function () {
+            if (r.readyState != 4 || r.status != 200) return;
+            onReady(r.responseText);
+        };
+        r.send();
+    }
+
+    function httpGetJson(url, onReady, async = true) {
+        var r = new XMLHttpRequest();
+        r.open("GET", url, async);
+        r.onreadystatechange = function () {
+            if (r.readyState != 4 || r.status != 200) return;
+            onReady(JSON.parse(r.responseText));
+        };
+        r.send();
+    }
+
+    function httpPostJson(url, data, onReady, async = true) {
+        httpSendJson(url, "POST", data, onReady, async);
+    }
+
+    function httpSendJson(url, method, data, onReady, async = true) {
+        var r = new XMLHttpRequest();
+        r.open(method, url, async);
+        if (onReady) {
+            r.onreadystatechange = function () {
+                if (r.readyState != 4 || r.status != 200) return;
+                onReady(JSON.parse(r.responseText));
+            };
+        }
+        r.setRequestHeader("Content-Type", "application/json");
+        r.send(JSON.stringify(data));
+    }
+
+    /* Scratchpad methods */
+    function addScratchpad() {
+        let content = DOM["mainContent"];
+        appendElements(
+            content,
+            renderHtml(`<div class="container">
+            <textarea id="scratchpad" placeholder="Scratch pad"></textarea>
+            <br/>
+            <button id="clear-scratchpad-button" class="btn btn-outline-secondary">Clear Notes</button>
+        </div>`)
+        );
+        Scratchpad.init();
     }
 
     /* =============== export public methods =============== */
     return {
-        addBreak: addBreak,
+        addScratchpad: addScratchpad,
+        appendElements: appendElements,
         alert: alert,
         confirm: confirm,
         appendToPanel: appendToPanel,
         clearPanel: clearPanel,
+        createRadioGroup: createRadioGroup,
+        createRadioItem: createRadioItem,
         getAuthId: getAuthId,
         getElementById: getElementById,
         getElementByClass: getElementByClass,
@@ -229,6 +282,8 @@ var TPZ = (function () {
         httpSendJson: httpSendJson,
         loginRequired: loginRequired,
         renderHtml: renderHtml,
+        setHeader: setHeader,
+        setTitle: setTitle,
         init: init,
     };
 })();

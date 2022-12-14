@@ -2,10 +2,28 @@
     background-color: firebrick;
 }
 
+.footer {
+  position: absolute;
+  bottom: 0;
+}
+
+#ping {
+  opacity: 0.75;
+}
+
 .btn-theme {
   color: #fff;
   background-color: firebrick;
   border-color: firebrick;
+}
+
+.btn-theme.active {
+  background-color: rgb(143, 26, 26);
+}
+
+.btn-group-vertical {
+  align-items: end;
+  vertical-align: top;
 }
 
 #header {
@@ -97,7 +115,7 @@
 }
 
 .deduction-invalid {
-  background-color: indianred;
+  background-color: lightcoral;
 }
 
 .nandu thead td {
