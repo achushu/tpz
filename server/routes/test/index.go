@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/achushu/tpz/app/auth"
 	"github.com/achushu/tpz/app/test"
 	"github.com/achushu/tpz/server/routes"
-	"github.com/achushu/tpz/server/session"
 )
 
 const (
@@ -26,7 +26,7 @@ func init() {
 }
 
 func main(w http.ResponseWriter, r *http.Request) {
-	s, _ := session.GetSession(r)
+	s, _ := auth.GetSession(r)
 	url := r.URL.Path
 	log.Printf("[server/test] request %s\n", url)
 	if url == namespace+"/" {

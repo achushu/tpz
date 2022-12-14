@@ -1,10 +1,8 @@
-package session
+package auth
 
 import (
 	"net/http"
 	"time"
-
-	"github.com/achushu/tpz/app"
 )
 
 const (
@@ -13,7 +11,7 @@ const (
 
 // SetTagCookie assigns the browser a unique ID that persists across connections
 func SetTagCookie(w http.ResponseWriter, r *http.Request) string {
-	tag := app.GenerateTag()
+	tag := GenerateTag()
 	expires := time.Now().AddDate(0, 0, 15) // tag ID will be good for 15 days
 	cookie := &http.Cookie{
 		Name:     tagCookieName,
