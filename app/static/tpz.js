@@ -250,17 +250,14 @@ var TPZ = (function () {
     }
 
     /* Scratchpad methods */
-    function addScratchpad() {
+
+    function addScratchpad(text) {
         let content = DOM["mainContent"];
-        appendElements(
-            content,
-            renderHtml(`<div class="container">
-            <textarea id="scratchpad" placeholder="Scratch pad"></textarea>
-            <br/>
-            <button id="clear-scratchpad-button" class="btn btn-outline-secondary">Clear Notes</button>
-        </div>`)
-        );
+        appendElements(content, renderHtml(Scratchpad.html()));
         Scratchpad.init();
+        if (text !== undefined) {
+            Scratchpad.setText(text);
+        }
     }
 
     /* =============== export public methods =============== */

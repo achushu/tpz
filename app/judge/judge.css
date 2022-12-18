@@ -8,7 +8,10 @@
 }
 
 #ping {
+  font-size: 0.4em;
   opacity: 0.75;
+  float: right;
+  padding: 1em;
 }
 
 .btn-theme {

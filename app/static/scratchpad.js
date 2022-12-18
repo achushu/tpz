@@ -1,4 +1,6 @@
 var Scratchpad = (() => {
+    var id = "scratchpad";
+
     function clear() {
         let sp = $("#scratchpad");
         TPZ.confirm("Clear all text from notes?", () => {
@@ -42,8 +44,28 @@ var Scratchpad = (() => {
         });
     }
 
+    function setupHtml() {
+        return `<div class="container">
+        <textarea id="scratchpad" placeholder="Scratch pad"></textarea><br/>
+        <button id="clear-scratchpad-button" class="btn btn-outline-secondary">Clear Notes</button>
+    </div>`;
+    }
+
+    function getText() {
+        let sp = document.getElementById(id);
+        if (sp) return sp.value;
+    }
+
+    function setText(text) {
+        let sp = document.getElementById(id);
+        sp.value = text;
+    }
+
     return {
         clear: clear,
         init: init,
+        html: setupHtml,
+        text: getText,
+        setText: setText,
     };
 })();
