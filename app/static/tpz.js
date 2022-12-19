@@ -98,7 +98,12 @@ var TPZ = (function () {
         if (template.content.childNodes.length == 1) {
             return template.content.childNodes[0];
         }
-        return template.content.childNodes;
+        let children = template.content.childNodes;
+        let frag = document.createDocumentFragment();
+        while (children.length > 0) {
+            frag.appendChild(children[0]);
+        }
+        return frag;
     }
 
     function appendElements(dst, children) {
@@ -106,9 +111,11 @@ var TPZ = (function () {
             dst.appendChild(children);
             return;
         }
-        while (children.length > 0) {
-            dst.appendChild(children[0]);
+        let frag = document.createDocumentFragment();
+        for (let i in children) {
+            frag.appendChild(children[i]);
         }
+        dst.appendChild(frag);
     }
 
     function setHeader(text) {

@@ -22,13 +22,19 @@ var TPZJudge = (() => {
                 return `/api/${cache.ringId}/get-scores`;
             },
             listRings: "/api/get-rings",
+            publishScore: "/api/finalize-score",
             settings: "/api/get-settings",
+            submitAdj: "/api/submit-adjustment",
             submitScore: "/api/submit-score",
         },
         cb: {
             onCompetitorChange: () => {},
         },
         id: {
+            adj: "score-adjustment",
+            adjAdd: "add-adj-button",
+            adjList: "adjustment-list",
+            adjReason: "adjustment-reason",
             eventDisplay: "event-display",
             competitorSelect: "competitor-select",
             currentCompetitor: "current-competitor",
@@ -37,8 +43,10 @@ var TPZJudge = (() => {
             finalScore: "final-score",
             finalScoreLabel: "final-score-label",
             headJudgePanel: "head-judge-panel",
+            nextCompBtn: "next-competitor-button",
             panelSelect: "panel-select",
             pingDisplay: "ping",
+            publishButton: "publish-button",
             ringSelect: "ring-select",
             scoreEntry: "score-entry",
             scoreHint: "score-hint",
@@ -59,9 +67,6 @@ var TPZJudge = (() => {
                     console.log(raw);
                     let msg = parseMessage(raw.data);
                     switch (msg.action) {
-                        case "init":
-                            cfg.clientId = msg.params[0];
-                            break;
                         case "notify-competitor":
                             cfg.cb.onCompetitorChange();
                             break;
@@ -102,14 +107,20 @@ var TPZJudge = (() => {
             adjWarn: "Please submit or clear the adjustment!",
             calculatedScore: "Calculated",
             continueNext: "Results not finalized! Continue?",
+            currentLabel: "Now",
             invalidAdj: "Please check the adjustment entered.",
             invalidScore: "Please check the score entered.",
+            nextCompetitor: "&#x2B9E;",
             publishScore: "Publish Score",
             publishWarn: "Publish results?",
+            ringFinished: "Finished!",
+            scoreLabel: "Score",
             scoresLabel: "Scores submitted",
+            selectLabel: "Select",
             startTimer: "Start Timer",
             stopTimer: "Stop Timer",
             submit: "Submit",
+            timeLabel: "Time",
         },
     };
 
@@ -126,6 +137,7 @@ var TPZJudge = (() => {
             limitHundredths: true,
         },
         scratch: "",
+        timerInterval: 0,
     };
 
     function init() {
@@ -146,7 +158,10 @@ var TPZJudge = (() => {
 
     function setClientId() {
         let tag = TPZ.getAuthId();
-        if (tag !== undefined) cfg.clientId = tag;
+        if (tag !== undefined) {
+            cfg.clientId = tag;
+            TPZ.getElementById("judgeId").textContent = tag;
+        }
     }
 
     function phoneHome() {
@@ -201,31 +216,38 @@ var TPZJudge = (() => {
             // Clear the list
             scoreList.innerHTML = "";
             let scoreCount = 0;
-            for (let k in data.scores) {
-                let score = data.scores[k].score;
-                let item = TPZ.renderHtml(`<li>${score}</li>`);
-                scoreList.appendChild(item);
-                scoreCount += 1;
-                // check for own submission
-                if (k == clientId) {
-                    TPZ.getElementById("score-entry").value = score;
-                    disableScorePanel();
+            if (data.scores !== undefined) {
+                let eles = [];
+                for (let k in data.scores) {
+                    let score = data.scores[k].score;
+                    let item = TPZ.renderHtml(`<li>${score}</li>`);
+                    eles.push(item);
+                    scoreCount++;
+                    // check for own submission
+                    if (k == cfg.clientId) {
+                        TPZ.getElementById(cfg.id.scoreEntry).value = score;
+                        disableScorePanel();
+                    }
                 }
+                TPZ.appendElements(scoreList, eles);
             }
             TPZ.getElementById("score-count").textContent = scoreCount;
             let adjs = data.adjustments;
             if (adjs && adjs.length > 0) {
                 // Reset the list
                 let adjTotal = 0;
-                TPZ.getElementById("adjustment-list").innerHTML = "";
-                for (let i = 0; i < adjs.length; i += 1) {
+                let adjList = TPZ.getElementById(cfg.id.adjList);
+                adjList.innerHTML = "";
+                let eles = [];
+                for (let i = 0, numAdjs = adjs.length; i < numAdjs; i++) {
                     let adj = adjs[i];
                     let item = TPZ.renderHtml(
-                        "<li>" + adj.amount + " (" + adj.reason + ")</li>"
+                        `<li>${adj.amount} (${adj.reason})</li>`
                     );
                     adjTotal -= adj.amount;
-                    TPZ.getElementById("adjustment-list").appendChild(item);
+                    eles.push(item);
                 }
+                TPZ.appendElements(adjList, eles);
                 TPZ.getElementById(
                     "adjustment-label"
                 ).textContent = `${cfg.txt.adjLabel}: ${adjTotal}`;
@@ -244,14 +266,32 @@ var TPZJudge = (() => {
         });
     }
 
+    function adjustScore(amount, reason) {
+        let adj = {
+            amount: amount,
+            reason: reason,
+            judgeID: cfg.clientId,
+            routineID: cache.routineId,
+            ringID: cache.ringId,
+        };
+        TPZ.httpPostJson(cfg.api.submitAdj, adj, () => {
+            getScores();
+        });
+    }
+
+    function finalizeScore() {
+        let data = { ringID: cache.ringId };
+        TPZ.httpPostJson(cfg.api.publishScore, data, () => {
+            setPublishedStatus();
+        });
+    }
+
     function updateEventInfo(onReady, async = true) {
         TPZ.httpGetJson(
             cfg.api.current(),
             (data) => {
                 onGetCurrentStatusReady(data);
-                if (onReady) {
-                    onReady(data);
-                }
+                if (onReady) onReady(data);
             },
             async
         );
@@ -298,13 +338,9 @@ var TPZJudge = (() => {
     }
 
     function setupJudgeSelection() {
-        let selectionContainer = TPZ.renderHtml(
-            `<div id="${cfg.id.selectionContainer}"></div>`
-        );
+        let selectionContainer = TPZ.renderHtml(html.judgeSelection);
         TPZ.appendToPanel(selectionContainer);
-        let joinBtn = TPZ.renderHtml(
-            '<button class="btn btn-theme" type="submit">Join</button>'
-        );
+        let joinBtn = TPZ.renderHtml(html.joinBtn);
         joinBtn.addEventListener("click", loadJudge);
         listJudgePanels();
         listRings();
@@ -325,21 +361,18 @@ var TPZJudge = (() => {
             TPZ.createRadioItem("Direct Score Entry", { panel: "direct" }),
         ];
         let panelGroup = TPZ.createRadioGroup(cfg.id.panelSelect);
+        TPZ.appendElements(panelGroup, panels);
         TPZ.getElementById(cfg.id.selectionContainer).appendChild(panelGroup);
-        for (let i in panels) {
-            let panel = panels[i];
-            panelGroup.appendChild(panel);
-        }
     }
 
     function setupEventControlPanel() {
         TPZ.appendToPanel(
             TPZ.renderHtml(
                 `<div id="event-control-panel" class="row justify-content-between panel">
-                    <div class="col-8">Select: <select id="${cfg.id.eventSelect}" class="col-5 custom-select"></select>
+                    <div class="col-8">${cfg.txt.selectLabel}: <select id="${cfg.id.eventSelect}" class="col-5 custom-select"></select>
                     <span class="event-panel-spacing"/>
                     <select id="${cfg.id.competitorSelect}" class="col-4 custom-select"></select></div>
-                    <div class="col-3"><button id="next-competitor-button" class="btn btn-theme">&#62;</button></div></div>`
+                    <div class="col-3"><button id="${cfg.id.nextCompBtn}" class="btn btn-theme">${cfg.txt.nextCompetitor}</button></div></div>`
             )
         );
     }
@@ -361,14 +394,13 @@ var TPZJudge = (() => {
                 `<div id="${cfg.id.timerPanel}" class="row panel"></div>`
             )
         );
-        renderTimerPanel();
     }
 
     function renderTimerPanel() {
         TPZ.getElementById(
             cfg.id.timerPanel
         ).innerHTML = `<div class="col-2"><button id="${cfg.id.timerButton}" class="btn btn-info">${cfg.txt.startTimer}</button></div>
-            <div class="col-2">Time: <span id="${cfg.id.eventTimer}">0:00:00</span></div></div>`;
+            <div class="col-2">${cfg.txt.timeLabel}: <span id="${cfg.id.eventTimer}">0:00:00</span></div></div>`;
         cache.eventStart = null;
         timerButton = TPZ.getElementById(cfg.id.timerButton);
         timerButton.addEventListener("click", startEventTimer);
@@ -379,10 +411,10 @@ var TPZJudge = (() => {
         // Head judge's clock should always start immediately on click
         cache.eventStart = performance.now();
         let timerElement = TPZ.getElementById(cfg.id.eventTimer);
-        if (timerInterval) {
-            clearInterval(timerInterval);
+        if (cfg.timerInterval) {
+            clearInterval(cfg.timerInterval);
         }
-        timerInterval = setInterval(() => {
+        cfg.timerInterval = setInterval(() => {
             let elapsed = new Date(performance.now() - cache.eventStart);
             timerElement.textContent = formatTime(elapsed);
         }, 50);
@@ -393,7 +425,7 @@ var TPZJudge = (() => {
 
     function stopEventTimer() {
         // TODO: Make each click add the latest time to the display
-        clearInterval(timerInterval);
+        clearInterval(cfg.timerInterval);
         let elapsed = new Date(performance.now() - cache.eventStart);
         TPZ.getElementById(cfg.id.eventTimer).textContent = formatTime(elapsed);
     }
@@ -401,7 +433,7 @@ var TPZJudge = (() => {
     function setupEventDisplay() {
         TPZ.appendToPanel(
             TPZ.renderHtml(
-                `<div id="${cfg.id.eventDisplay}" class="panel">Now: <b id="current-event"></b> - <b id="current-competitor"></b></div>`
+                `<div id="${cfg.id.eventDisplay}" class="panel">${cfg.txt.currentLabel}: <b id="current-event"></b> - <b id="current-competitor"></b></div>`
             )
         );
     }
@@ -415,12 +447,7 @@ var TPZJudge = (() => {
     }
 
     function renderScorePanel() {
-        TPZ.getElementById(
-            cfg.id.scorePanel
-        ).innerHTML = `Score: <div><input id="${cfg.id.scoreEntry}" type="text" class="score-input" /> / 
-            ${cache.ruleset.maxScore}
-            <button id="${cfg.id.scoreSubmit}" class="btn btn-theme">${cfg.txt.submit}</div>
-            <div><p id="${cfg.id.scoreHint}"></p></div>`;
+        TPZ.getElementById(cfg.id.scorePanel).innerHTML = html.scorePanel();
 
         let hint = "";
         switch (cache.exp) {
@@ -460,20 +487,12 @@ var TPZJudge = (() => {
         if (isNaN(scoreInput) || scoreInput == null) return false;
         let fScore = parseFloat(scoreInput);
         if (fScore < 0 || fScore >= cache.ruleset.maxScore) return false;
-        let sScore = String(fScore);
-        let decIdx = sScore.indexOf(".");
-        if (decIdx > 0) {
-            let decimals = scoreString.substring(decIdx + 1);
-            let decimalPlaces = decimals.length;
-            if (decimalPlaces > 2) return false;
-            if (
-                decimalPlaces == 2 &&
-                cache.ruleset.limitHundredths &&
-                decimals[1] != "5"
-            ) {
-                return false;
-            }
-        }
+        if (fScore % 1 === 0) return true;
+        let decimals = fScore.toString().split(".")[1];
+        let digits = decimals.length;
+        if (digits == 1) return true;
+        if (digits > 2) return false;
+        if (cache.ruleset.limitHundredths && decimals[1] !== "5") return false;
         return true;
     }
 
@@ -495,20 +514,14 @@ var TPZJudge = (() => {
 
     function addAdjustmentPanel() {
         let eventPanel = TPZ.getElementById(cfg.id.headJudgePanel);
-        let adjPanel = TPZ.renderHtml(
-            `<div id="adjustment-panel">
-                <p id="adjustment-label"></p><ul id="adjustment-list"></ul>
-                ${cfg.txt.adjAdd}: <span id="adjust-minus">&nbsp;-&nbsp;</span><input id="score-adjustment" type="text" class="score-input"/>
-                ${cfg.txt.adjReason}: <input id="adjustment-reason" type="text" />
-                <button id="add-adj-button" class="btn btn-secondary">${cfg.txt.add}</button></div>`
-        );
+        let adjPanel = TPZ.renderHtml(html.adjPanel);
         eventPanel.appendChild(adjPanel);
         eventPanel.appendChild(TPZ.renderHtml("<br/>"));
-        TPZ.getElementById("add-adj-button").onclick = () => {
-            let adj = TPZ.getElementById("score-adjustment");
+        TPZ.getElementById(cfg.id.adjAdd).onclick = () => {
+            let adj = TPZ.getElementById(cfg.id.adj);
             let adjValue = parseFloat(adj.value);
             if (validateAdjustment(adjValue)) {
-                let reason = TPZ.getElementById("adjustment-reason");
+                let reason = TPZ.getElementById(cfg.id.adjReason);
                 adjustScore(adjValue, reason.value);
                 adj.value = "";
                 reason.value = "";
@@ -518,31 +531,48 @@ var TPZJudge = (() => {
         };
     }
 
+    function validateAdjustment(adj) {
+        // Make sure the score is positive and below the max possible
+        if (adj > -10 && adj < 10) {
+            if (Math.trunc(adj * 10) % 1 === 0) {
+                // Check that the score uses at most the tenths digit
+                return true;
+            } else if (Math.trunc(adj * 100) % 5 === 0) {
+                // Allow for five-hundredths of a point (special cases)
+                return true;
+            }
+        }
+        return false;
+    }
+
     function addFinalScoreContainer() {
         let eventPanel = TPZ.getElementById(cfg.id.headJudgePanel);
-        let finalScoreContainer = TPZ.renderHtml(
-            `<div id="final-score-container">
-                <span id="${cfg.id.finalScoreLabel}"></span>
-                <span id="${cfg.id.finalScore}"></span></div>`
-        );
+        let finalScoreContainer = TPZ.renderHtml(html.finalScoreContainer);
         eventPanel.appendChild(finalScoreContainer);
     }
 
     function addPublishScoreButton() {
         let eventPanel = TPZ.getElementById(cfg.id.headJudgePanel);
         let publishScoreBtn = TPZ.renderHtml(
-            `<button id="head-publish-score" class="btn btn-theme">${cfg.txt.publishScore}</button>`
+            `<button id="${cfg.id.publishButton}" class="btn btn-theme">${cfg.txt.publishScore}</button>`
         );
         eventPanel.append(publishScoreBtn);
-        TPZ.getElementById("head-publish-score").onclick = () => {
-            let adj = TPZ.getElementById("score-adjustment");
-            let reason = TPZ.getElementById("adjustment-reason");
+        TPZ.getElementById(cfg.id.publishButton).onclick = () => {
+            let adj = TPZ.getElementById(cfg.id.adj);
+            let reason = TPZ.getElementById(cfg.id.adjReason);
             if (adj != undefined && (adj.value != "" || reason.value != "")) {
                 TPZ.alert(cfg.txt.adjWarn);
             } else {
                 TPZ.confirm(cfg.txt.publishWarn, finalizeScore);
             }
         };
+    }
+
+    function setPublishedStatus() {
+        TPZ.getElementById("final-score-label").textContent = "Final: ";
+        let publishBtn = TPZ.getElementById(cfg.id.publishButton);
+        publishBtn.dataset.published = "true";
+        publishBtn.disabled = true;
     }
 
     function renderHeadJudgePanel(intl = false) {
@@ -563,49 +593,48 @@ var TPZJudge = (() => {
 
         // get a new list of competitors
         TPZ.httpGetJson(cfg.api.eventCompetitors(), (compList) => {
-            for (let i = compSelect.length - 1; i >= 0; i -= 1) {
+            for (let i = compSelect.length - 1; i >= 0; i--) {
                 compSelect.remove(i);
             }
-            for (let i = 0; i < compList.length; i += 1) {
+            for (let i = 0, numComps = compList.length; i < numComps; i++) {
                 let competitor = compList[i];
                 let name = `${i + 1}. ${formatName(
                     competitor.first_name,
                     competitor.last_name
                 )}`;
-                let option = document.createElement("option");
-                option.text = name;
-                option.value = competitor.id;
+                let option = TPZ.renderHtml(
+                    `<option value="${competitor.id}">${name}</option>`
+                );
                 compSelect.append(option);
             }
-            let initCompetitorId = parseInt(compSelect.dataset.init);
-            if (initCompetitorId != undefined && initCompetitorId >= 0) {
+            if (cache.competitorId > 0) {
                 // resume
-                compSelect.value = initCompetitorId;
-                compSelect.dataset.init = "-1";
-                compSelect.dispatchEvent(new Event("change"));
+                compSelect.value = cache.competitorId;
             } else {
                 // select first competitor
                 compSelect.selectedIndex = 0;
             }
+            compSelect.dispatchEvent(new Event("change"));
         });
     }
 
     function renderEventControlPanel() {
         let eventSelect = TPZ.getElementById(cfg.id.eventSelect);
         let compSelect = TPZ.getElementById(cfg.id.competitorSelect);
-        compSelect.dataset.init = cache.competitorId;
 
         // get events in this ring
         TPZ.httpGetJson(cfg.api.ringEvents(), (eventList) => {
-            for (let i = 0; i < eventList.length; i += 1) {
+            let eles = [];
+            for (let i = 0, numEvents = eventList.length; i < numEvents; i++) {
                 let event = eventList[i];
-                let option = document.createElement("option");
-                option.text = `${i + 1}. ${event.name}`;
-                option.value = event.id;
-                eventSelect.append(option);
+                let name = `${i + 1}. ${event.name}`;
+                let option = TPZ.renderHtml(
+                    `<option value="${event.id}">${name}</option>`
+                );
+                eles.push(option);
             }
-
-            if (cache.eventId !== undefined && cache.eventId >= 0) {
+            TPZ.appendElements(eventSelect, eles);
+            if (cache.eventId >= 0) {
                 // resume event
                 eventSelect.value = cache.eventId;
                 setCompetitorList();
@@ -618,19 +647,16 @@ var TPZJudge = (() => {
 
         eventSelect.addEventListener("change", () => {
             let eventId = eventSelect.value;
-            if (eventId === cache.eventId) {
-                return;
-            }
+            if (eventId === cache.eventId) return;
             let change = { id: parseInt(eventId) };
             TPZ.httpPostJson(cfg.api.changeEvent(), change, () => {
+                cache.competitorId = 0; // unset competitor ID
                 setCompetitorList();
-                // event change means competitor change
-                cfg.cb.onCompetitorChange();
             });
         });
         compSelect.addEventListener("change", () => {
             let competitorId = parseInt(compSelect.value);
-            if (competitorId == cache.competitorId) return;
+            // if (competitorId === cache.competitorId) return;
             let eventId = parseInt(eventSelect.value);
             let change = { event_id: eventId, competitor_id: competitorId };
             TPZ.httpPostJson(
@@ -642,7 +668,7 @@ var TPZJudge = (() => {
     }
 
     function setNextCompetitorButton() {
-        let publishBtn = TPZ.getElementById("head-publish-score");
+        let publishBtn = TPZ.getElementById(cfg.id.publishButton);
         if (publishBtn.dataset.published != "true") {
             // this score hasn't been published yet
             // confirm we want to move on
@@ -657,41 +683,35 @@ var TPZJudge = (() => {
     function selectNextCompetitor() {
         let compSelect = document.getElementById(cfg.id.competitorSelect);
         let compIndex = compSelect.selectedIndex;
-        let eventSelect = document.getElementById(cfg.id.eventSelect);
-        let eventIndex = eventSelect.selectedIndex;
-
         if (compIndex < compSelect.length - 1) {
             compSelect.selectedIndex = compIndex + 1;
             compSelect.dispatchEvent(new Event("change"));
-            if (
-                compIndex == compSelect.length - 1 &&
-                eventIndex == eventSelect.length - 1
-            ) {
-                nextButton.disabled = true;
-            }
             return;
         }
-
+        let eventSelect = document.getElementById(cfg.id.eventSelect);
+        let eventIndex = eventSelect.selectedIndex;
         // move onto next event
         if (eventIndex < eventSelect.length - 1) {
             eventSelect.selectedIndex = eventIndex + 1;
             eventSelect.dispatchEvent(new Event("change"));
-        } else {
-            TPZ.alert("Finished!");
+            return;
         }
+        TPZ.alert(cfg.txt.ringFinished);
     }
 
     function listRings() {
         let ringGroup = TPZ.createRadioGroup(cfg.id.ringSelect);
         TPZ.getElementById(cfg.id.selectionContainer).appendChild(ringGroup);
         TPZ.httpGetJson(cfg.api.listRings, (data) => {
+            var eles = [];
             for (let i in data) {
                 let ring = data[i];
                 let ringItem = TPZ.createRadioItem(ring.name, {
                     ring: ring.id,
                 });
-                ringGroup.appendChild(ringItem);
+                eles.push(ringItem);
             }
+            TPZ.appendElements(ringGroup, eles);
         });
     }
 
@@ -738,6 +758,15 @@ var TPZJudge = (() => {
 
     function headJudge() {
         cfg.poll.action = getScores;
+        cfg.Notify.args.onmessage = (raw) => {
+            console.log(raw);
+            let msg = parseMessage(raw.data);
+            switch (msg.action) {
+                case "submit-score":
+                    getScores();
+                    break;
+            }
+        };
         Notify.connect(cfg.Notify.URI, cfg.Notify.args);
 
         // setup interface
@@ -770,7 +799,7 @@ var TPZJudge = (() => {
                 renderScorePanel();
             }
             renderEventControlPanel();
-            document.getElementById("next-competitor-button").onclick =
+            document.getElementById(cfg.id.nextCompBtn).onclick =
                 setNextCompetitorButton;
         });
     }
@@ -789,23 +818,43 @@ var TPZJudge = (() => {
         cfg.cb.onCompetitorChange = () => {
             updateEventInfo((data) => {
                 renderScorePanel();
-                if (data.scores !== undefined) {
-                    let saved = data.scores[cfg.clientId];
-                    if (saved !== undefined) {
-                        TPZ.getElementById(cfg.id.scoreEntry).value =
-                            saved.score;
-                        disableScorePanel();
-                    }
-                }
+                if (data.scores === undefined) return;
+                let saved = data.scores[cfg.clientId];
+                if (saved === undefined) return;
+                TPZ.getElementById(cfg.id.scoreEntry).value = saved.score;
+                disableScorePanel();
             });
         };
         cfg.cb.onCompetitorChange();
         TPZ.addScratchpad(cache.scratch);
     }
 
-    return {
-        init: init,
-    };
-})();
+    var html = {
+        adjPanel: `
+<div id="adjustment-panel">
+    <p id="adjustment-label"></p><ul id="${cfg.id.adjList}"></ul>
+    ${cfg.txt.adjAdd}: <span id="adjust-minus">&nbsp;-&nbsp;</span><input id="${cfg.id.adj}" type="text" class="score-input"/>
+    ${cfg.txt.adjReason}: <input id="${cfg.id.adjReason}" type="text" />
+    <button id="${cfg.id.adjAdd}" class="btn btn-secondary">${cfg.txt.add}</button></div>`,
 
+        finalScoreContainer: `
+<div id="final-score-container">
+    <span id="${cfg.id.finalScoreLabel}"></span>
+    <span id="${cfg.id.finalScore}"></span></div>`,
+
+        joinBtn: '<button class="btn btn-theme" type="submit">Join</button>',
+
+        judgeSelection: `<div id="${cfg.id.selectionContainer}"></div>`,
+
+        scorePanel: () => {
+            return `
+${cfg.txt.scoreLabel}: <div>
+    <input id="${cfg.id.scoreEntry}" type="text" class="score-input" /> / ${cache.ruleset.maxScore}
+    <button id="${cfg.id.scoreSubmit}" class="btn btn-theme">${cfg.txt.submit}</div>
+<div><p id="${cfg.id.scoreHint}"></p></div>`;
+        },
+    };
+
+    return { init: init };
+})();
 TPZJudge.init();

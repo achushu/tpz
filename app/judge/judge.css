@@ -7,11 +7,15 @@
   bottom: 0;
 }
 
-#ping {
+#conn-info {
   font-size: 0.4em;
-  opacity: 0.75;
+  opacity: 0.5;
   float: right;
   padding: 1em;
+}
+
+#ping {
+  padding-left: 1em;
 }
 
 .btn-theme {
