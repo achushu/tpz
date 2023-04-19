@@ -462,9 +462,16 @@ func GetScores(routineID int) (map[string]*Score, error) {
 	return scores, err
 }
 
-func DeleteScore(id int) (err error) {
-	stmt := "DELETE FROM score WHERE id = $1"
+func deleteScore(id int) (err error) {
+	stmt := "DELETE FROM scores WHERE id = $1"
 	values := []interface{}{id}
+	_, err = Query(stmt, values)
+	return err
+}
+
+func clearScores(routineID int) (err error) {
+	stmt := "DELETE FROM scores WHERE routine_id = $1"
+	values := []interface{}{routineID}
 	_, err = Query(stmt, values)
 	return err
 }

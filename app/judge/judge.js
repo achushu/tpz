@@ -1,5 +1,7 @@
+// TPZJudge builds the judging interfaces for all judging roles
 var TPZJudge = (() => {
     // TODO: add Chinese translation
+    // English text
     var txtEN = {
         add: "Add",
         adjAdd: "Add adjustment",
@@ -25,12 +27,14 @@ var TPZJudge = (() => {
         nextCompetitor: "&#x2B9E;",
         publishScore: "Publish Score",
         publishWarn: "Publish results?",
+        rescoreBtn: "Rescore",
         ringFinished: "Finished!",
         scoreLabel: "Score",
         scoresLabel: "Scores submitted",
         selectJudge: "Select a judge role!",
         selectLabel: "Select",
         selectRing: "Select a ring!",
+        spread: "Spread",
         startTimer: "Start Timer",
         stopTimer: "Stop Timer",
         submit: "Submit",
@@ -68,6 +72,7 @@ var TPZJudge = (() => {
             },
             listRings: "/api/get-rings",
             publishScore: "/api/finalize-score",
+            rescore: "/api/rescore",
             settings: "/api/get-settings",
             submitAdj: "/api/submit-adjustment",
             submitScore: "/api/submit-score",
@@ -161,7 +166,7 @@ var TPZJudge = (() => {
             pingSym = cfg.ping.icon.med;
         }
         pingDisplay.innerHTML = pingSym;
-        pingDisplay.title = `${rtt} ms`;
+        pingDisplay.title = `${rtt.toFixed(1)} ms`;
         cfg.ping.lastRtt = rtt;
     }
 
@@ -254,6 +259,7 @@ var TPZJudge = (() => {
     return { init: init };
 })();
 
+// JudgeView provides common functionality for all judging roles
 class JudgeView {
     cache = {
         exp: "",
@@ -385,6 +391,9 @@ class JudgeView {
     }
 }
 
+// HeadJudgeView creates an interface for the head judge
+// with the controls and information displays necessary.
+// Extends the JudgeView class.
 class HeadJudgeView extends JudgeView {
     constructor(cfg) {
         super(cfg, cfg.txt.titleHeadJudge, "head");
@@ -394,7 +403,7 @@ class HeadJudgeView extends JudgeView {
         this.adjustments = new AdjustmentPanel(this.cfg, this.cache);
         this.deductionResult = new DeductionResultPanel(this.cfg);
         this.nanduResult = new NanduResultPanel(this.cfg);
-        this.scoreList = new ScoreList(this.cfg);
+        this.scoreList = new ScoreList(this.cfg, this.cache);
         this.scoreDisplay = new ScoreDisplay(this.cfg);
         this.scoreManager = new ScoreManager(this.cfg);
         this.scoreManager.registerHandler((data) => {
@@ -439,6 +448,10 @@ class HeadJudgeView extends JudgeView {
             let msg = this.parseMessage(raw.data);
             switch (msg.action) {
                 case "submit-score":
+                    this.scoreManager.update();
+                    break;
+                case "rescore":
+                    this.scoringPanel.clear();
                     this.scoreManager.update();
                     break;
                 case "adjust-score":
@@ -529,6 +542,18 @@ class ScoreJudgeView extends JudgeView {
             this.setTitle(cfg.txt.titleIntBJudge);
         }
         this.scoringPanel = new ScoringPanel(this.cfg, this.cache);
+        this.cfg.Notify.args.onmessage = (raw) => {
+            console.log(raw);
+            let msg = this.parseMessage(raw.data);
+            switch (msg.action) {
+                case "notify-competitor":
+                    cfg.cb.onCompetitorChange();
+                    break;
+                case "rescore":
+                    this.scoringPanel.clear();
+                    break;
+            }
+        };
         this.connect();
     }
 
@@ -648,22 +673,38 @@ class ViewObject {
     }
 }
 
+// ScoreList displays a list of submitted scores, the score spread,
+// and a button to call for a re-score.
 class ScoreList extends ViewObject {
     id = {
         ct: "score-count",
         list: "score-list",
+        spread: "spread",
+        btn: "rescore-btn",
     };
 
-    constructor(cfg) {
+    constructor(cfg, state) {
         super(cfg);
+        this.state = state;
     }
 
     add(target) {
         let p = TPZ.renderHtml(
-            `${this.txt.scoresLabel} (<span id="${this.id.ct}">0</span>): <ul id="${this.id.list}"></ul>`
+            `<div>${this.txt.scoresLabel} (<span id="${this.id.ct}">0</span>):` +
+                `<ul id="${this.id.list}"></ul>` +
+                `<div>${this.txt.spread}: <span id="${this.id.spread}"></span>` +
+                `<button id="${this.id.btn}" class="btn btn-secondary">${this.txt.rescoreBtn}</button></div></div>`
         );
         TPZ.appendElements(target, p);
         this.counter = TPZ.getElementById(this.id.ct);
+        this.spread = TPZ.getElementById(this.id.spread);
+        TPZ.getElementById(this.id.btn).addEventListener("click", () => {
+            let info = {
+                routine_id: this.state.routineId,
+                ring_id: this.cfg.ringId,
+            };
+            TPZ.httpPostJson(this.cfg.api.rescore, info);
+        });
     }
 
     onUpdate(data) {
@@ -674,13 +715,20 @@ class ScoreList extends ViewObject {
         let submitted = Object.keys(data.scores);
         if (submitted.length > 0) {
             let eles = [];
+            let scores = [];
             for (let k of submitted) {
                 let score = data.scores[k].score;
                 let item = TPZ.renderHtml(`<li>${score}</li>`);
                 eles.push(item);
+                scores.push(score);
                 scoreCount++;
             }
             TPZ.appendElements(scoreList, eles);
+            // update spread
+            let diff = Math.max(...scores) - Math.min(...scores);
+            this.spread.textContent = diff.toFixed(2);
+        } else {
+            this.spread.textContent = "0";
         }
         this.counter.textContent = scoreCount;
     }
@@ -1067,6 +1115,12 @@ class ScoringPanel extends ViewObject {
                 TPZ.alert(this.txt.invalidScore);
             }
         });
+    }
+
+    clear() {
+        this.box.value = "";
+        this.box.disabled = false;
+        this.submit.disabled = false;
     }
 
     setScore(score) {

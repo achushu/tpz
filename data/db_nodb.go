@@ -234,7 +234,23 @@ func saveScore(score float64, routineID int, judgeTag string) error {
 	return nil
 }
 
-func DeleteScore(id int) error {
+func deleteScore(id int) error {
+	return nil
+}
+
+func clearScores(routineID int) (err error) {
+	toDelete := make([]int, 0)
+
+	for i, v := range scores {
+		if v.Routine == routineID {
+			// prepend indices to create a reverse order
+			toDelete = append([]int{i}, toDelete...)
+		}
+	}
+	// delete flagged indices
+	for _, idx := range toDelete {
+		scores = append(scores[:idx], scores[idx+1:]...)
+	}
 	return nil
 }
 

@@ -93,7 +93,7 @@ Build the binary with these tags to alter normal behavior
 ## Develop
 
 - Install code generators
-  - Install the Go stringer tool: `go get golang.org/x/tools/cmd/stringer`
+  - Install the Go stringer tool: `go install golang.org/x/tools/cmd/stringer@latest`
 - Generate code (must be run any time respective definitions are changed)
   - Generate string enumerations: `go generate ./...`
 

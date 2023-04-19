@@ -27,6 +27,7 @@ const (
 	NotifyCompetitor // notify-competitor
 	NotifyEvent      // notify-event
 	NotifyFinalScore // notify-final-score
+	Rescore          // rescore
 	RingStatus       // ring-status
 	RingUpdate       // ring-update
 	Score            // score

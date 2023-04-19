@@ -89,6 +89,7 @@ type changer struct {
 	EventID      int `json:"event_id"`
 	CompetitorID int `json:"competitor_id"`
 	RingID       int `json:"ring_id"`
+	RoutineID    int `json:"routine_id"`
 }
 
 func competitionName(w http.ResponseWriter, r *http.Request) {

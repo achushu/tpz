@@ -24,6 +24,7 @@ func init() {
 	submitAdjustmentRoute := routes.LoginRequired(http.HandlerFunc(submitAdjustment))
 	submitDeductionRoute := routes.LoginRequired(http.HandlerFunc(submitDeduction))
 	submitNanduRoute := routes.LoginRequired(http.HandlerFunc(submitNandu))
+	rescoreRoute := routes.Log(http.HandlerFunc(rescore))
 	finalizeScoreRoute := routes.LoginRequired(http.HandlerFunc(finalizeScore))
 
 	routes.AddSubroute(namespace, []routes.Route{
@@ -35,6 +36,7 @@ func init() {
 		routes.New("/submit-adjustment", submitAdjustmentRoute),
 		routes.New("/submit-deduction", submitDeductionRoute),
 		routes.New("/submit-nandu", submitNanduRoute),
+		routes.New("/rescore", rescoreRoute),
 		routes.New("/finalize-score", finalizeScoreRoute),
 	})
 }
@@ -101,6 +103,43 @@ func submitScore(w http.ResponseWriter, r *http.Request) {
 		log.WsError("could not notify head judge", err)
 	}
 
+	w.Write(emptyJson)
+}
+
+func rescore(w http.ResponseWriter, r *http.Request) {
+	var (
+		c    changer
+		ring *data.RingState
+		msg  []byte
+		err  error
+	)
+
+	if !decodeBodyOrError(&c, w, r) {
+		return
+	}
+	defer r.Body.Close()
+
+	if ring = getRingOrError(c.RingID, w); ring == nil {
+		return
+	}
+	if c.RoutineID == 0 {
+		return
+	}
+
+	if err = data.ClearScores(c.RoutineID, c.RingID); err != nil {
+		routes.RenderError(w, errors.NewInternalError(err))
+		log.HttpError("error clearing scores:", err, "\n", c)
+		return
+	}
+
+	msg, err = sockets.ConstructMessage(sockets.Rescore, nil)
+	if err != nil {
+		log.WsError("could not construct rescore notification", err)
+	}
+	err = sockets.Broadcast(msg, c.RingID)
+	if err != nil {
+		log.WsError("could not broadcast rescore", err)
+	}
 	w.Write(emptyJson)
 }
 
