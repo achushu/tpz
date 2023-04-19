@@ -85,6 +85,15 @@ var TPZ = (function () {
         content.appendChild(element);
     }
 
+    function prependToPanel(element) {
+        let content = DOM["mainContent"];
+        if (content.childNodes.length == 0) {
+            return appendToPanel(element);
+        }
+        let first = content.childNodes[0];
+        content.insertBefore(element, first);
+    }
+
     function clearPanel() {
         let content = DOM["mainContent"];
         while (content.hasChildNodes()) {
@@ -142,6 +151,13 @@ var TPZ = (function () {
             item.dataset[k] = data[k];
         }
         return item;
+    }
+
+    function formatName(first, last) {
+        if (first && last) return first + " " + last;
+        if (first) return first;
+        if (last) return last;
+        return undefined;
     }
 
     function alert(text) {
@@ -277,6 +293,7 @@ var TPZ = (function () {
         clearPanel: clearPanel,
         createRadioGroup: createRadioGroup,
         createRadioItem: createRadioItem,
+        formatName: formatName,
         getAuthId: getAuthId,
         getElementById: getElementById,
         getElementByClass: getElementByClass,
@@ -285,6 +302,7 @@ var TPZ = (function () {
         httpPostJson: httpPostJson,
         httpSendJson: httpSendJson,
         loginRequired: loginRequired,
+        prependToPanel: prependToPanel,
         renderHtml: renderHtml,
         setHeader: setHeader,
         setTitle: setTitle,

@@ -135,6 +135,14 @@ func submitAdjustment(w http.ResponseWriter, r *http.Request) {
 
 	ring.SetAdjustment(adj.JudgeID, adj.Amount, adj.Reason)
 
+	msg, err := sockets.ConstructMessage(sockets.AdjustScore, nil)
+	if err != nil {
+		log.WsError("could not construct adjust-score notification", err)
+	}
+	err = sockets.NotifyHeadJudge(msg, adj.RingID)
+	if err != nil {
+		log.WsError("could not notify head judge", err)
+	}
 	w.Write(emptyJson)
 }
 

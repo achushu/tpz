@@ -37,12 +37,16 @@
   cursor: pointer;
 }
 
-#ring-label {
-  width: 150px;
+.btn.judge-select {
+  width: 200px;
 }
 
-#role-label {
-  width: 200px;
+#ring-group {
+  padding-left: 10px;
+}
+
+.btn.ring-select {
+  width: 150px;
 }
 
 #connection-status-label {
