@@ -442,7 +442,9 @@ class HeadJudgeView extends JudgeView {
         TPZ.appendToPanel(this.panel);
         TPZ.addScratchpad(this.cache.scratch);
 
-        this.cfg.poll.action = this.scoreManager.update;
+        this.cfg.poll.action = () => {
+            this.scoreManager.update();
+        };
         this.cfg.Notify.args.onmessage = (raw) => {
             console.log(raw);
             let msg = this.parseMessage(raw.data);
@@ -523,6 +525,8 @@ class HeadJudgeView extends JudgeView {
         let data = { ringID: parseInt(this.cfg.ringId) };
         TPZ.httpPostJson(this.cfg.api.publishScore, data, () => {
             this.setPublished();
+            // automatically move onto the next competitor
+            this.eventControl.selectNextCompetitor();
         });
     }
 
@@ -550,6 +554,7 @@ class ScoreJudgeView extends JudgeView {
                     cfg.cb.onCompetitorChange();
                     break;
                 case "rescore":
+                    TPZ.alert("Please re-enter a score");
                     this.scoringPanel.clear();
                     break;
             }
@@ -563,7 +568,9 @@ class ScoreJudgeView extends JudgeView {
         this.cfg.cb.onCompetitorChange = () => {
             this.update();
         };
-        this.cfg.poll.action = this.cfg.cb.onCompetitorChange;
+        this.cfg.poll.action = () => {
+            this.cfg.cb.onCompetitorChange();
+        };
         this.update();
     }
 
@@ -699,11 +706,13 @@ class ScoreList extends ViewObject {
         this.counter = TPZ.getElementById(this.id.ct);
         this.spread = TPZ.getElementById(this.id.spread);
         TPZ.getElementById(this.id.btn).addEventListener("click", () => {
-            let info = {
-                routine_id: this.state.routineId,
-                ring_id: this.cfg.ringId,
-            };
-            TPZ.httpPostJson(this.cfg.api.rescore, info);
+            TPZ.confirm("Rescore event?", () => {
+                let info = {
+                    routine_id: this.state.routineId,
+                    ring_id: this.cfg.ringId,
+                };
+                TPZ.httpPostJson(this.cfg.api.rescore, info);
+            });
         });
     }
 

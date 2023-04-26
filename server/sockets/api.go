@@ -33,6 +33,8 @@ const (
 	Score            // score
 	StartEvent       // start-event
 	StopEvent        // stop-event
+	LastDisplay      // last-display
+	LiveDisplay      // live-display
 
 	// Error
 	InvalidAction // invalid

@@ -68,15 +68,15 @@ func setSettings(w http.ResponseWriter, r *http.Request) {
 }
 
 func addToEvent(w http.ResponseWriter, r *http.Request) {
-	var c changer
+	var v values
 
-	if !decodeBodyOrError(&c, w, r) {
+	if !decodeBodyOrError(&v, w, r) {
 		return
 	}
 	defer r.Body.Close()
 
-	out.Println("server/control - add competitor", c.CompetitorID, "to event", c.EventID)
-	err := data.AddCompetitorToEvent(c.CompetitorID, c.EventID)
+	out.Println("server/control - add competitor", v.CompetitorID, "to event", v.EventID)
+	err := data.AddCompetitorToEvent(v.CompetitorID, v.EventID)
 	if err != nil {
 		routes.RenderError(w, errors.NewInternalError(err))
 		log.HttpError(err)
@@ -86,15 +86,15 @@ func addToEvent(w http.ResponseWriter, r *http.Request) {
 }
 
 func removeFromEvent(w http.ResponseWriter, r *http.Request) {
-	var c changer
+	var v values
 
-	if !decodeBodyOrError(&c, w, r) {
+	if !decodeBodyOrError(&v, w, r) {
 		return
 	}
 	defer r.Body.Close()
 
-	out.Println("server/control - remove competitor", c.CompetitorID, "from event", c.EventID)
-	err := data.RemoveCompetitorFromEvent(c.CompetitorID, c.EventID)
+	out.Println("server/control - remove competitor", v.CompetitorID, "from event", v.EventID)
+	err := data.RemoveCompetitorFromEvent(v.CompetitorID, v.EventID)
 	if err != nil {
 		routes.RenderError(w, errors.NewInternalError(err))
 		log.HttpError(err)
@@ -106,7 +106,7 @@ func removeFromEvent(w http.ResponseWriter, r *http.Request) {
 func changeEvent(w http.ResponseWriter, r *http.Request) {
 	var (
 		ring *data.RingState
-		c    changer
+		v    values
 		msg  []byte
 	)
 
@@ -115,12 +115,12 @@ func changeEvent(w http.ResponseWriter, r *http.Request) {
 	if ring = getRingOrError(ringID, w); ring == nil {
 		return
 	}
-	if !decodeBodyOrError(&c, w, r) {
+	if !decodeBodyOrError(&v, w, r) {
 		return
 	}
 	defer r.Body.Close()
 
-	eventID := c.ID
+	eventID := v.ID
 	event, err := data.GetEventByID(eventID)
 	if err != nil {
 		err = errors.NewEventError(eventID)
@@ -161,7 +161,7 @@ func changeEvent(w http.ResponseWriter, r *http.Request) {
 func changeCompetitor(w http.ResponseWriter, r *http.Request) {
 	var (
 		ring *data.RingState
-		c    changer
+		v    values
 	)
 
 	vars := mux.Vars(r)
@@ -169,12 +169,12 @@ func changeCompetitor(w http.ResponseWriter, r *http.Request) {
 	if ring = getRingOrError(ringID, w); ring == nil {
 		return
 	}
-	if !decodeBodyOrError(&c, w, r) {
+	if !decodeBodyOrError(&v, w, r) {
 		return
 	}
 	defer r.Body.Close()
 
-	eventID := c.EventID
+	eventID := v.EventID
 	if ring.Event == nil || ring.Event.ID != eventID {
 		event, err := data.GetEventByID(eventID)
 		if err != nil {
@@ -186,7 +186,7 @@ func changeCompetitor(w http.ResponseWriter, r *http.Request) {
 		ring.SetEvent(event)
 	}
 
-	comp, err := data.GetCompetitorByID(c.CompetitorID)
+	comp, err := data.GetCompetitorByID(v.CompetitorID)
 	if err != nil {
 		routes.RenderError(w, errors.NewInternalError(err))
 		log.HttpError(err)
@@ -204,15 +204,15 @@ func changeCompetitor(w http.ResponseWriter, r *http.Request) {
 }
 
 func moveEvent(w http.ResponseWriter, r *http.Request) {
-	var c changer
+	var v values
 
-	if !decodeBodyOrError(&c, w, r) {
+	if !decodeBodyOrError(&v, w, r) {
 		return
 	}
 	defer r.Body.Close()
 
-	out.Printf("server/control - move event %d to ring ID %d\n", c.EventID, c.RingID)
-	err := data.ChangeEventRing(c.RingID, c.EventID)
+	out.Printf("server/control - move event %d to ring ID %d\n", v.EventID, v.RingID)
+	err := data.ChangeEventRing(v.RingID, v.EventID)
 	if err != nil {
 		routes.RenderError(w, errors.NewInternalError(err))
 		log.HttpError(err)

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -18,6 +19,7 @@ func init() {
 	ringCurrentRoute := routes.Log(http.HandlerFunc(ringStatus))
 	displayInfoRoute := routes.Log(http.HandlerFunc(displayInfo))
 	eventCompetitorsRoute := routes.Log(http.HandlerFunc(getEventCompetitors))
+	getRoutineRoute := routes.Log(http.HandlerFunc(getRoutine))
 
 	routes.AddSubroute(namespace, []routes.Route{
 		routes.New("/{ringID:\\d+}/status", ringStatusRoute),
@@ -25,6 +27,7 @@ func init() {
 		routes.New("/{ringID:\\d+}/current", ringCurrentRoute),
 		routes.New("/{ringID:\\d+}/display-info", displayInfoRoute),
 		routes.New("/{ringID:\\d+}/event-competitors", eventCompetitorsRoute),
+		routes.New("/get-routine", getRoutineRoute),
 	})
 }
 
@@ -108,6 +111,7 @@ func displayInfo(w http.ResponseWriter, r *http.Request) {
 	}
 	if comp != nil {
 		info["competitor_id"] = comp.ID
+		info["routine_id"] = current.Routine.ID
 		info["current"] = map[string]string{
 			"fname": comp.FirstName,
 			"lname": comp.LastName,
@@ -126,6 +130,53 @@ func displayInfo(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	jsonResponse(info, w)
+}
+
+func getRoutine(w http.ResponseWriter, r *http.Request) {
+	var v values
+
+	if !decodeBodyOrError(&v, w, r) {
+		return
+	}
+	defer r.Body.Close()
+
+	rID := v.RoutineID
+	if rID == 0 {
+		err := fmt.Errorf("invalid routine: %d", v.RoutineID)
+		routes.RenderError(w, errors.NewBadRequest(err))
+		log.HttpError(err)
+		return
+	}
+	rInfo, err := data.GetRoutineByID(rID)
+	if err != nil {
+		routes.RenderError(w, errors.NewInternalError(err))
+		log.HttpError(err)
+		return
+	}
+	event, err := data.GetEventByID(rInfo.Event)
+	if err != nil {
+		routes.RenderError(w, errors.NewInternalError(err))
+		log.HttpError(err)
+		return
+	}
+	competitor, err := data.GetCompetitorByID(rInfo.Competitor)
+	if err != nil {
+		routes.RenderError(w, errors.NewInternalError(err))
+		log.HttpError(err)
+		return
+	}
+	info, err := getScorecard(rID)
+	if err != nil {
+		routes.RenderError(w, errors.NewInternalError(err))
+		log.HttpError(err)
+		return
+	}
+	info["event_id"] = rInfo.Event
+	info["event_name"] = event.Name
+	info["competitor_id"] = rInfo.Competitor
+	info["fname"] = competitor.FirstName
+	info["lname"] = competitor.LastName
 	jsonResponse(info, w)
 }
 
@@ -177,7 +228,8 @@ func getEventCompetitors(w http.ResponseWriter, r *http.Request) {
 	ringID := types.Atoi(vars["ringID"])
 	ring := data.GetRing(ringID)
 	if ring.Event == nil {
-
+		w.Write(emptyJson)
+		return
 	}
 	eventID := ring.Event.ID
 	comps, err := data.GetCompetitorsInEvent(eventID)

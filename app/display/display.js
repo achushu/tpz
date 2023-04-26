@@ -5,10 +5,14 @@ let clientId = "00000000";
 let ringId;
 let currentEventId;
 let currentCompetitorId;
+let currentRoutineId;
 let ruleset;
 let pollId = 0;
 let pollMode = false;
 let ccId = 0;
+let lastRoutine = 0;
+let timedScoreDisplay = false;
+let scoreDisplayInterval = 20000; // ms
 
 let notifyArgs = {
     onopen: function () {
@@ -23,10 +27,20 @@ let notifyArgs = {
                 break;
             case "notify-competitor":
                 // Only change the event name when the competitor has been selected
-                setInfo();
+                // and a timed scorecard is not being shown
+                if (!timedScoreDisplay) {
+                    setInfo();
+                }
                 break;
             case "notify-final-score":
+                timedScoreDisplay = true;
+                getFinalScore();
+                break;
+            case "live-display":
                 setInfo();
+                break;
+            case "last-display":
+                showScorecard(lastRoutine);
                 break;
             default:
                 break;
@@ -217,8 +231,12 @@ function setInfo() {
             currentEventId != data.event_id ||
             currentCompetitorId != data.competitor_id
         ) {
+            // cache previous routine ID
+            lastRoutine = currentRoutineId;
+            // update current event IDs
             currentEventId = data.event_id;
             currentCompetitorId = data.competitor_id;
+            currentRoutineId = data.routine_id;
             // clear names
             TPZ.getElementById("event-name").textContent = "";
             TPZ.getElementById("competitor-name").textContent = "";
@@ -239,17 +257,24 @@ function setInfo() {
             if (data.prepare != undefined) {
                 prepare = formatName(data.prepare.fname, data.prepare.lname);
             }
+            clearScores();
+            displayNamesMode(next, prepare);
         }
-        // set scores
-        TPZ.httpGetJson("/api/" + ringId + "/get-scores", function (scoreInfo) {
-            if (scoreInfo.final != undefined && scoreInfo.final != "0.00") {
-                // we have a final score, go to score mode
-                displayScoresMode(scoreInfo);
-            } else {
-                clearScores();
-                displayNamesMode(next, prepare);
-            }
-        });
+        getFinalScore();
+    });
+}
+
+function getFinalScore() {
+    // set scores
+    TPZ.httpGetJson("/api/" + ringId + "/get-scores", function (scoreInfo) {
+        if (scoreInfo.final != undefined && scoreInfo.final != "0.00") {
+            // we have a final score, go to score mode
+            displayScoresMode(scoreInfo);
+            setTimeout(() => {
+                timedScoreDisplay = false;
+                setInfo();
+            }, scoreDisplayInterval);
+        }
     });
 }
 
@@ -261,6 +286,21 @@ function displayNamesMode(next, prepare) {
         TPZ.getElementById("prepare-name").textContent = prepare;
     }
     footer.css("opacity", "100%");
+}
+
+function showScorecard(routineId) {
+    let req = { routine_id: routineId };
+    TPZ.httpPostJson("/api/get-routine", req, (res) => {
+        currentEventId = res.event_id;
+        currentCompetitorId = res.competitor_id;
+        currentRoutineId = routineId;
+        TPZ.getElementById("event-name").textContent = res.event_name;
+        TPZ.getElementById("competitor-name").textContent = formatName(
+            res.fname,
+            res.lname
+        );
+        displayScoresMode(res);
+    });
 }
 
 function displayScoresMode(scoreInfo) {

@@ -164,6 +164,15 @@ func GetRoutine(eventID, competitorID int) (*Routine, error) {
 	return nil, errors.ErrNotFound
 }
 
+func GetRoutineByID(id int) (*Routine, error) {
+	for _, v := range routines {
+		if v.ID == id {
+			return v, nil
+		}
+	}
+	return nil, errors.ErrNotFound
+}
+
 func SaveDeductionMark(dm *DeductionMark) error {
 	deductions = append(deductions, dm)
 	return nil
@@ -291,8 +300,8 @@ func SaveFinalScore(score, total string, elapsed string, eventID, competitorID i
 	return nil
 }
 
-func GetFinalScore(eventID, competitorID int) (string, error) {
-	e, err := GetRoutine(eventID, competitorID)
+func GetFinalScore(routineID int) (string, error) {
+	e, err := GetRoutineByID(routineID)
 	if err != nil {
 		return "", err
 	}

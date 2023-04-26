@@ -44,26 +44,26 @@ func init() {
 // delete score requires (score) ID and RingID
 func deleteScore(w http.ResponseWriter, r *http.Request) {
 	var (
-		c   changer
+		v   values
 		msg []byte
 		err error
 	)
 
-	if !decodeBodyOrError(&c, w, r) {
+	if !decodeBodyOrError(&v, w, r) {
 		return
 	}
 	defer r.Body.Close()
 
-	if err := data.DeleteScore(c.ID); err != nil {
+	if err := data.DeleteScore(v.ID); err != nil {
 		routes.RenderError(w, errors.NewInternalError(err))
-		log.HttpError(fmt.Sprintf("error deleting score [%d]:", c.ID), err)
+		log.HttpError(fmt.Sprintf("error deleting score [%d]:", v.ID), err)
 		return
 	}
 	msg, err = sockets.ConstructMessage(sockets.SubmitScore, nil)
 	if err != nil {
 		log.WsError("could not construct submit-score notification", err)
 	}
-	err = sockets.NotifyHeadJudge(msg, c.RingID)
+	err = sockets.NotifyHeadJudge(msg, v.RingID)
 	if err != nil {
 		log.WsError("could not notify head judge", err)
 	}
@@ -108,27 +108,27 @@ func submitScore(w http.ResponseWriter, r *http.Request) {
 
 func rescore(w http.ResponseWriter, r *http.Request) {
 	var (
-		c    changer
+		v    values
 		ring *data.RingState
 		msg  []byte
 		err  error
 	)
 
-	if !decodeBodyOrError(&c, w, r) {
+	if !decodeBodyOrError(&v, w, r) {
 		return
 	}
 	defer r.Body.Close()
 
-	if ring = getRingOrError(c.RingID, w); ring == nil {
+	if ring = getRingOrError(v.RingID, w); ring == nil {
 		return
 	}
-	if c.RoutineID == 0 {
+	if v.RoutineID == 0 {
 		return
 	}
 
-	if err = data.ClearScores(c.RoutineID, c.RingID); err != nil {
+	if err = data.ClearScores(v.RoutineID, v.RingID); err != nil {
 		routes.RenderError(w, errors.NewInternalError(err))
-		log.HttpError("error clearing scores:", err, "\n", c)
+		log.HttpError("error clearing scores:", err, "\n", v)
 		return
 	}
 
@@ -136,7 +136,7 @@ func rescore(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.WsError("could not construct rescore notification", err)
 	}
-	err = sockets.Broadcast(msg, c.RingID)
+	err = sockets.Broadcast(msg, v.RingID)
 	if err != nil {
 		log.WsError("could not broadcast rescore", err)
 	}
@@ -347,7 +347,7 @@ func getScores(w http.ResponseWriter, r *http.Request) {
 			total += v.Score
 		}
 		info["total"] = total
-		final, err := data.GetFinalScore(ring.Event.ID, ring.Competitor.ID)
+		final, err := data.GetFinalScore(ring.Routine.ID)
 		if err != nil && err != errors.ErrNotFound {
 			out.Errorln("error retrieving final score: ", err)
 		}
@@ -356,6 +356,20 @@ func getScores(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	jsonResponse(info, w)
+}
+
+func getScorecard(routineID int) (map[string]interface{}, error) {
+	routine, err := data.GetRoutineByID(routineID)
+	if err != nil {
+		return nil, err
+	}
+	info := map[string]interface{}{
+		"scores":      routine.Scores,
+		"adjustments": routine.Adjustments,
+		"total":       routine.TotalScore,
+		"final":       routine.FinalScore,
+	}
+	return info, nil
 }
 
 func getDeductions(w http.ResponseWriter, r *http.Request) {
