@@ -44,6 +44,24 @@ var TPZ = (function () {
         getElementById("js-warn").remove();
     }
 
+    function loginRequired() {
+        $("#user-panel").dropdown("show");
+    }
+
+    function getAuthId() {
+        let cookies = decodeURIComponent(document.cookie).split(";");
+        for (let i = 0; i < cookies.length; i += 1) {
+            let c = cookies[i];
+            let [k, v] = c.split("=");
+            if (k == "tpzTag") {
+                return v;
+            }
+        }
+        return undefined;
+    }
+
+    /* DOM manipulation */
+
     function getElementById(id) {
         /* no caching for now
         var ele = DOM[id];
@@ -62,25 +80,18 @@ var TPZ = (function () {
         return ele;
     }
 
-    function loginRequired() {
-        $("#user-panel").dropdown("show");
-    }
-
-    function getAuthId() {
-        let cookies = decodeURIComponent(document.cookie).split(";");
-        for (let i = 0; i < cookies.length; i += 1) {
-            let c = cookies[i];
-            let [k, v] = c.split("=");
-            if (k == "tpzTag") {
-                return v;
-            }
-        }
-        return undefined;
-    }
-
     function appendToPanel(element) {
         let content = DOM["mainContent"];
         content.appendChild(element);
+    }
+
+    function prependToPanel(element) {
+        let content = DOM["mainContent"];
+        if (content.childNodes.length == 0) {
+            return appendToPanel(element);
+        }
+        let first = content.childNodes[0];
+        content.insertBefore(element, first);
     }
 
     function clearPanel() {
@@ -96,44 +107,57 @@ var TPZ = (function () {
         if (template.content.childNodes.length == 1) {
             return template.content.childNodes[0];
         }
-        return template.content.childNodes;
-    }
-
-    function httpGet(url, onReady, async = true) {
-        var r = new XMLHttpRequest();
-        r.open("GET", url, async);
-        r.onreadystatechange = function () {
-            if (r.readyState != 4 || r.status != 200) return;
-            onReady(r.responseText);
-        };
-        r.send();
-    }
-
-    function httpGetJson(url, onReady, async = true) {
-        var r = new XMLHttpRequest();
-        r.open("GET", url, async);
-        r.onreadystatechange = function () {
-            if (r.readyState != 4 || r.status != 200) return;
-            onReady(JSON.parse(r.responseText));
-        };
-        r.send();
-    }
-
-    function httpPostJson(url, data, onReady, async = true) {
-        httpSendJson(url, "POST", data, onReady, async);
-    }
-
-    function httpSendJson(url, method, data, onReady, async = true) {
-        var r = new XMLHttpRequest();
-        r.open(method, url, async);
-        if (onReady) {
-            r.onreadystatechange = function () {
-                if (r.readyState != 4 || r.status != 200) return;
-                onReady(JSON.parse(r.responseText));
-            };
+        let children = template.content.childNodes;
+        let frag = document.createDocumentFragment();
+        while (children.length > 0) {
+            frag.appendChild(children[0]);
         }
-        r.setRequestHeader("Content-Type", "application/json");
-        r.send(JSON.stringify(data));
+        return frag;
+    }
+
+    function appendElements(dst, children) {
+        if (children.length === undefined) {
+            dst.appendChild(children);
+            return;
+        }
+        let frag = document.createDocumentFragment();
+        for (let i in children) {
+            frag.appendChild(children[i]);
+        }
+        dst.appendChild(frag);
+    }
+
+    function setHeader(text) {
+        getElementById("header").textContent = text;
+    }
+
+    function setTitle(text) {
+        document.getElementsByTagName(
+            "title"
+        )[0].textContent = `${text} | Ten.Zero`;
+    }
+
+    function createRadioGroup(id) {
+        return TPZ.renderHtml(
+            `<div id="${id}" class="btn-group btn-group-toggle btn-group-vertical" data-toggle="buttons"></div>`
+        );
+    }
+
+    function createRadioItem(name, data) {
+        let item = TPZ.renderHtml(
+            `<label class="btn btn-theme"><input type="radio">${name}</label>`
+        );
+        for (let k in data) {
+            item.dataset[k] = data[k];
+        }
+        return item;
+    }
+
+    function formatName(first, last) {
+        if (first && last) return first + " " + last;
+        if (first) return first;
+        if (last) return last;
+        return undefined;
     }
 
     function alert(text) {
@@ -209,17 +233,67 @@ var TPZ = (function () {
         modal.remove();
     }
 
-    function addBreak(node) {
-        node.appendChild(renderHtml("<br/>"));
+    /* AJAX queries */
+
+    function httpGet(url, onReady, async = true) {
+        var r = new XMLHttpRequest();
+        r.open("GET", url, async);
+        r.onreadystatechange = function () {
+            if (r.readyState != 4 || r.status != 200) return;
+            onReady(r.responseText);
+        };
+        r.send();
+    }
+
+    function httpGetJson(url, onReady, async = true) {
+        var r = new XMLHttpRequest();
+        r.open("GET", url, async);
+        r.onreadystatechange = function () {
+            if (r.readyState != 4 || r.status != 200) return;
+            onReady(JSON.parse(r.responseText));
+        };
+        r.send();
+    }
+
+    function httpPostJson(url, data, onReady, async = true) {
+        httpSendJson(url, "POST", data, onReady, async);
+    }
+
+    function httpSendJson(url, method, data, onReady, async = true) {
+        var r = new XMLHttpRequest();
+        r.open(method, url, async);
+        if (onReady) {
+            r.onreadystatechange = function () {
+                if (r.readyState != 4 || r.status != 200) return;
+                onReady(JSON.parse(r.responseText));
+            };
+        }
+        r.setRequestHeader("Content-Type", "application/json");
+        r.send(JSON.stringify(data));
+    }
+
+    /* Scratchpad methods */
+
+    function addScratchpad(text) {
+        let content = DOM["mainContent"];
+        appendElements(content, renderHtml(Scratchpad.html()));
+        Scratchpad.init();
+        if (text !== undefined) {
+            Scratchpad.setText(text);
+        }
     }
 
     /* =============== export public methods =============== */
     return {
-        addBreak: addBreak,
+        addScratchpad: addScratchpad,
+        appendElements: appendElements,
         alert: alert,
         confirm: confirm,
         appendToPanel: appendToPanel,
         clearPanel: clearPanel,
+        createRadioGroup: createRadioGroup,
+        createRadioItem: createRadioItem,
+        formatName: formatName,
         getAuthId: getAuthId,
         getElementById: getElementById,
         getElementByClass: getElementByClass,
@@ -228,7 +302,10 @@ var TPZ = (function () {
         httpPostJson: httpPostJson,
         httpSendJson: httpSendJson,
         loginRequired: loginRequired,
+        prependToPanel: prependToPanel,
         renderHtml: renderHtml,
+        setHeader: setHeader,
+        setTitle: setTitle,
         init: init,
     };
 })();

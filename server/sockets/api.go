@@ -27,11 +27,14 @@ const (
 	NotifyCompetitor // notify-competitor
 	NotifyEvent      // notify-event
 	NotifyFinalScore // notify-final-score
+	Rescore          // rescore
 	RingStatus       // ring-status
 	RingUpdate       // ring-update
 	Score            // score
 	StartEvent       // start-event
 	StopEvent        // stop-event
+	LastDisplay      // last-display
+	LiveDisplay      // live-display
 
 	// Error
 	InvalidAction // invalid

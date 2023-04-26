@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/achushu/libs/out"
-	"github.com/achushu/tpz/app"
+	"github.com/achushu/tpz/app/auth"
 	"github.com/achushu/tpz/config"
 	"github.com/achushu/tpz/data"
 )
@@ -19,7 +19,7 @@ func main() {
 		out.Errorln(err)
 		return
 	}
-	err = app.CreateUser("tpz", "password")
+	err = auth.CreateUser("tpz", "password")
 	if err != nil {
 		out.Errorln(err)
 	}

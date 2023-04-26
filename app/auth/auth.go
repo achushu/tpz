@@ -1,12 +1,9 @@
-package app
+package auth
 
 import (
 	"crypto/sha512"
-	"time"
-
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/achushu/libs/random"
 	"github.com/achushu/tpz/data"
 	"github.com/achushu/tpz/errors"
 )
@@ -47,7 +44,7 @@ func UserLogin(username, password string) (*data.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = login(u, password)
+	err = validate(u, password)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +52,7 @@ func UserLogin(username, password string) (*data.User, error) {
 }
 
 // Validate provided password against user's stored hash
-func login(u *data.User, password string) error {
+func validate(u *data.User, password string) error {
 	// hash password and compare
 	hashPass := hashPassword(password)
 
@@ -67,65 +64,4 @@ func login(u *data.User, password string) error {
 		return err
 	}
 	return nil
-}
-
-// NewSession generates a new session for the user
-func NewSession(user *data.User, expires time.Time, ipAddress, userAgent string) (*data.Session, error) {
-	if expires.IsZero() {
-		expires = time.Now().AddDate(0, 0, 3) // default expiration
-	}
-	s := &data.Session{
-		Username:  user.Name,
-		SessionID: random.String(128),
-		CSRFToken: random.String(256),
-		Valid:     true,
-		Expires:   expires,
-		When:      time.Now(),
-		IPAddress: ipAddress,
-		UserAgent: userAgent,
-	}
-	s.Key = s.Username + "_" + s.SessionID
-
-	err := save(s)
-	return s, err
-}
-
-// GetSession retrieves a session
-func GetSession(sessionKey string) (s *data.Session, err error) {
-	s = sessionCache[sessionKey]
-	if s == nil {
-		s, err = data.GetWebSession(sessionKey)
-		if s != nil {
-			s.Valid = true
-			sessionCache[sessionKey] = s
-		}
-	}
-	if err == errors.ErrNotFound {
-		return nil, errors.ErrSessionInvalid
-	}
-	if err != nil {
-		return nil, err
-	}
-	if !s.Valid || s.Expires.Before(time.Now()) {
-		return nil, errors.ErrSessionInvalid
-	}
-	s.CSRFToken = random.String(256)
-	return s, nil
-}
-
-// Logout logs out of a session
-func Logout(s *data.Session) error {
-	s.Valid = false
-	err := save(s)
-	sessionCache[s.Key] = nil
-	return err
-}
-
-func save(s *data.Session) error {
-	sessionCache[s.Key] = s
-	return data.CreateWebSession(s.Key, s.Username, s.When, s.Expires)
-}
-
-func GenerateTag() string {
-	return random.String(64)
 }

@@ -26,17 +26,20 @@ func _() {
 	_ = x[NotifyCompetitor-15]
 	_ = x[NotifyEvent-16]
 	_ = x[NotifyFinalScore-17]
-	_ = x[RingStatus-18]
-	_ = x[RingUpdate-19]
-	_ = x[Score-20]
-	_ = x[StartEvent-21]
-	_ = x[StopEvent-22]
-	_ = x[InvalidAction-23]
+	_ = x[Rescore-18]
+	_ = x[RingStatus-19]
+	_ = x[RingUpdate-20]
+	_ = x[Score-21]
+	_ = x[StartEvent-22]
+	_ = x[StopEvent-23]
+	_ = x[LastDisplay-24]
+	_ = x[LiveDisplay-25]
+	_ = x[InvalidAction-26]
 }
 
-const _Action_name = "adjust-scorecalculate-scorechange-competitorchange-eventfinalize-scoreregister-displayregister-judgestart-timerstop-timersubmit-deductionssubmit-nandusubmit-scoreinitlist-competitorslist-eventsnotify-competitornotify-eventnotify-final-scorering-statusring-updatescorestart-eventstop-eventinvalid"
+const _Action_name = "adjust-scorecalculate-scorechange-competitorchange-eventfinalize-scoreregister-displayregister-judgestart-timerstop-timersubmit-deductionssubmit-nandusubmit-scoreinitlist-competitorslist-eventsnotify-competitornotify-eventnotify-final-scorerescorering-statusring-updatescorestart-eventstop-eventlast-displaylive-displayinvalid"
 
-var _Action_index = [...]uint16{0, 12, 27, 44, 56, 70, 86, 100, 111, 121, 138, 150, 162, 166, 182, 193, 210, 222, 240, 251, 262, 267, 278, 288, 295}
+var _Action_index = [...]uint16{0, 12, 27, 44, 56, 70, 86, 100, 111, 121, 138, 150, 162, 166, 182, 193, 210, 222, 240, 247, 258, 269, 274, 285, 295, 307, 319, 326}
 
 func (i Action) String() string {
 	if i < 0 || i >= Action(len(_Action_index)-1) {

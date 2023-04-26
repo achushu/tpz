@@ -164,6 +164,15 @@ func GetRoutine(eventID, competitorID int) (*Routine, error) {
 	return nil, errors.ErrNotFound
 }
 
+func GetRoutineByID(id int) (*Routine, error) {
+	for _, v := range routines {
+		if v.ID == id {
+			return v, nil
+		}
+	}
+	return nil, errors.ErrNotFound
+}
+
 func SaveDeductionMark(dm *DeductionMark) error {
 	deductions = append(deductions, dm)
 	return nil
@@ -234,7 +243,23 @@ func saveScore(score float64, routineID int, judgeTag string) error {
 	return nil
 }
 
-func DeleteScore(id int) error {
+func deleteScore(id int) error {
+	return nil
+}
+
+func clearScores(routineID int) (err error) {
+	toDelete := make([]int, 0)
+
+	for i, v := range scores {
+		if v.Routine == routineID {
+			// prepend indices to create a reverse order
+			toDelete = append([]int{i}, toDelete...)
+		}
+	}
+	// delete flagged indices
+	for _, idx := range toDelete {
+		scores = append(scores[:idx], scores[idx+1:]...)
+	}
 	return nil
 }
 
@@ -275,8 +300,8 @@ func SaveFinalScore(score, total string, elapsed string, eventID, competitorID i
 	return nil
 }
 
-func GetFinalScore(eventID, competitorID int) (string, error) {
-	e, err := GetRoutine(eventID, competitorID)
+func GetFinalScore(routineID int) (string, error) {
+	e, err := GetRoutineByID(routineID)
 	if err != nil {
 		return "", err
 	}

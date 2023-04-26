@@ -83,12 +83,13 @@ func decodeBodyOrError(v any, w http.ResponseWriter, r *http.Request) bool {
 	return true
 }
 
-// changer holds values that may be POSTed
-type changer struct {
+// values holds key-value pairs that may be submitted in the request
+type values struct {
 	ID           int `json:"id"`
 	EventID      int `json:"event_id"`
 	CompetitorID int `json:"competitor_id"`
 	RingID       int `json:"ring_id"`
+	RoutineID    int `json:"routine_id"`
 }
 
 func competitionName(w http.ResponseWriter, r *http.Request) {

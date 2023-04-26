@@ -3,9 +3,9 @@ package routes
 import (
 	"net/http"
 
+	"github.com/achushu/tpz/app/auth"
 	"github.com/achushu/tpz/errors"
 	"github.com/achushu/tpz/server/log"
-	"github.com/achushu/tpz/server/session"
 )
 
 // LoginRequired is a shortcut to call both Log and Auth middlewares.
@@ -28,7 +28,7 @@ func Log(next http.Handler) http.Handler {
 // Failures are logged as well.
 func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, err := session.MustGetSession(r)
+		_, err := auth.MustGetSession(r)
 		if err != nil {
 			log.Http(r.RemoteAddr, "-", r.Method, "-", r.URL.Path, "DENIED")
 			RenderError(w, errors.NewForbiddenError())

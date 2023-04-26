@@ -1,6 +1,7 @@
 // Enforce strict Javascript rules
 ("use strict");
 
+let clientId = "9999";
 let itemId;
 
 function renderPage() {
@@ -24,6 +25,20 @@ function renderPage() {
     [item, panel] = setupCommandCenter();
     listContainer.appendChild(item);
     panelContainer.appendChild(panel);
+
+    notifyArgs = {
+        onopen: () => {
+            console.log("connected");
+        },
+    };
+    Notify.connect("/admin/server", notifyArgs);
+}
+
+function notify(ringId, msg) {
+    msg.client = clientId;
+    msg.ring = ringId;
+    msg.timestamp = Date.now();
+    Notify.send(msg);
 }
 
 function setupCommandCenter() {
@@ -38,11 +53,32 @@ function setupCommandCenter() {
         for (let i = 0; i < children.length; i++) {
             panel.removeChild(children[i]);
         }
+        renderDisplayControl();
         TPZ.httpGetJson("/api/get-settings", function (settings) {
             renderClientPolling(settings.poll);
         });
     });
     return [item, panel];
+}
+
+function renderDisplayControl() {
+    TPZ.httpGetJson("/api/get-rings", (data) => {
+        let panel = TPZ.getElementById("command-center");
+        for (let ring of data) {
+            let ringLabel = TPZ.renderHtml(`${ring.name}`);
+            let prevScoreBtn = TPZ.renderHtml("<button>Show last</button>");
+            prevScoreBtn.addEventListener("click", () => {
+                notify(ring.id, { action: "last-display", params: [] });
+            });
+            let liveBtn = TPZ.renderHtml("<button>Show current</button>");
+            liveBtn.addEventListener("click", () => {
+                notify(ring.id, { action: "live-display", params: [] });
+            });
+            let ringItem = TPZ.renderHtml("<div></div>");
+            TPZ.appendElements(ringItem, [ringLabel, prevScoreBtn, liveBtn]);
+            panel.appendChild(ringItem);
+        }
+    });
 }
 
 function renderClientPolling(active) {

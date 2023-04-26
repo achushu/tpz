@@ -2,22 +2,51 @@
     background-color: firebrick;
 }
 
+.footer {
+  position: absolute;
+  bottom: 0;
+}
+
+#conn-info {
+  font-size: 0.4em;
+  opacity: 0.5;
+  float: right;
+  padding: 1em;
+}
+
+#ping {
+  padding-left: 1em;
+}
+
 .btn-theme {
   color: #fff;
   background-color: firebrick;
   border-color: firebrick;
 }
 
+.btn-theme.active {
+  background-color: rgb(143, 26, 26);
+}
+
+.btn-group-vertical {
+  align-items: end;
+  vertical-align: top;
+}
+
 #header {
   cursor: pointer;
 }
 
-#ring-label {
-  width: 150px;
+.btn.judge-select {
+  width: 200px;
 }
 
-#role-label {
-  width: 200px;
+#ring-group {
+  padding-left: 10px;
+}
+
+.btn.ring-select {
+  width: 150px;
 }
 
 #connection-status-label {
@@ -62,6 +91,10 @@
   font-weight: bold;
 }
 
+#rescore-btn {
+  margin-left: 15px;
+}
+
 #deduction-results {
   font-weight: bold;
   font-size: 1.5em;
@@ -97,7 +130,7 @@
 }
 
 .deduction-invalid {
-  background-color: indianred;
+  background-color: lightcoral;
 }
 
 .nandu thead td {

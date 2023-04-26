@@ -2,7 +2,7 @@
     <link rel="stylesheet" type="text/css" media="screen" href="display.css" />
 {{ end }}
 {{ define "title" }}Display Home{{ end }}
-{{ define "header" }}Display Home{{ end }}
+{{ define "header" }}<span id="header">Display Home</span>{{ end }}
 {{ define "body" }}
 <div id="competition-name-container" class="float-center-container">
     <div id="competition-name" class="float-center"></div>
@@ -14,3 +14,4 @@
     <script src="/static/notify.js"></script>
     <script src="display.js"></script>
 {{ end }}
+{{ define "footer" }}{{ end }}

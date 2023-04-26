@@ -7,8 +7,8 @@ import (
 
 	gorilla "github.com/gorilla/websocket"
 
+	"github.com/achushu/tpz/app/auth"
 	"github.com/achushu/tpz/server/log"
-	"github.com/achushu/tpz/server/session"
 )
 
 const (
@@ -74,7 +74,7 @@ func WSServer(w http.ResponseWriter, r *http.Request, msgCB OnMessage) {
 func clientInit(w http.ResponseWriter, r *http.Request, connID string) bool {
 	// check for device tag and send it as the client ID
 	// create one for the client if they do not have one
-	tag := session.GetTag(r)
+	tag := auth.GetTag(r)
 	log.Ws("connection", connID, "belongs to client", tag)
 	toSend, err := ConstructMessage(ClientInit, []interface{}{tag})
 	if err != nil {

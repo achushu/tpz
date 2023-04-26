@@ -117,6 +117,26 @@ func SaveScore(score float64, ringID int, judgeID string) error {
 	return nil
 }
 
+func DeleteScore(scoreID int) error {
+	return nil
+}
+
+func ClearScores(routineID, ringID int) error {
+	ring := GetRing(ringID)
+	if ring == nil {
+		return errors.NewRingError(ringID)
+	}
+
+	// delete from the database
+	if err := clearScores(routineID); err != nil {
+		return err
+	}
+
+	// delete from the cache
+	ring.ClearScores()
+	return nil
+}
+
 func FormatScore(score float64) string {
 	format := "%.2f"
 	return fmt.Sprintf(format, score)

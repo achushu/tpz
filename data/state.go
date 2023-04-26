@@ -179,7 +179,7 @@ func (r *RingState) SetCompetitor(newComp *Competitor, event *Event) {
 		return
 	}
 	// Reset the state
-	r.Scores = make(map[string]*Score)
+	r.ClearScores()
 	r.Adjustments = make([]*Adjustment, 0)
 	r.Deductions = nil
 	r.Nandusheet = nil
@@ -237,6 +237,10 @@ func (r *RingState) SetEventStart(startTime time.Time) {
 func (r *RingState) SetEventStop(stopTime time.Time) {
 	r.StopTime = stopTime
 	out.Debugln("data/state - ", "ring ", r.ID, " event stopped")
+}
+
+func (r *RingState) ClearScores() {
+	r.Scores = make(map[string]*Score)
 }
 
 func (r *RingState) SetPerformanceScore(judgeTag string, score float64) {

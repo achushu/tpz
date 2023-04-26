@@ -307,6 +307,19 @@ func GetRoutine(eventID, competitorID int) (*Routine, error) {
 	return constructRoutine(res[0]), nil
 }
 
+func GetRoutineByID(id int) (*Routine, error) {
+	stmt := "SELECT * FROM routines WHERE id = $1"
+	values := []interface{}{id}
+	res, err := Query(stmt, values)
+	if err != nil {
+		return nil, err
+	}
+	if len(res) == 0 {
+		return nil, errors.ErrNotFound
+	}
+	return constructRoutine(res[0]), nil
+}
+
 func saveScore(score float64, routineID int, judgeTag string) (err error) {
 	stmt := "INSERT INTO scores (routine_id, judge_tag, score) VALUES ($1, $2, $3)"
 	values := []interface{}{routineID, judgeTag, score}
@@ -321,9 +334,9 @@ func SaveFinalScore(score, total string, elapsed string, eventID, competitorID i
 	return err
 }
 
-func GetFinalScore(eventID, competitorID int) (string, error) {
-	stmt := "SELECT final_score FROM routines WHERE event_id = $1 AND competitor_id = $2"
-	values := []interface{}{eventID, competitorID}
+func GetFinalScore(routineID int) (string, error) {
+	stmt := "SELECT final_score FROM routines WHERE id = $1"
+	values := []interface{}{routineID}
 	res, err := Query(stmt, values)
 	if err != nil {
 		return "", err
@@ -462,9 +475,16 @@ func GetScores(routineID int) (map[string]*Score, error) {
 	return scores, err
 }
 
-func DeleteScore(id int) (err error) {
-	stmt := "DELETE FROM score WHERE id = $1"
+func deleteScore(id int) (err error) {
+	stmt := "DELETE FROM scores WHERE id = $1"
 	values := []interface{}{id}
+	_, err = Query(stmt, values)
+	return err
+}
+
+func clearScores(routineID int) (err error) {
+	stmt := "DELETE FROM scores WHERE routine_id = $1"
+	values := []interface{}{routineID}
 	_, err = Query(stmt, values)
 	return err
 }

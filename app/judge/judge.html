@@ -1,10 +1,14 @@
 {{ define "head" }}
     <link rel="stylesheet" type="text/css" media="screen" href="judge.css" />
+    <link rel="stylesheet" type="text/css" href="/static/scratchpad.css" />
 {{ end }}
 {{ define "title" }}Judge Home{{ end }}
-{{ define "header" }}Judge Home{{ end }}
+{{ define "header" }}<span id="header">Judge Home</span><div id="conn-info"><span id="judge-id"></span><span id="ping"></span></div>{{ end }}
 {{ define "body" }}
 {{ end }}
 {{ define "js" }}
     <script src="judge.js"></script>
+    <script src="/static/notify.js"></script>
+    <script src="/static/scratchpad.js"></script>
 {{ end }}
+{{ define "footer" }}{{ end }}
