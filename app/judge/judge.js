@@ -137,6 +137,10 @@ var TPZJudge = (() => {
                 cfg.poll.action();
             }
         });
+        pingDisplay.addEventListener("click", () => {
+            TPZ.getElementById(id.judgeId).textContent = cfg.clientId;
+        });
+
         setupJudgeSelection();
     }
 
@@ -144,7 +148,6 @@ var TPZJudge = (() => {
         let tag = TPZ.getAuthId();
         if (tag !== undefined) {
             cfg.clientId = tag;
-            TPZ.getElementById(id.judgeId).textContent = tag;
         }
     }
 
