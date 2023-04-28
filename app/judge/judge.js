@@ -1124,6 +1124,12 @@ class ScoringPanel extends ViewObject {
                 TPZ.alert(this.txt.invalidScore);
             }
         });
+        // configure 'enter' to submit
+        this.box.addEventListener("keydown", (e) => {
+            if (e.key == "Enter") {
+                this.submit.click();
+            }
+        });
     }
 
     clear() {
