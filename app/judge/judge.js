@@ -933,32 +933,7 @@ class EventControlPanel extends ViewObject {
     }
 
     render() {
-        // get events in this ring
-        TPZ.httpGetJson(this.cfg.api.ringEvents(), (eventList) => {
-            let eles = [];
-            for (let i = 0, numEvents = eventList.length; i < numEvents; i++) {
-                let event = eventList[i];
-                let name = `${i + 1}. ${event.name}`;
-                let option = TPZ.renderHtml(
-                    `<option value="${event.id}">${name}</option>`
-                );
-                eles.push(option);
-            }
-            TPZ.appendElements(this.eventSelect, eles);
-            if (this.state.eventId >= 0) {
-                // resume event
-                this.eventSelect.value = this.state.eventId;
-                this.setCompetitorList();
-            } else {
-                // select first event
-                this.eventSelect.selectedIndex = 0;
-                this.eventSelect.dispatchEvent(new Event("change"));
-            }
-            TPZ.getElementById(this.id.nextBtn).onclick = () => {
-                this.setNextButton();
-            };
-        });
-
+        // set up listeners
         this.eventSelect.addEventListener("change", () => {
             let eventId = this.eventSelect.value;
             if (eventId === this.state.eventId) return;
@@ -977,6 +952,32 @@ class EventControlPanel extends ViewObject {
                 change,
                 this.cfg.cb.onCompetitorChange
             );
+        });
+
+        // get events in this ring
+        TPZ.httpGetJson(this.cfg.api.ringEvents(), (eventList) => {
+            let eles = [];
+            for (let i = 0, numEvents = eventList.length; i < numEvents; i++) {
+                let event = eventList[i];
+                let name = `${i + 1}. ${event.name}`;
+                let option = TPZ.renderHtml(
+                    `<option value="${event.id}">${name}</option>`
+                );
+                eles.push(option);
+            }
+            TPZ.appendElements(this.eventSelect, eles);
+            if (this.state.eventId > 0) {
+                // resume event
+                this.eventSelect.value = this.state.eventId;
+                this.setCompetitorList();
+            } else {
+                // select first event
+                this.eventSelect.selectedIndex = 0;
+                this.eventSelect.dispatchEvent(new Event("change"));
+            }
+            TPZ.getElementById(this.id.nextBtn).onclick = () => {
+                this.setNextButton();
+            };
         });
     }
 
