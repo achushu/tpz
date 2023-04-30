@@ -29,10 +29,8 @@ Supports scoring and rulesets for wushu / kung fu competitions.
 
 Given a file of competition data exists at `./install/pg/competition.sql`:
 
-`cd install/bin`
+`cd install/scripts`
 `sudo -u postgres ./reset_database.sh`
-`sudo -u postgres psql -d tpz --file=../pg/competition.sql`
-`cd ../..`
 `./createuser`
 
 ### Security

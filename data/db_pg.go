@@ -285,12 +285,39 @@ func GetNthEventInRing(n, ringID int) (*Event, error) {
 	return res[0], nil
 }
 
+func pgDecimalToString(v interface{}) (string, error) {
+	var (
+		orig []uint8
+		conv []byte
+		ok   bool
+	)
+	if orig, ok = v.([]uint8); !ok {
+		return "", fmt.Errorf("pgDecimalToString could not cast %v to []uint8", v)
+	}
+	conv = make([]byte, 0, len(orig))
+	// convert each uint8 to byte
+	for i := 0; i < len(orig); i++ {
+		conv = append(conv, byte(orig[i]))
+	}
+	return string(conv), nil
+}
+
 func constructRoutine(v map[string]interface{}) *Routine {
+	total, err := pgDecimalToString(v["total_score"])
+	if err != nil {
+		total = "-1"
+	}
+	final, err := pgDecimalToString(v["final_score"])
+	if err != nil {
+		final = "-1"
+	}
 	return &Routine{
 		ID:         types.AssertInt(v["id"]),
 		Event:      types.AssertInt(v["event_id"]),
 		Competitor: types.AssertInt(v["competitor_id"]),
 		Order:      types.AssertInt(v["event_order"]),
+		TotalScore: total,
+		FinalScore: final,
 	}
 }
 
