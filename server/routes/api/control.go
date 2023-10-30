@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -36,16 +35,7 @@ func init() {
 }
 
 func getSettings(w http.ResponseWriter, r *http.Request) {
-	res, err := json.Marshal(data.ClientSettings)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		return
-	}
-
-	_, err = w.Write(res)
-	if err != nil {
-		log.HttpError("error responding to request:", err)
-	}
+	jsonResponse(data.ClientSettings, w)
 }
 
 type settingsChange struct {
@@ -63,8 +53,7 @@ func setSettings(w http.ResponseWriter, r *http.Request) {
 	for k, v := range s.Settings {
 		data.ClientSettings[k] = v
 	}
-
-	w.Write(emptyJson)
+	emptyResponse(w)
 }
 
 func addToEvent(w http.ResponseWriter, r *http.Request) {
@@ -81,8 +70,7 @@ func addToEvent(w http.ResponseWriter, r *http.Request) {
 		routes.RenderError(w, errors.NewInternalError(err))
 		log.HttpError(err)
 	}
-
-	w.Write(emptyJson)
+	emptyResponse(w)
 }
 
 func removeFromEvent(w http.ResponseWriter, r *http.Request) {
@@ -99,8 +87,7 @@ func removeFromEvent(w http.ResponseWriter, r *http.Request) {
 		routes.RenderError(w, errors.NewInternalError(err))
 		log.HttpError(err)
 	}
-
-	w.Write(emptyJson)
+	emptyResponse(w)
 }
 
 func changeEvent(w http.ResponseWriter, r *http.Request) {
@@ -154,8 +141,7 @@ func changeEvent(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.HttpError("could not construct notify-competitor notification", err)
 	}
-
-	w.Write(emptyJson)
+	emptyResponse(w)
 }
 
 func changeCompetitor(w http.ResponseWriter, r *http.Request) {
@@ -190,7 +176,7 @@ func changeCompetitor(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		routes.RenderError(w, errors.NewInternalError(err))
 		log.HttpError(err)
-		w.Write(emptyJson)
+		emptyResponse(w)
 		return
 	}
 	ring.SetCompetitor(comp, ring.Event)
@@ -199,8 +185,7 @@ func changeCompetitor(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.HttpError("could not construct notify-competitor notification", err)
 	}
-
-	w.Write(emptyJson)
+	emptyResponse(w)
 }
 
 func moveEvent(w http.ResponseWriter, r *http.Request) {
@@ -217,6 +202,5 @@ func moveEvent(w http.ResponseWriter, r *http.Request) {
 		routes.RenderError(w, errors.NewInternalError(err))
 		log.HttpError(err)
 	}
-
-	w.Write(emptyJson)
+	emptyResponse(w)
 }

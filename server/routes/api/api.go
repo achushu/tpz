@@ -50,6 +50,21 @@ func init() {
 }
 
 var emptyJson = []byte{123, 125} // {}
+func emptyResponse(w http.ResponseWriter) {
+	_, err := w.Write(emptyJson)
+	if err != nil {
+		routes.RenderError(w, errors.NewInternalError(err))
+		log.HttpError("error responding to request:", err)
+	}
+}
+
+func respond(data []byte, w http.ResponseWriter) {
+	_, err := w.Write(data)
+	if err != nil {
+		routes.RenderError(w, errors.NewInternalError(err))
+		log.HttpError("error responding to request:", err)
+	}
+}
 
 func jsonResponse(v any, w http.ResponseWriter) {
 	res, err := json.Marshal(v)
@@ -57,10 +72,7 @@ func jsonResponse(v any, w http.ResponseWriter) {
 		routes.RenderError(w, errors.NewInternalError(err))
 		return
 	}
-	_, err = w.Write(res)
-	if err != nil {
-		log.HttpError("error responding to request:", err)
-	}
+	respond(res, w)
 }
 
 func getRingOrError(ringID int, w http.ResponseWriter) *data.RingState {
@@ -93,10 +105,7 @@ type values struct {
 }
 
 func competitionName(w http.ResponseWriter, r *http.Request) {
-	_, err := w.Write([]byte(config.Settings.Competition.Name))
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-	}
+	respond([]byte(config.Settings.Competition.Name), w)
 }
 
 func getRings(w http.ResponseWriter, r *http.Request) {
@@ -105,22 +114,13 @@ func getRings(w http.ResponseWriter, r *http.Request) {
 		routes.RenderError(w, errors.NewInternalError(err))
 		return
 	}
-	res, err := json.Marshal(data)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		return
-	}
-	_, err = w.Write(res)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-	}
+	jsonResponse(data, w)
 }
 
 func getEvents(w http.ResponseWriter, r *http.Request) {
 	var (
 		event  *data.Event
 		events []*data.Event
-		res    []byte
 		err    error
 	)
 	vars := mux.Vars(r)
@@ -138,17 +138,9 @@ func getEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if events != nil {
-		res, err = json.Marshal(events)
+		jsonResponse(events, w)
 	} else {
-		res, err = json.Marshal(event)
-	}
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		return
-	}
-	_, err = w.Write(res)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
+		jsonResponse(event, w)
 	}
 }
 
@@ -164,30 +156,14 @@ func currentEvent(w http.ResponseWriter, r *http.Request) {
 		res, err := json.Marshal(data)
 	*/
 	// Use cached version
-	res, err := json.Marshal(current.Event)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		return
-	}
-	_, err = w.Write(res)
-	if err != nil {
-		log.HttpError("error responding to request:", errors.NewInternalError(err))
-	}
+	jsonResponse(current.Event, w)
 }
 
 func currentCompetitor(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ringID := types.Atoi(vars["ringID"])
 	current := data.GetRing(ringID)
-	res, err := json.Marshal(current.Competitor)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		return
-	}
-	_, err = w.Write(res)
-	if err != nil {
-		log.HttpError("error responding to request:", errors.NewInternalError(err))
-	}
+	jsonResponse(current.Competitor, w)
 }
 
 func competitors(w http.ResponseWriter, r *http.Request) {
@@ -207,15 +183,7 @@ func competitors(w http.ResponseWriter, r *http.Request) {
 		routes.RenderError(w, errors.NewInternalError(err))
 		return
 	}
-	res, err := json.Marshal(comps)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		return
-	}
-	_, err = w.Write(res)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-	}
+	jsonResponse(comps, w)
 }
 
 func eventsByCompetitor(w http.ResponseWriter, r *http.Request) {
@@ -226,15 +194,7 @@ func eventsByCompetitor(w http.ResponseWriter, r *http.Request) {
 		routes.RenderError(w, errors.NewInternalError(err))
 		return
 	}
-	res, err := json.Marshal(events)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		return
-	}
-	_, err = w.Write(res)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-	}
+	jsonResponse(events, w)
 }
 
 func overallRankings(w http.ResponseWriter, r *http.Request) {
@@ -258,15 +218,7 @@ func overallRankings(w http.ResponseWriter, r *http.Request) {
 		}
 		rankings[i]["scores"] = scores
 	}
-	res, err := json.Marshal(rankings)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		return
-	}
-	_, err = w.Write(res)
-	if err != nil {
-		log.HttpError("error responding to request:", errors.NewInternalError(err))
-	}
+	jsonResponse(rankings, w)
 }
 
 func eventRanks(w http.ResponseWriter, r *http.Request) {
@@ -277,15 +229,7 @@ func eventRanks(w http.ResponseWriter, r *http.Request) {
 		routes.RenderError(w, errors.NewInternalError(err))
 		return
 	}
-	res, err := json.Marshal(ranks)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		return
-	}
-	_, err = w.Write(res)
-	if err != nil {
-		log.HttpError("error responding to request:", errors.NewInternalError(err))
-	}
+	jsonResponse(ranks, w)
 }
 
 func allaround(w http.ResponseWriter, r *http.Request) {
@@ -308,13 +252,5 @@ func getRulesets(w http.ResponseWriter, r *http.Request) {
 		routes.RenderError(w, errors.NewInternalError(err))
 		return
 	}
-	res, err := json.Marshal(data)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-		return
-	}
-	_, err = w.Write(res)
-	if err != nil {
-		routes.RenderError(w, errors.NewInternalError(err))
-	}
+	jsonResponse(data, w)
 }
