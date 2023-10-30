@@ -104,9 +104,10 @@ User passwords are hashed first with SHA-512 and followed by bcrypt
 
 This software has been used at the following competitions:
 
+- Presidential Wushu Cup (2023)
 - Terpwushu Intercollege Wushu Games 2023
-- Terpwushu 16th University Wushu Games 2022
+- Terpwushu 16th University Wushu Games (2022)
 - Terpwushu Intercollege Wushu Games 2022
-- Terpwushu 15th University Wushu Games 2019
-- Terpwushu 14th University Wushu Games 2018
-- Terpwushu 13th University Wushu Games 2017
+- Terpwushu 15th University Wushu Games (2019)
+- Terpwushu 14th University Wushu Games (2018)
+- Terpwushu 13th University Wushu Games (2017)
