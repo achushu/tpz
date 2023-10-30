@@ -2,19 +2,18 @@ package generate
 
 import (
 	"bufio"
+	"encoding/csv"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/achushu/tpz/data"
 )
 
 var inputFiles = []string{
-	"input/uwg-2022-ring1-AM.txt",
-	"input/uwg-2022-ring2-AM.txt",
-	"input/uwg-2022-ring1-PM.txt",
-	"input/uwg-2022-ring2-PM.txt",
-	"input/test-ring.txt",
+	"input/pwc-2023-blue.csv",
+	"input/pwc-2023-green.csv",
 }
 
 const (
@@ -80,6 +79,108 @@ func main() {
 	// remove previous output
 	os.Remove(resultFilename)
 
+	// uwgFormat()
+	err := pwcFormat()
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("done")
+}
+
+func pwcFormat() (err error) {
+	var ok bool
+
+	ringFile, err = os.OpenFile(ringFilename, os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		return
+	}
+	ringFile.WriteString("INSERT INTO rings (id, name) VALUES\n")
+
+	eventFile, err = os.OpenFile(eventFilename, os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		return
+	}
+	eventFile.WriteString("INSERT INTO events (ring_id, name, ruleset_id, event_order, style, experience_id) VALUES\n")
+
+	competitorFile, err = os.OpenFile(competitorFilename, os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		return
+	}
+	competitorFile.WriteString("INSERT INTO competitors (last_name, first_name, gender_id, experience_id) VALUES\n")
+
+	routineFile, err = os.OpenFile(routineFilename, os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		return
+	}
+	routineFile.WriteString("INSERT INTO routines (event_id, event_order, competitor_id) VALUES\n")
+
+	for i, input := range inputFiles {
+		var f *os.File
+		eventOrder = 1
+		ringID = i + 1
+		f, err = os.Open(input)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		csvFile := csv.NewReader(f)
+		ringID := 1
+		records, err := csvFile.ReadAll()
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		header := records[0]
+		fnIdx := indexOf("First Name", header)
+		lnIdx := indexOf("Last Name", header)
+		expIdx := indexOf("Experience", header)
+		genderIdx := indexOf("Gender", header)
+		// eventIdx := indexOf("Event", header)
+		eidIdx := indexOf("eID", header)
+
+		eID := 0
+		cID := 0
+		lastEID := 0
+
+		for _, v := range records[1:] {
+			fName := v[fnIdx]
+			lName := v[lnIdx]
+			fullName := fName + " " + lName
+			gender := data.ToGender(v[genderIdx])
+			exp := data.ToExperience(v[expIdx])
+
+			eventName := fmt.Sprintf("%s %s %s", exp.StringShort(), gender.StringShort)
+			eID, err = strconv.Atoi(v[eidIdx])
+			if err != nil {
+				fmt.Println("error converting event ID")
+				return err
+			}
+			if eID != lastEID {
+				// new event
+				lastEID = eID
+				eventFile.WriteString(fmt.Sprintf("  (%d, '%s', %d, %d),\n", ringID, eventName, eventOrder, exp))
+			}
+
+			if cID, ok = competitorMap[fullName]; !ok {
+				competitorFile.WriteString(fmt.Sprintf("  ('%s', '%s', %d, %d),\n", lName, fName, gender, exp))
+			}
+
+			routineFile.WriteString(fmt.Sprintf("  (%d, %d, %d),\n", eID, compOrder, cID))
+		}
+	}
+	return
+}
+
+func indexOf(value string, slice []string) int {
+	for i, v := range slice {
+		if value == v {
+			return i
+		}
+	}
+	return -1
+}
+
+func uwgFormat() {
 	// do the thing
 	if err := processInput(); err != nil {
 		fmt.Println(err)
@@ -254,6 +355,15 @@ func expandEvent(name string) string {
 	return name
 }
 
+func intSliceContains(slice []int, a int) bool {
+	for _, v := range slice {
+		if a == v {
+			return true
+		}
+	}
+	return false
+}
+
 func parseEvent(eventName string) EventDetails {
 	var (
 		exp data.Experience
@@ -271,10 +381,11 @@ func parseEvent(eventName string) EventDetails {
 		}
 	}
 
-	ageName := strings.Join(tokens[:idx], " ")
-	age := data.ToAgeGroup(ageName)
-
-	idx++ // idx is past age group
+	/*
+		ageName := strings.Join(tokens[:idx], " ")
+		age := data.ToAgeGroup(ageName)
+		idx++ // idx is past age group
+	*/
 
 	styleEndIdx := len(tokens) - 1
 
@@ -289,14 +400,16 @@ func parseEvent(eventName string) EventDetails {
 
 	gender := data.ToGender(tokens[len(tokens)-1])
 
-	styleName := strings.Join(tokens[idx:styleEndIdx], " ")
+	fmt.Println("idx:", idx)
+	fmt.Println("style:", styleEndIdx)
+	styleName := strings.Join(tokens[idx:2], " ")
 
 	return EventDetails{
-		ID:         eventID,
-		Age:        int(age) + 1,
-		Experience: int(exp) + 1,
+		ID: eventID,
+		//		Age:        int(age),
+		Experience: int(exp),
 		Style:      styleMap(styleName),
-		Rules:      int(rules) + 1,
-		Gender:     int(gender) + 1,
+		Rules:      int(rules),
+		Gender:     int(gender),
 	}
 }

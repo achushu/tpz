@@ -52,8 +52,8 @@ var TPZJudge = (() => {
         clientId: "0000",
         ringId: 0,
         api: {
-            current: () => {
-                return `/api/${cfg.ringId}/current`;
+            status: () => {
+                return `/api/${cfg.ringId}/status`;
             },
             changeCompetitor: () => {
                 return `/api/${cfg.ringId}/change-competitor`;
@@ -347,7 +347,7 @@ class JudgeView {
 
     updateEventInfo(onReady, async = true) {
         TPZ.httpGetJson(
-            this.cfg.api.current(),
+            this.cfg.api.status(),
             (data) => {
                 this.onGetCurrentStatusReady(data);
                 if (onReady) onReady(data);

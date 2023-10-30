@@ -59,16 +59,6 @@ NOTE: The installer will create a user, `tpzadmin` to administer the `tpz` datab
 
 - Wired LAN to ensure stable connectivity between all nodes
 
-## Competitions
-
-This software has been used at the following competitions:
-
-- Terpwushu 13th University Wushu Games 2017
-- Terpwushu 14th University Wushu Games 2018
-- Terpwushu 15th University Wushu Games 2019
-- Terpwushu Intercollege Wushu Games 2022
-- Terpwushu 16th University Wushu Games 2022
-
 ## Build
 
 - Run `go mod tidy` to pull the necessary dependencies
@@ -83,10 +73,6 @@ Build the binary with these tags to alter normal behavior
 - `debug`: enable debug output
 - `nodb`: use a mock (in-memory) database for testing
 - `pg`: use PostgreSQL database (default)
-
-### Windows
-
-- Run the powershell script `powershell .\make.ps1`
 
 ## Develop
 
@@ -105,12 +91,22 @@ Build the binary with these tags to alter normal behavior
 - `config/` - parses and monitors the configuration file
 - `data/` - models, current state, and interfaces with the underlying database
 - `install/` - files to assist with installing the software
-- `reference/` - official documents relevant to the sport for reference
+- `ref/` - official documents relevant to the sport for reference
 - `server/` - routes for requests and connection management
   - Requests for views are controlled here
 - `tools/` - convenience apps
-- `vendor/` - Saved third-party dependencies
 
 ### Authentication
 
 User passwords are hashed first with SHA-512 and followed by bcrypt
+
+## Competitions
+
+This software has been used at the following competitions:
+
+- Terpwushu Intercollege Wushu Games 2023
+- Terpwushu 16th University Wushu Games 2022
+- Terpwushu Intercollege Wushu Games 2022
+- Terpwushu 15th University Wushu Games 2019
+- Terpwushu 14th University Wushu Games 2018
+- Terpwushu 13th University Wushu Games 2017

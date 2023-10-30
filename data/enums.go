@@ -9,19 +9,18 @@ import (
 /*
  * ENUMERATIONS
  */
-// NOTE: These enumerations must follow the order they are inserted into their
-//       respective tables
 
 type Experience int
 
 const (
-	Beginner Experience = iota
+	InvalidExperience Experience = iota
+	Beginner
 	Intermediate
 	Advanced
-	InvalidExperience
+	FirstTimer
 )
 
-var AllExperiences = []Experience{Beginner, Intermediate, Advanced}
+var AllExperiences = []Experience{Beginner, Intermediate, Advanced, FirstTimer}
 
 func (t Experience) String() string {
 	switch t {
@@ -31,6 +30,8 @@ func (t Experience) String() string {
 		return "intermediate"
 	case Advanced:
 		return "advanced"
+	case FirstTimer:
+		return "firsttimer"
 	}
 	return "Experience(" + strconv.Itoa(int(t)) + ")"
 }
@@ -43,6 +44,8 @@ func (t Experience) StringShort() string {
 		return "int"
 	case Advanced:
 		return "adv"
+	case FirstTimer:
+		return "ft"
 	}
 	return t.String()
 }
@@ -68,14 +71,14 @@ func ToExperience(s string) Experience {
 type AgeGroup int
 
 const (
-	Child AgeGroup = iota
+	InvalidAge AgeGroup = iota
+	Child
 	Youth
 	GroupC
 	GroupB
 	GroupA
 	Adult
 	AdultII
-	InvalidAge
 )
 
 var AllAgeGroups = []AgeGroup{Child, Youth, GroupC, GroupB, GroupA, Adult, AdultII}
@@ -123,9 +126,9 @@ func ToAgeGroup(s string) AgeGroup {
 type Gender int
 
 const (
-	Female Gender = iota
+	OtherGender Gender = iota
+	Female
 	Male
-	OtherGender
 )
 
 var AllGenders = []Gender{Female, Male}
@@ -171,7 +174,8 @@ func ToGender(s string) Gender {
 type Ruleset int
 
 const (
-	USWU Ruleset = iota
+	InvalidRuleset Ruleset = iota
+	USWU
 	IWUF
 	IWUFAB
 )
