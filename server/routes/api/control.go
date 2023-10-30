@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 
@@ -35,7 +36,13 @@ func init() {
 }
 
 func getSettings(w http.ResponseWriter, r *http.Request) {
-	jsonResponse(data.ClientSettings, w)
+	info := map[string]interface{}{
+		"timestamp": time.Now().UnixMilli(),
+	}
+	for k, v := range data.ClientSettings {
+		info[k] = v
+	}
+	jsonResponse(info, w)
 }
 
 type settingsChange struct {
