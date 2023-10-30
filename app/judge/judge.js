@@ -156,6 +156,7 @@ var TPZJudge = (() => {
             let rtt = performance.now() - start;
             setPing(rtt);
             if (cfg.time.offset == 0) {
+                // determine time difference between client and server clocks
                 let now = Date().now();
                 let serverTime = parseInt(settings.timestamp);
                 serverTime -= rtt / 2;
@@ -349,6 +350,12 @@ class JudgeView {
     setTitle(title) {
         TPZ.setHeader(title);
         TPZ.setTitle(title);
+    }
+
+    // getTimestamp returns the current time in milliseconds
+    // adjusted for the difference between client and server clocks
+    getTimestamp() {
+        return Date().now() + this.cfg.time.offset;
     }
 
     updateEventInfo(onReady, async = true) {
@@ -1317,8 +1324,7 @@ class DeductionPanel extends ViewObject {
 
     mark() {
         this.typingMode = false;
-        let timestamp = Date().now();
-        timestamp += this.cfg.time.offset; // adjust for client time difference
+        let timestamp = this.getTimestamp();
         let deductId = `deduct-${this.deductionCount}`;
         let row = TPZ.renderHtml(
             `<li id="${deductId}" class="deduction-entry" data-ts="${timestamp}">` +
