@@ -67,8 +67,7 @@ func deleteScore(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.WsError("could not notify head judge", err)
 	}
-
-	w.Write(emptyJson)
+	emptyResponse(w)
 }
 
 type scorecard struct {
@@ -102,8 +101,7 @@ func submitScore(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.WsError("could not notify head judge", err)
 	}
-
-	w.Write(emptyJson)
+	emptyResponse(w)
 }
 
 func rescore(w http.ResponseWriter, r *http.Request) {
@@ -140,7 +138,7 @@ func rescore(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.WsError("could not broadcast rescore", err)
 	}
-	w.Write(emptyJson)
+	emptyResponse(w)
 }
 
 type adjustment struct {
@@ -182,7 +180,7 @@ func submitAdjustment(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.WsError("could not notify head judge", err)
 	}
-	w.Write(emptyJson)
+	emptyResponse(w)
 }
 
 type deduction struct {
@@ -245,8 +243,7 @@ func submitDeduction(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.WsError("could not notify head judge", err)
 	}
-
-	w.Write(emptyJson)
+	emptyResponse(w)
 }
 
 type nanduResult struct {
@@ -293,8 +290,7 @@ func submitNandu(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.WsError("could not notify head judge", err)
 	}
-
-	w.Write(emptyJson)
+	emptyResponse(w)
 }
 
 func getNanduScores(w http.ResponseWriter, r *http.Request) {
@@ -420,6 +416,5 @@ func finalizeScore(w http.ResponseWriter, r *http.Request) {
 	if errs != nil {
 		log.WsError("server/judge - ", "error broadcasting websockets message: ", errs)
 	}
-
-	w.Write(emptyJson)
+	emptyResponse(w)
 }

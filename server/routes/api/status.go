@@ -228,7 +228,7 @@ func getEventCompetitors(w http.ResponseWriter, r *http.Request) {
 	ringID := types.Atoi(vars["ringID"])
 	ring := data.GetRing(ringID)
 	if ring.Event == nil {
-		w.Write(emptyJson)
+		emptyResponse(w)
 		return
 	}
 	eventID := ring.Event.ID
