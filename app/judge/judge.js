@@ -102,8 +102,7 @@ var TPZJudge = (() => {
             interval: 3000, // ms
         },
         time: {
-            server: 0,
-            offset: 0,
+            offset: 0, // ms the client time is behind the server time
         },
         txt: {},
     };
@@ -154,7 +153,14 @@ var TPZJudge = (() => {
     function phoneHome() {
         let start = performance.now();
         TPZ.httpGetJson(cfg.api.settings, (settings) => {
-            setPing(performance.now() - start);
+            let rtt = performance.now() - start;
+            setPing(rtt);
+            if (cfg.time.offset == 0) {
+                let now = Date().now();
+                let serverTime = parseInt(settings.timestamp);
+                serverTime -= rtt / 2;
+                cfg.time.offset = serverTime - now;
+            }
             settings.poll === "true"
                 ? (cfg.poll.enabled = true)
                 : (cfg.poll.enabled = false);
@@ -1311,10 +1317,11 @@ class DeductionPanel extends ViewObject {
 
     mark() {
         this.typingMode = false;
-        let timestamp = new Date();
+        let timestamp = Date().now();
+        timestamp += this.cfg.time.offset; // adjust for client time difference
         let deductId = `deduct-${this.deductionCount}`;
         let row = TPZ.renderHtml(
-            `<li id="${deductId}" class="deduction-entry" data-ts="${timestamp.getTime()}">` +
+            `<li id="${deductId}" class="deduction-entry" data-ts="${timestamp}">` +
                 '<button class="deduction-remove btn btn-outline-secondary">x</button>' +
                 `<span class="deduction-label">${
                     this.deductionCount + 1
