@@ -9,6 +9,8 @@ var TPZ = (function () {
         mainContent: document.getElementById("main-content"),
     };
 
+    var timeoffset = 0;
+
     /* =================== private methods ================= */
     /*
     // cache DOM elements
@@ -58,6 +60,16 @@ var TPZ = (function () {
             }
         }
         return undefined;
+    }
+
+    // getTimestamp syncs times across the app with the server
+    // by adjusting the system time with an offset
+    function getTimestamp() {
+        return Date.now() + this.timeoffset;
+    }
+
+    function setTimeOffset(offset) {
+        this.timeoffset = offset;
     }
 
     /* DOM manipulation */
@@ -306,6 +318,8 @@ var TPZ = (function () {
         renderHtml: renderHtml,
         setHeader: setHeader,
         setTitle: setTitle,
+        setTimeOffset: setTimeOffset,
+        time: getTimestamp,
         init: init,
     };
 })();
