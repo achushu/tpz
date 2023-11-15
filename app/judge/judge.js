@@ -157,15 +157,22 @@ var TPZJudge = (() => {
             setPing(rtt);
             if (cfg.time.offset == 0) {
                 // determine time difference between client and server clocks
-                let now = Date().now();
+                let now = Date.now();
                 let serverTime = parseInt(settings.timestamp);
                 serverTime -= rtt / 2;
+                TPZ.setTimeOffset(serverTime - now);
                 cfg.time.offset = serverTime - now;
             }
             settings.poll === "true"
                 ? (cfg.poll.enabled = true)
                 : (cfg.poll.enabled = false);
         });
+    }
+
+    // getTimestamp returns the current time in milliseconds
+    // adjusted for the difference between client and server clocks
+    function getTimestamp() {
+        return TPZ.time();
     }
 
     function setPing(rtt) {
@@ -266,7 +273,10 @@ var TPZJudge = (() => {
         view.render();
     }
 
-    return { init: init };
+    return {
+        init: init,
+        time: getTimestamp,
+    };
 })();
 
 // JudgeView provides common functionality for all judging roles
@@ -352,12 +362,6 @@ class JudgeView {
         TPZ.setTitle(title);
     }
 
-    // getTimestamp returns the current time in milliseconds
-    // adjusted for the difference between client and server clocks
-    getTimestamp() {
-        return Date().now() + this.cfg.time.offset;
-    }
-
     updateEventInfo(onReady, async = true) {
         TPZ.httpGetJson(
             this.cfg.api.current(),
@@ -422,6 +426,8 @@ class HeadJudgeView extends JudgeView {
         this.scoreList = new ScoreList(this.cfg, this.cache);
         this.scoreDisplay = new ScoreDisplay(this.cfg);
         this.scoreManager = new ScoreManager(this.cfg);
+
+        this.eventTimer.register(this.deductionResult.handleTimer);
         this.scoreManager.registerHandler((data) => {
             this.scoreList.onUpdate(data);
             this.scoreDisplay.onUpdate(data);
@@ -1186,6 +1192,9 @@ class EventTimer extends ViewObject {
         timerPanel: "timer-panel",
     };
 
+    timerStart;
+    registeredCBs = [];
+
     constructor(cfg, state) {
         super(cfg);
         this.state = state;
@@ -1226,25 +1235,39 @@ class EventTimer extends ViewObject {
     start() {
         // TODO: Take latency into account (iff a Timekeeper is managing the clock)
         // Head judge's clock should always start immediately on click
-        this.state.eventStart = performance.now();
+        this.state.eventStart = getTimestamp();
+        this.timerStart = performance.now();
         if (this.cfg.timerInterval) {
             clearInterval(this.cfg.timerInterval);
         }
         this.cfg.timerInterval = setInterval(() => {
-            let elapsed = new Date(performance.now() - this.state.eventStart);
+            let elapsed = new Date(performance.now() - this.timerStart);
             this.timeDisplay.textContent = this.formatTime(elapsed);
         }, 50);
         this.timerButton.textContent = this.txt.stopTimer;
+        this.registeredCBs.forEach((cb) => {
+            cb("start");
+        });
     }
 
     stop() {
         clearInterval(this.cfg.timerInterval);
-        let elapsed = new Date(performance.now() - this.state.eventStart);
+        let stop = performance.now();
+        let elapsed = new Date(stop - this.timerStart);
         this.timeDisplay.textContent = this.formatTime(elapsed);
+        this.registeredCBs.forEach((cb) => {
+            cb("stop");
+        });
     }
 
     reset() {
         this.render();
+    }
+
+    // register a handler for timer events
+    // the callback function should handle "start" and "stop" events.
+    register(cb) {
+        this.registeredCBs.push(cb);
     }
 
     formatTime(t) {
@@ -1324,7 +1347,7 @@ class DeductionPanel extends ViewObject {
 
     mark() {
         this.typingMode = false;
-        let timestamp = this.getTimestamp();
+        let timestamp = TPZJudge.time();
         let deductId = `deduct-${this.deductionCount}`;
         let row = TPZ.renderHtml(
             `<li id="${deductId}" class="deduction-entry" data-ts="${timestamp}">` +
@@ -1856,10 +1879,20 @@ class DeductionResultPanel extends ViewObject {
 
     add(target) {
         let deductionsPanel = TPZ.renderHtml(
-            'Deductions: <span id="deduction-results"></span>' +
+            'Deductions: <div id="ded-time"></div>' +
+                '<span id="deduction-results"></span>' +
                 '<table id="deduction-table"><caption>Timeline</caption></table>'
         );
         TPZ.appendElements(target, deductionsPanel);
+        DeductionTimeline.init("ded-time");
+    }
+
+    handleTimer(e) {
+        if (e == "start") {
+            DeductionTimeline.start();
+        } else if (e == "stop") {
+            DeductionTimeline.stop();
+        }
     }
 
     update() {
@@ -1878,7 +1911,11 @@ class DeductionResultPanel extends ViewObject {
                 dList.innerHTML += dResults[i].code + "&nbsp;";
             }
         }
+        let judgeNum = 1;
         for (let key in dmap) {
+            let times = [];
+            let codes = [];
+
             if (key == "result") {
                 continue;
             }
@@ -1896,12 +1933,16 @@ class DeductionResultPanel extends ViewObject {
             });
             for (let i in deductions) {
                 let d = deductions[i];
+                times.push(d.timestamp);
+                codes.push(d.code);
                 let cell = TPZ.renderHtml("<td>" + d.code + "</td>");
                 dRow.appendChild(cell);
                 if (d.applied) {
                     cell.classList.add("applied");
                 }
             }
+            DeductionTimeline.set(judgeNum, times, codes);
+            judgeNum++;
         }
     }
 }
