@@ -10,7 +10,7 @@ import (
 
 const (
 	EndItem = ","
-	EndStmt = ";\n\n"
+	EndStmt = ";\n"
 )
 
 func WriteCategoriesFile(filename string) error {

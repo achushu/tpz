@@ -5,24 +5,31 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/achushu/tpz/data"
 )
 
 var inputFiles = []string{
-	"input/pwc-2023-blue.csv",
-	"input/pwc-2023-green.csv",
+	"input/pwc-2024-center.csv",
 }
 
 const (
+	tablesFilename     = "create_tables.sql"
+	categoriesFilename = "output/categories.sql"
 	resultFilename     = "output/competition.sql"
 	ringFilename       = "output/rings.sql"
 	eventFilename      = "output/events.sql"
 	competitorFilename = "output/competitors.sql"
 	routineFilename    = "output/routines.sql"
 	nanduFilename      = "output/nandu.sql"
+	tenPtTestFilename  = "test-ring.txt"
+	nanduTestFilename  = "test-ring-nandu.txt"
+)
+
+const (
+	UWG int = iota
+	PWC
 )
 
 type EventDetails struct {
@@ -35,20 +42,21 @@ type EventDetails struct {
 }
 
 var (
-	// intermediary files
-	intFilenames = []string{
-		ringFilename, eventFilename, competitorFilename, routineFilename, nanduFilename,
-	}
 	ringFile       *os.File
 	competitorFile *os.File
 	routineFile    *os.File
 	eventFile      *os.File
 	nanduFile      *os.File
 
-	ringID     = 1
-	eventID    = 1
+	testFilenames = []string{tenPtTestFilename, nanduTestFilename}
+
+	// cache of intermediary files
+	intFiles []*os.File
+
+	ringID     = 0
+	eventID    = 0
 	eventOrder = 1
-	compID     = 1
+	compID     = 0
 	compOrder  = 1
 
 	currentEvent  EventDetails
@@ -58,6 +66,9 @@ var (
 )
 
 func styleMap(styleName string) int {
+	if len(styleName) == 0 {
+		return 0
+	}
 	switch styleName {
 	case "NQ":
 		fallthrough
@@ -75,188 +86,153 @@ func styleMap(styleName string) int {
 	return 0
 }
 
-func main() {
+func main() error {
+	fileType := PWC
+	var fmtFn func([]string) error
+
 	// remove previous output
 	os.Remove(resultFilename)
 
-	// uwgFormat()
-	err := pwcFormat()
-	if err != nil {
+	if err := CreateIntermediateFiles(); err != nil {
 		fmt.Println(err)
+		return err
+	}
+	intFiles = []*os.File{
+		ringFile, competitorFile, eventFile, routineFile, nanduFile,
+	}
+
+	switch fileType {
+	case UWG:
+		fmtFn = uwgFormat
+	case PWC:
+		fmtFn = pwcFormat
+	}
+	if err := fmtFn(inputFiles); err != nil {
+		fmt.Println(err)
+		return err
+	}
+	// add test rings
+	if err := uwgFormat(testFilenames); err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	finishFiles()
+
+	if err := GenerateCombinedFile(resultFilename); err != nil {
+		fmt.Println(err)
+		return err
 	}
 	fmt.Println("done")
+	return nil
 }
 
-func pwcFormat() (err error) {
-	var ok bool
-
-	ringFile, err = os.OpenFile(ringFilename, os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
+func CreateIntermediateFiles() (err error) {
+	if ringFile, err = os.OpenFile(ringFilename, os.O_CREATE|os.O_TRUNC, 0666); err != nil {
 		return
 	}
 	ringFile.WriteString("INSERT INTO rings (id, name) VALUES\n")
 
-	eventFile, err = os.OpenFile(eventFilename, os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
+	if eventFile, err = os.OpenFile(eventFilename, os.O_CREATE|os.O_TRUNC, 0666); err != nil {
 		return
 	}
-	eventFile.WriteString("INSERT INTO events (ring_id, name, ruleset_id, event_order, style, experience_id) VALUES\n")
+	eventFile.WriteString("INSERT INTO events (ring_id, name, event_order, experience_id, ruleset_id) VALUES\n")
 
-	competitorFile, err = os.OpenFile(competitorFilename, os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
+	if competitorFile, err = os.OpenFile(competitorFilename, os.O_CREATE|os.O_TRUNC, 0666); err != nil {
 		return
 	}
 	competitorFile.WriteString("INSERT INTO competitors (last_name, first_name, gender_id, experience_id) VALUES\n")
 
-	routineFile, err = os.OpenFile(routineFilename, os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
+	if routineFile, err = os.OpenFile(routineFilename, os.O_CREATE|os.O_TRUNC, 0666); err != nil {
 		return
 	}
 	routineFile.WriteString("INSERT INTO routines (event_id, event_order, competitor_id) VALUES\n")
 
-	for i, input := range inputFiles {
+	if nanduFile, err = os.OpenFile(nanduFilename, os.O_CREATE|os.O_TRUNC, 0666); err != nil {
+		return
+	}
+	nanduFile.WriteString("INSERT INTO nandu_sheets (routine_id, segment1, segment2, segment3, segment4) VALUES\n")
+	return
+}
+
+func pwcFormat(files []string) (err error) {
+	var ok bool
+
+	for _, input := range files {
 		var f *os.File
 		eventOrder = 1
-		ringID = i + 1
 		f, err = os.Open(input)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		csvFile := csv.NewReader(f)
-		ringID := 1
+
+		ringID += 1
+		ringFile.WriteString(fmt.Sprintf("  (%d, '%s'),\n", ringID, f.Name()))
 		records, err := csvFile.ReadAll()
 		if err != nil {
 			fmt.Println(err)
 			return err
 		}
 		header := records[0]
+		for i, title := range header {
+			// strip whitespace
+			header[i] = strings.TrimSpace(title)
+		}
 		fnIdx := indexOf("First Name", header)
 		lnIdx := indexOf("Last Name", header)
 		expIdx := indexOf("Experience", header)
 		genderIdx := indexOf("Gender", header)
-		// eventIdx := indexOf("Event", header)
-		eidIdx := indexOf("eID", header)
+		eventIdx := indexOf("Event", header)
 
-		eID := 0
+		rulesetID := 1 // all 10-pt scoring
+		styleID := 1   // doesn't matter
 		cID := 0
-		lastEID := 0
+		lastEvent := ""
 
 		for _, v := range records[1:] {
-			fName := v[fnIdx]
-			lName := v[lnIdx]
-			fullName := fName + " " + lName
+			fName := strings.TrimSpace(v[fnIdx])
+			lName := strings.TrimSpace(v[lnIdx])
+			if fName == "" && lName == "" {
+				continue
+			}
+			if fName[:2] == "XX" {
+				continue
+			}
+			fullName := strings.ToTitle(fName + " " + lName)
 			gender := data.ToGender(v[genderIdx])
 			exp := data.ToExperience(v[expIdx])
+			event := v[eventIdx]
 
-			eventName := fmt.Sprintf("%s %s %s", exp.StringShort(), gender.StringShort)
-			eID, err = strconv.Atoi(v[eidIdx])
-			if err != nil {
-				fmt.Println("error converting event ID")
-				return err
-			}
-			if eID != lastEID {
+			eventName := fmt.Sprintf("%s %s %s", exp.StringShort(), event, gender.StringShort())
+			eventName = strings.ToTitle(eventName)
+			if eventName != lastEvent {
 				// new event
-				lastEID = eID
-				eventFile.WriteString(fmt.Sprintf("  (%d, '%s', %d, %d),\n", ringID, eventName, eventOrder, exp))
+				eventID += 1
+				eventFile.WriteString(fmt.Sprintf("  (%d, '%s', %d, %d, %d, %d),\n", ringID, eventName, rulesetID, eventOrder, styleID, exp))
+				compOrder = 1
+				lastEvent = eventName
 			}
 
 			if cID, ok = competitorMap[fullName]; !ok {
+				compID += 1
 				competitorFile.WriteString(fmt.Sprintf("  ('%s', '%s', %d, %d),\n", lName, fName, gender, exp))
+				cID = compID
+				competitorMap[fullName] = cID
 			}
 
-			routineFile.WriteString(fmt.Sprintf("  (%d, %d, %d),\n", eID, compOrder, cID))
+			routineFile.WriteString(fmt.Sprintf("  (%d, %d, %d),\n", eventID, compOrder, cID))
+			compOrder += 1
 		}
 	}
 	return
 }
 
-func indexOf(value string, slice []string) int {
-	for i, v := range slice {
-		if value == v {
-			return i
-		}
-	}
-	return -1
-}
-
-func uwgFormat() {
-	// do the thing
-	if err := processInput(); err != nil {
-		fmt.Println(err)
-		return
-	}
-	if err := combineFiles(); err != nil {
-		fmt.Println(err)
-	}
-}
-
-func combineFiles() error {
-	for _, f := range intFilenames {
-		if err := cat(f, resultFilename); err != nil {
-			return err
-		}
-		os.Remove(f)
-	}
-	return nil
-}
-
-func cat(src, dst string) error {
-	out, err := os.OpenFile(dst, os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-	in, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer in.Close()
-	scanner := bufio.NewScanner(in)
-	for scanner.Scan() {
-		if _, err = out.WriteString(scanner.Text() + "\n"); err != nil {
-			return err
-		}
-	}
-	out.WriteString("\n")
-	return nil
-}
-
-func processInput() (err error) {
-	ringFile, err = os.OpenFile(ringFilename, os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
-		return
-	}
-	ringFile.WriteString("INSERT INTO rings (id, name) VALUES\n")
-
-	eventFile, err = os.OpenFile(eventFilename, os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
-		return
-	}
-	eventFile.WriteString("INSERT INTO events (ring_id, name, ruleset_id, event_order, style, experience_id) VALUES\n")
-
-	competitorFile, err = os.OpenFile(competitorFilename, os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
-		return
-	}
-	competitorFile.WriteString("INSERT INTO competitors (last_name, first_name, gender_id, experience_id) VALUES\n")
-
-	routineFile, err = os.OpenFile(routineFilename, os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
-		return
-	}
-	routineFile.WriteString("INSERT INTO routines (event_id, event_order, competitor_id) VALUES\n")
-
-	nanduFile, err = os.OpenFile(nanduFilename, os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
-		return
-	}
-	nanduFile.WriteString("INSERT INTO nandu_sheets (routine_id, segment1, segment2, segment3, segment4) VALUES\n")
-
-	for i, input := range inputFiles {
-		var f *os.File
+func uwgFormat(files []string) (err error) {
+	var f *os.File
+	for _, input := range files {
 		eventOrder = 1
-		ringID = i + 1
 		f, err = os.Open(input)
 		if err != nil {
 			fmt.Println(err)
@@ -266,6 +242,7 @@ func processInput() (err error) {
 		line := 0
 		for b.Scan() {
 			if line == 0 {
+				ringID += 1
 				ringFile.WriteString(fmt.Sprintf("  (%d, '%s'),\n", ringID, b.Text()))
 			} else {
 				processLine(b.Text())
@@ -274,22 +251,6 @@ func processInput() (err error) {
 		}
 		f.Close()
 	}
-
-	intFiles := []*os.File{
-		ringFile, competitorFile, routineFile, eventFile, nanduFile,
-	}
-
-	// replace last commas with a semi-colon
-	for _, f := range intFiles {
-		if _, err = f.Seek(-2, 2); err != nil {
-			fmt.Println("error seeking file:", err)
-		}
-		if _, err = f.WriteString(";"); err != nil {
-			fmt.Println("error finishing SQL file:", err)
-		}
-		f.Close()
-	}
-
 	return
 }
 
@@ -312,13 +273,13 @@ func processLine(line string) {
 		// competitor
 		cID, ok := competitorMap[name]
 		if !ok {
+			compID += 1
 			cID = compID
 			competitorMap[name] = cID
 			lNameIdx := strings.LastIndex(name, " ")
 			lName := name[lNameIdx+1:]
 			fName := name[:lNameIdx]
 			competitorFile.WriteString(fmt.Sprintf("  ('%s', '%s', %d, %d),\n", lName, fName, currentEvent.Gender, currentEvent.Experience))
-			compID++
 		}
 		routineFile.WriteString(fmt.Sprintf("  (%d, %d, %d),\n", currentEvent.ID, compOrder, cID))
 		lastRoutineID++
@@ -326,13 +287,28 @@ func processLine(line string) {
 		return
 	}
 	// event
+	eventID++
 	line = strings.TrimSpace(line)
 	currentEvent = parseEvent(line)
 	eventName := expandEvent(line)
 	eventFile.WriteString(fmt.Sprintf("  (%d, '%s', %d, %d, %d, %d),\n", ringID, eventName, currentEvent.Rules, eventOrder, currentEvent.Style, currentEvent.Experience))
-	eventID++
 	eventOrder++
 	compOrder = 1
+}
+
+func finishFiles() (err error) {
+	// replace last commas with a semi-colon
+	for _, f := range intFiles {
+		if _, err = f.Seek(-2, 2); err != nil {
+			fmt.Println("error seeking file:", err)
+			return
+		}
+		if _, err = f.WriteString(";"); err != nil {
+			fmt.Println("error finishing SQL file:", err)
+			return
+		}
+	}
+	return
 }
 
 func expandEvent(name string) string {
@@ -380,7 +356,6 @@ func parseEvent(eventName string) EventDetails {
 			break
 		}
 	}
-
 	/*
 		ageName := strings.Join(tokens[:idx], " ")
 		age := data.ToAgeGroup(ageName)
@@ -400,8 +375,6 @@ func parseEvent(eventName string) EventDetails {
 
 	gender := data.ToGender(tokens[len(tokens)-1])
 
-	fmt.Println("idx:", idx)
-	fmt.Println("style:", styleEndIdx)
 	styleName := strings.Join(tokens[idx:2], " ")
 
 	return EventDetails{
@@ -412,4 +385,60 @@ func parseEvent(eventName string) EventDetails {
 		Rules:      int(rules),
 		Gender:     int(gender),
 	}
+}
+
+func GenerateCombinedFile(filename string) (err error) {
+	var (
+		tablesFile     *os.File
+		categoriesFile *os.File
+	)
+	if tablesFile, err = os.Open(tablesFilename); err != nil {
+		return
+	} else if err = cat(tablesFile, filename); err != nil {
+		return
+	}
+	WriteCategoriesFile(categoriesFilename)
+	if categoriesFile, err = os.Open(categoriesFilename); err != nil {
+		return
+	} else if err = cat(categoriesFile, filename); err != nil {
+		return
+	}
+	categoriesFile.Close()
+	if err = os.Remove(categoriesFilename); err != nil {
+		return
+	}
+	for _, f := range intFiles {
+		if err = cat(f, filename); err != nil {
+			return
+		}
+		f.Close()
+		os.Remove(f.Name())
+	}
+	return
+}
+
+func indexOf(value string, slice []string) int {
+	for i, v := range slice {
+		if value == v {
+			return i
+		}
+	}
+	return -1
+}
+
+func cat(src *os.File, dst string) error {
+	src.Seek(0, 0)
+	out, err := os.OpenFile(dst, os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	scanner := bufio.NewScanner(src)
+	for scanner.Scan() {
+		if _, err = out.WriteString(scanner.Text() + "\n"); err != nil {
+			return err
+		}
+	}
+	out.WriteString("\n")
+	return nil
 }

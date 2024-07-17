@@ -52,6 +52,10 @@ func (t Experience) StringShort() string {
 
 func ToExperience(s string) Experience {
 	switch strings.ToLower(s) {
+	case FirstTimer.String():
+		fallthrough
+	case FirstTimer.StringShort():
+		return FirstTimer
 	case Beginner.String():
 		fallthrough
 	case Beginner.StringShort():

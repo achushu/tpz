@@ -14,5 +14,7 @@ func TestGenerateFiles(t *testing.T) {
 }
 
 func TestMain(t *testing.T) {
-	main()
+	if err := main(); err != nil {
+		t.Fatal(err)
+	}
 }

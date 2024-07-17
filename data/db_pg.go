@@ -756,25 +756,17 @@ func FormatTimestamp(timestamp time.Time) string {
 }
 
 func MapToGender(dbID int) Gender {
-	// pg is 1-indexed
-	x := dbID - 1
-	return Gender(x)
+	return Gender(dbID)
 }
 
 func MapToExperience(dbID int) Experience {
-	// pg is 1-indexed
-	x := dbID - 1
-	return Experience(x)
+	return Experience(dbID)
 }
 
 func MapToAgeGroup(dbID int) AgeGroup {
-	// pg is 1-indexed
-	x := dbID - 1
-	return AgeGroup(x)
+	return AgeGroup(dbID)
 }
 
 func MapToRuleset(dbID int) Ruleset {
-	// pg is 1-indexed
-	x := dbID - 1
-	return Ruleset(x)
+	return Ruleset(dbID)
 }
