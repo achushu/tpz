@@ -65,6 +65,7 @@ function getRuleBase(name) {
 
 $(document).ready(function () {
     TPZ.init();
+    document.getElementsByTagName("body")[0].className = "display-bg";
 
     let tag = TPZ.getAuthId();
     if (tag != undefined) {

@@ -1,0 +1,25 @@
+.navbar {
+    background-color: firebrick;
+}
+
+.btn-theme {
+    color: #fff;
+    background-color: firebrick;
+    border-color: firebrick;
+}
+
+.btn-theme.active {
+    background-color: rgb(143, 26, 26);
+}
+  
+.deduction-focus {
+    border-color: firebrick;
+}
+
+.display-bg {
+    background-color: firebrick;
+}
+
+.display-bg a {
+    color: white;
+}

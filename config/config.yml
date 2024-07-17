@@ -1,8 +1,7 @@
 competition:
-    name: 2022 University Wushu Games
-    colors:
-        primary: firebrick
-        secondary: white
+    name: 2023 University Wushu Games
+    theme: '/static/theme-red.css'
+
 server:
     port: 8000
     home: './app'

@@ -22,7 +22,8 @@ type Config struct {
 }
 
 type Competition struct {
-	Name string
+	Name  string
+	Theme string
 }
 
 func LoadConfigFile(filename string) (*Config, error) {
@@ -41,7 +42,8 @@ func LoadConfigFile(filename string) (*Config, error) {
 		StaticDir: viper.GetString("server.static"),
 		Database:  data.MustGetConfigFromMap(v.Sub("database").AllSettings()),
 		Competition: Competition{
-			Name: viper.GetString("competition.name"),
+			Name:  viper.GetString("competition.name"),
+			Theme: viper.GetString("competition.theme"),
 		},
 	}
 

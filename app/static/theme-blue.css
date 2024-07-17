@@ -1,0 +1,25 @@
+.navbar {
+    background-color: royalblue;
+}
+
+.btn-theme {
+    color: #fff;
+    background-color: royalblue;
+    border-color: royalblue;
+}
+
+.btn-theme.active {
+    background-color: rgb(44, 72, 158);
+}
+
+.deduction-focus {
+    border-color: royalblue;
+}
+
+.display-bg {
+    background-color: royalblue;
+}
+
+.display-bg a {
+    color: white;
+}

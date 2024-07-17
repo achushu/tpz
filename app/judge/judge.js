@@ -183,7 +183,8 @@ var TPZJudge = (() => {
             pingSym = cfg.ping.icon.med;
         }
         pingDisplay.innerHTML = pingSym;
-        pingDisplay.title = `${rtt.toFixed(1)} ms`;
+        let now = new Date(TPZ.time());
+        pingDisplay.title = `${rtt.toFixed(1)} ms - ${now.toLocaleString()}`;
         cfg.ping.lastRtt = rtt;
     }
 
@@ -825,7 +826,7 @@ class AdjustmentPanel extends ViewObject {
         TPZ.getElementById(this.id.btn).onclick = () => {
             let adjValue = parseFloat(this.adj.value);
             if (this.validate(adjValue)) {
-                this.submit(adjValue, reason.value);
+                this.submit(adjValue, this.reason.value);
                 this.adj.value = "";
                 this.reason.value = "";
             } else {
@@ -1235,7 +1236,7 @@ class EventTimer extends ViewObject {
     start() {
         // TODO: Take latency into account (iff a Timekeeper is managing the clock)
         // Head judge's clock should always start immediately on click
-        this.state.eventStart = getTimestamp();
+        this.state.eventStart = TPZ.time();
         this.timerStart = performance.now();
         if (this.cfg.timerInterval) {
             clearInterval(this.cfg.timerInterval);
@@ -1458,7 +1459,7 @@ class DeductionPanel extends ViewObject {
             timestamp: timestamp,
             code: code,
             judgeID: this.cfg.clientId,
-            routineID: this.state.currentRoutineId,
+            routineID: this.state.routineId,
             ringID: parseInt(this.cfg.ringId),
         };
         let method = "POST";
@@ -1483,7 +1484,7 @@ class DeductionPanel extends ViewObject {
                 let ded = {
                     timestamp: parseInt(dbox.dataset.ts),
                     judgeID: this.cfg.clientId,
-                    routineID: this.state.currentRoutineId,
+                    routineID: this.state.routineId,
                     ringID: parseInt(this.cfg.ringId),
                 };
                 TPZ.httpSendJson(
@@ -1699,10 +1700,10 @@ class NanduPanel extends ViewObject {
                         }
                     }
                     let scorecard = {
-                        routineID: currentRoutineId,
-                        judgeID: clientId,
+                        routineID: this.state.routineId,
+                        judgeID: this.cfg.clientId,
                         result: results,
-                        ringID: parseInt(ringId),
+                        ringID: parseInt(this.cfg.ringId),
                     };
                     TPZ.httpPostJson("/api/submit-nandu", scorecard, () => {
                         TPZ.getElementByClass(this.class.mark).disabled = true;

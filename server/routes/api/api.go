@@ -20,6 +20,7 @@ const (
 
 func init() {
 	competitionNameHandler := routes.Log(http.HandlerFunc(competitionName))
+	themeHandler := routes.Log(http.HandlerFunc(getTheme))
 	getRingsHandler := routes.Log(http.HandlerFunc(getRings))
 	getEventsHandler := routes.Log(http.HandlerFunc(getEvents))
 	currentEventHandler := routes.Log(http.HandlerFunc(currentEvent))
@@ -33,6 +34,7 @@ func init() {
 
 	routes.AddSubroute(namespace, []routes.Route{
 		routes.New("/competition-name", competitionNameHandler),
+		routes.New("/get-theme", themeHandler),
 		routes.New("/get-rings", getRingsHandler),
 		routes.New("/all-events", getEventsHandler),
 		routes.New("/get-event/{eventID:\\d+}", getEventsHandler),
@@ -106,6 +108,10 @@ type values struct {
 
 func competitionName(w http.ResponseWriter, r *http.Request) {
 	respond([]byte(config.Settings.Competition.Name), w)
+}
+
+func getTheme(w http.ResponseWriter, r *http.Request) {
+	respond([]byte(config.Settings.Competition.Theme), w)
 }
 
 func getRings(w http.ResponseWriter, r *http.Request) {

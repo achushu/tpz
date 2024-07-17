@@ -137,11 +137,13 @@ func changeEvent(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		routes.RenderError(w, errors.NewInternalError(err))
 		log.HttpError(err)
+		return
 	}
 	if comp == nil {
 		err = errors.ErrNotFound
 		routes.RenderError(w, errors.NewInternalError(err))
 		log.HttpError(err)
+		return
 	}
 	ring.SetCompetitor(comp, event)
 	err = sockets.NotifyCompetitorChange(ringID)

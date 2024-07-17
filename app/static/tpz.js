@@ -4,6 +4,8 @@ var TPZ = (function () {
     // if JS blocked, the warning will remain
     clearJSWarning();
 
+    loadTheme();
+
     // cached DOM elements
     var DOM = {
         mainContent: document.getElementById("main-content"),
@@ -70,6 +72,16 @@ var TPZ = (function () {
 
     function setTimeOffset(offset) {
         this.timeoffset = offset;
+    }
+
+    function loadTheme() {
+        httpGet("/api/get-theme", function (data) {
+            var themeRef = document.createElement("link");
+            themeRef.rel = "stylesheet";
+            themeRef.type = "text/css";
+            themeRef.href = data;
+            document.getElementsByTagName("head")[0].appendChild(themeRef);
+        });
     }
 
     /* DOM manipulation */
