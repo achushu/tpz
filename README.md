@@ -23,7 +23,7 @@ Supports scoring and rulesets for wushu / kung fu competitions.
 
 ### Start Server
 
-`./tpz server`
+`./tpz server [path/to/config.yml]`
 
 ### Reset Database
 
@@ -32,6 +32,19 @@ Given a file of competition data exists at `./install/pg/competition.sql`:
 `cd install/scripts`
 `sudo -u postgres ./reset_database.sh`
 `./createuser`
+
+### Configuration
+
+`competition`
+
+- `name`: Set the competition name to display
+- `theme`: Filepath to the color theme file
+  - A red theme is provided at `/static/theme-red.css`
+  - A blue theme is provided at `/static/theme-blue.css`
+
+### Generate Database
+
+Automatically generate competition data using the application found at `data/generate`. Generates a `competition.sql` file from CSV or custom event data formats.
 
 ### Security
 
@@ -104,10 +117,6 @@ User passwords are hashed first with SHA-512 and followed by bcrypt
 
 This software has been used at the following competitions:
 
-- Presidential Wushu Cup (2023)
-- Terpwushu Intercollege Wushu Games 2023
-- Terpwushu 16th University Wushu Games (2022)
-- Terpwushu Intercollege Wushu Games 2022
-- Terpwushu 15th University Wushu Games (2019)
-- Terpwushu 14th University Wushu Games (2018)
-- Terpwushu 13th University Wushu Games (2017)
+- Presidential Wushu Cup (2023, 2024)
+- Terpwushu University Wushu Games (2017, 2018, 2019, 2022, 2023)
+- Terpwushu Intercollege Wushu Games (2022, 2023)
