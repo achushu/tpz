@@ -11,7 +11,10 @@ import (
 )
 
 var inputFiles = []string{
-	"input/pwc-2024-center.csv",
+	"input/uwg-2024-ring1-AM.txt",
+	"input/uwg-2024-ring2-AM.txt",
+	"input/uwg-2024-ring1-PM.txt",
+	"input/uwg-2024-ring2-PM.txt",
 }
 
 const (
@@ -24,7 +27,7 @@ const (
 	routineFilename    = "output/routines.sql"
 	nanduFilename      = "output/nandu.sql"
 	tenPtTestFilename  = "test-ring.txt"
-	nanduTestFilename  = "test-ring-nandu.txt"
+	nanduTestFilename  = "test-ring-intl.txt"
 )
 
 const (
@@ -87,7 +90,7 @@ func styleMap(styleName string) int {
 }
 
 func main() error {
-	fileType := PWC
+	fileType := UWG
 	var fmtFn func([]string) error
 
 	// remove previous output
@@ -187,7 +190,6 @@ func pwcFormat(files []string) (err error) {
 		eventIdx := indexOf("Event", header)
 
 		rulesetID := 1 // all 10-pt scoring
-		styleID := 1   // doesn't matter
 		cID := 0
 		lastEvent := ""
 
@@ -210,7 +212,7 @@ func pwcFormat(files []string) (err error) {
 			if eventName != lastEvent {
 				// new event
 				eventID += 1
-				eventFile.WriteString(fmt.Sprintf("  (%d, '%s', %d, %d, %d, %d),\n", ringID, eventName, rulesetID, eventOrder, styleID, exp))
+				eventFile.WriteString(fmt.Sprintf("  (%d, '%s', %d, %d, %d),\n", ringID, eventName, eventOrder, exp, rulesetID))
 				compOrder = 1
 				lastEvent = eventName
 			}
@@ -291,7 +293,7 @@ func processLine(line string) {
 	line = strings.TrimSpace(line)
 	currentEvent = parseEvent(line)
 	eventName := expandEvent(line)
-	eventFile.WriteString(fmt.Sprintf("  (%d, '%s', %d, %d, %d, %d),\n", ringID, eventName, currentEvent.Rules, eventOrder, currentEvent.Style, currentEvent.Experience))
+	eventFile.WriteString(fmt.Sprintf("  (%d, '%s', %d, %d, %d),\n", ringID, eventName, eventOrder, currentEvent.Experience, currentEvent.Rules))
 	eventOrder++
 	compOrder = 1
 }
