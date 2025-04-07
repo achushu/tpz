@@ -1114,7 +1114,8 @@ class ScoringPanel extends ViewObject {
         TPZ.getElementById(
             this.id.scorePanel
         ).innerHTML = `${this.txt.scoreLabel}: <div>
-            <input id="${this.id.scoreEntry}" type="text" class="score-input" /> / ${this.state.ruleset.maxScore}
+            <input id="${this.id.scoreEntry}" type="text" class="score-input" autofocus /> 
+            <span id="max-score-label">/ ${this.state.ruleset.maxScore}</span>
             <button id="${this.id.scoreSubmit}" class="btn btn-theme">${this.txt.submit}</div>
         <div><p id="${this.id.scoreHint}"></p></div>`;
         let hint = "";
@@ -1154,12 +1155,14 @@ class ScoringPanel extends ViewObject {
                 this.submit.click();
             }
         });
+        this.box.focus();
     }
 
     clear() {
         this.box.value = "";
         this.box.disabled = false;
         this.submit.disabled = false;
+        this.focus();
     }
 
     setScore(score) {

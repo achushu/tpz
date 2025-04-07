@@ -87,8 +87,19 @@
   width: 2.2em;
 }
 
+#max-score-label {
+  margin-left: 0.5em;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
 #score-hint {
   font-weight: bold;
+}
+
+#score-submit {
+  margin-left: 1em;
+  height: 4em;
 }
 
 #rescore-btn {
