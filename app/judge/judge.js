@@ -14,7 +14,7 @@ var TPZJudge = (() => {
         deductAdd: "Add Deduction",
         deductAttn: "Deductions are submitted live!",
         deductInstr:
-            "Hit the 'SPACEBAR' key or press the 'Add Deduction' button to mark a deduction",
+            "Hit &lt;SPACEBAR&gt; or click 'Add Deduction' to mark a deduction",
         deductLabel: "Deductions",
         finalScore: "Final",
         inactiveJudge: "Not a judge for this event",
@@ -1318,7 +1318,29 @@ class DeductionPanel extends ViewObject {
         this.panel.innerHTML =
             `<p>${this.txt.deductAttn}</p><p>${this.txt.deductInstr}</p>` +
             `<p>${this.txt.deductLabel}:</p><ul id="${this.id.deductList}"></ul>` +
-            `<div><button id="${this.id.deductBtn}" class="btn btn-info">${this.txt.deductAdd}</button></div>`;
+            `<div><button id="${this.id.deductBtn}" class="btn btn-info">${this.txt.deductAdd}</button></div>` +
+            `<div id="ded-cheatsheet"><table>` +
+            `<thead><tr><th>Deduction Cheatsheet (2005)</th></tr></thead><tbody>` +
+            `<tr><td><b>14</b></td><td>cross-leg balance (扣腿平衡)</td></tr>` +
+            `<tr><td><b>15</b></td><td>low balance w/ leg forward (前举腿低势平衡)</td></tr>` +
+            `<tr><td><b>21</b></td><td>back sweep (后扫踢)</td></tr>` +
+            `<tr><td><b>22</b></td><td>front split (跌叉)</td></tr>` +
+            `<tr><td><b>30</b></td><td>jump kick [flying, tornado, lotus, outside] (腾空飞脚、旋风脚、腾空摆莲、腾空外摆腿)</td></tr>` +
+            `<tr><td><b>33</b></td><td>butterfly kick (旋子)</td></tr>` +
+            `<tr><td><b>50</b></td><td>bow stance (弓步)</td></tr>` +
+            `<tr><td><b>51</b></td><td>horse stance (马步)</td></tr>` +
+            `<tr><td><b>52</b></td><td>empty [cat] stance (虚步)</td></tr>` +
+            `<tr><td><b>53</b></td><td>crouch [drop] stance (仆步)</td></tr>` +
+            `<tr><td><b>55</b></td><td>butterfly stance (蝶步)</td></tr>` +
+            `<tr><td><b>70</b></td><td>body sway / loss of balance (上体晃动、脚移动或跳动)</td></tr>` +
+            `<tr><td><b>71</b></td><td>extra support (附加支撑)</td></tr>` +
+            `<tr><td><b>72</b></td><td>body fall (倒地)</td></tr>` +
+            `<tr><td><b>73</b></td><td>weapon touches ground, handle falls, hits body, deforms (器械触地、脱把、碰身、变形)</td></tr>` +
+            `<tr><td><b>76</b></td><td>weapon ornament dropped or tangled with body / loose buttons, torn costume, shoes off (刀彩、剑穗、枪缨、服饰、头饰掉地；刀彩、剑穗、软器械缠手 (缠身)；服装开纽或撕裂；鞋脱落)</td></tr>` +
+            `<tr><td><b>77</b></td><td>longtime balance less than two seconds (持久平衡静止时间不足 2 秒)</td></tr>` +
+            `<tr><td><b>78</b></td><td>body touches outside carpet (身体任何一部分触及线外地面)</td></tr>` +
+            `<tr><td><b>79</b></td><td>movement forgotten (遗忘)</td></tr>` +
+            `</tbody></table></div>`;
 
         this.deductionCount = 0;
         this.deductionsList = TPZ.getElementById(this.id.deductList);
@@ -1340,8 +1362,8 @@ class DeductionPanel extends ViewObject {
             }
         });
         document.body.addEventListener("keyup", (e) => {
-            if (e.key == " " && this.distinctKeypress) {
-                this.distinctKeypress = false;
+            if (e.key == " " && !this.distinctKeypress) {
+                this.distinctKeypress = true;
             }
         });
     }
@@ -1532,11 +1554,11 @@ class DeductionPanel extends ViewObject {
         23: { name: "snap kick (弹腿) / side kick (踹腿)", value: 0.1 },
         24: { name: "parting kick (分脚) / heel kick (蹬脚)", value: 0.1 },
         25: { name: "lotus kick (摆莲脚)", value: 0.1 },
-        26: { name: "pat leg (拍脚)", value: 0.1 },
+        26: { name: "slap kick (拍脚)", value: 0.1 },
         27: { name: "dragon's dive (雀地龙)", value: 0.1 },
         28: { name: "horizontal nail kick (横钉腿)", value: 0.1 },
         30: {
-            name: "jump kick (腾空飞脚) / tornado kick (旋风脚) / lotus kick (腾空摆莲) / jump outside kick (腾空外摆腿)",
+            name: "jump kick [flying, tornado, lotus, outside] (腾空飞脚、旋风脚、腾空摆莲、腾空外摆腿)",
             value: 0.1,
         },
         31: { name: "jump front straight kick (腾空正踢腿)", value: 0.1 },
@@ -1551,7 +1573,7 @@ class DeductionPanel extends ViewObject {
         52: { name: "empty [cat] stance (虚步)", value: 0.1 },
         53: { name: "crouch [drop] stance (仆步)", value: 0.1 },
         54: {
-            name: "step [forward, back, side] (上步, 退步, 进步, 跟步, 侧行步)",
+            name: "step [forward, back, side] (上步、退步、进步、跟步、侧行步)",
             value: 0.1,
         },
         55: { name: "butterfly stance (蝶步)", value: 0.1 },
@@ -1563,7 +1585,7 @@ class DeductionPanel extends ViewObject {
         63: { name: "spear parry (拦枪, 拿枪)", value: 0.1 },
         64: { name: "spear thrust (扎枪)", value: 0.1 },
         65: {
-            name: "figure-8 (立舞花枪, 立舞花棍) / uppercut (双手提撩花棍)",
+            name: "figure-8 (立舞花枪、立舞花棍) / uppercut (双手提撩花棍)",
             value: 0.1,
         },
         66: { name: "throw and catch (器械抛接 )", value: 0.1 },
@@ -1575,17 +1597,21 @@ class DeductionPanel extends ViewObject {
         71: { name: "extra support (附加支撑)", value: 0.2 },
         72: { name: "body fall (倒地)", value: 0.3 },
         73: {
-            name: "blade off handle (器械触地) / apparatus touches body or carpet, or is deformed (脱把、碰身、变形)",
+            name: "weapon touches ground, handle falls, hits body, deforms (器械触地、脱把、碰身、变形)",
             value: 0.1,
         },
-        74: { name: "breaking apparatus (器械折断)", value: 0.2 },
-        75: { name: "dropping apparatus (器械掉地)", value: 0.3 },
+        74: { name: "broken weapon (器械折断)", value: 0.2 },
+        75: { name: "dropped weapon (器械掉地)", value: 0.3 },
         76: {
-            name: "ornament drops from apparatus / body is tangled with apparatus / loose buttons, or torn costume / shoes off (刀彩、剑穗、枪缨、服饰、头饰掉地；刀彩、剑穗、软器械缠手（缠身）；服装开纽或撕裂；鞋脱落)",
+            name: "ornament drops from apparatus / body is tangled with apparatus / loose buttons, or torn costume / shoes off (刀彩、剑穗、枪缨、服饰、头饰掉地；刀彩、剑穗、软器械缠手 (缠身)；服装开纽或撕裂；鞋脱落)",
+            value: 0.1,
+        },
+        76: {
+            name: "weapon ornament dropped or tangled with body / loose buttons, torn costume, shoes off (刀彩、剑穗、枪缨、服饰、头饰掉地；刀彩、剑穗、软器械缠手（缠身）；服装开纽或撕裂；鞋脱落)",
             value: 0.1,
         },
         77: {
-            name: "longtime balance for less than two seconds (持久平衡静止时间不足 2 秒)",
+            name: "longtime balance less than two seconds (持久平衡静止时间不足 2 秒)",
             value: 0.1,
         },
         78: {

@@ -45,7 +45,7 @@ var Scratchpad = (() => {
     }
 
     function setupHtml() {
-        return `<div class="container">
+        return `<div class="container scratchpad">
         <textarea id="scratchpad" placeholder="Scratch pad"></textarea><br/>
         <button id="clear-scratchpad-button" class="btn btn-outline-secondary">Clear Notes</button>
     </div>`;

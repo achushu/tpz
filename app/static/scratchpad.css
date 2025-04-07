@@ -1,5 +1,9 @@
+.scratchpad {
+  padding-left: 0;
+}
+
 #scratchpad {
-  width: 85%;
+  width: 65%;
   height: 10em;
   border-style: dashed;
   border-width: 2px;

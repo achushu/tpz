@@ -149,6 +149,27 @@ tbody tr {
   margin-top: 1px;
 }
 
+#ded-cheatsheet {
+  position: absolute;
+  top: 95px;
+  right: 2px;
+}
+
+#ded-cheatsheet tr {
+  display: flex;
+  width: 500px;
+  height: 1.8rem;
+  overflow: hidden;
+}
+
+#ded-cheatsheet tr:nth-child(odd) {
+  background-color: white;
+}
+
+#ded-cheatsheet tr:nth-child(even) {
+  background-color: lightgray;
+}
+
 #nandu-table th, #nandu-table td {
   border: 1px solid gray;
 }
