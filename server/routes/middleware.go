@@ -3,7 +3,9 @@ package routes
 import (
 	"net/http"
 
+	//	"github.com/achushu/libs/out"
 	"github.com/achushu/tpz/app/auth"
+	"github.com/achushu/tpz/config"
 	"github.com/achushu/tpz/errors"
 	"github.com/achushu/tpz/server/log"
 )
@@ -12,6 +14,13 @@ import (
 func LoginRequired(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		Log(Auth(next)).ServeHTTP(w, r)
+	})
+}
+
+// JudgeLogin is a shortcut to call both Log and JudgeAuth middlewares.
+func JudgeLogin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		Log(JudgeAuth(next)).ServeHTTP(w, r)
 	})
 }
 
@@ -32,6 +41,23 @@ func Auth(next http.Handler) http.Handler {
 		if err != nil {
 			log.Http(r.RemoteAddr, "-", r.Method, "-", r.URL.Path, "DENIED")
 			RenderError(w, errors.NewForbiddenError())
+		} else {
+			next.ServeHTTP(w, r)
+		}
+	})
+}
+
+// JudgeAuth requires login only if judge.login config is set to true
+func JudgeAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if config.Settings.JudgeLogin {
+			_, err := auth.MustGetSession(r)
+			if err != nil {
+				log.Http(r.RemoteAddr, "-", r.Method, "-", r.URL.Path, "DENIED")
+				RenderError(w, errors.NewForbiddenError())
+			} else {
+				next.ServeHTTP(w, r)
+			}
 		} else {
 			next.ServeHTTP(w, r)
 		}

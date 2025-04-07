@@ -19,6 +19,7 @@ type Config struct {
 	StaticDir   string
 	Database    *data.Config
 	Competition Competition
+	JudgeLogin  bool
 }
 
 type Competition struct {
@@ -45,6 +46,7 @@ func LoadConfigFile(filename string) (*Config, error) {
 			Name:  viper.GetString("competition.name"),
 			Theme: viper.GetString("competition.theme"),
 		},
+		JudgeLogin: viper.GetBool("judge.login"),
 	}
 
 	// Keep an eye on the configuration file

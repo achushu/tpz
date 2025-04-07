@@ -64,6 +64,7 @@
         <script src="/static/tpz.js"></script>
         <script>
         {{if not .Session}}
+        function prepareLoginDropdown() { 
             // show login dropdown if an area requires login
             // and user has not logged in
             $('.login-required').each(function() {
@@ -74,6 +75,9 @@
                     }, 0);
                 });
             });
+        }
+        {{else}}
+        function prepareLoginDropdown() {}
         {{end}}
             // put the focus on the username field when dropdown is shown
             $('#user-panel').on('shown.bs.dropdown', function () {

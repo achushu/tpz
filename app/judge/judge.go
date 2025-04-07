@@ -6,6 +6,7 @@ import (
 	"github.com/achushu/libs/out"
 	"github.com/achushu/tpz/app"
 	"github.com/achushu/tpz/app/auth"
+	"github.com/achushu/tpz/config"
 	"github.com/achushu/tpz/data"
 	"github.com/achushu/tpz/errors"
 	"github.com/achushu/tpz/server/log"
@@ -18,8 +19,8 @@ const (
 )
 
 func init() {
-	mainRoute := routes.LoginRequired(http.HandlerFunc(main))
-	socketRoute := routes.LoginRequired(http.HandlerFunc(createWebSocket))
+	mainRoute := routes.JudgeLogin(http.HandlerFunc(main))
+	socketRoute := routes.JudgeLogin(http.HandlerFunc(createWebSocket))
 
 	routes.AddSubroute(namespace, []routes.Route{
 		routes.New("/server", socketRoute),
@@ -38,11 +39,20 @@ func Layout(session *data.Session) app.TPZPageLayout {
 }
 
 func main(w http.ResponseWriter, r *http.Request) {
+	var (
+		s   *data.Session
+		err error
+	)
+
 	// user must be logged in
-	s, err := auth.MustGetSession(r)
-	if err != nil {
-		routes.RenderError(w, errors.NewForbiddenError())
-		return
+	if config.Settings.JudgeLogin {
+		s, err = auth.MustGetSession(r)
+		if err != nil {
+			routes.RenderError(w, errors.NewForbiddenError())
+			return
+		}
+	} else {
+		s, _ = auth.GetSession(r)
 	}
 	if r.URL.Path == namespace+"/" {
 		// Serve the main page

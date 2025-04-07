@@ -10,4 +10,5 @@ import (
 	_ "github.com/achushu/tpz/app/login"
 	_ "github.com/achushu/tpz/app/results"
 	_ "github.com/achushu/tpz/server/routes/api"
+	_ "github.com/achushu/tpz/server/routes/auth"
 )

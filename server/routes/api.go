@@ -35,6 +35,14 @@ func init() {
 	})
 }
 
+func Respond(data []byte, w http.ResponseWriter) {
+	_, err := w.Write(data)
+	if err != nil {
+		RenderError(w, errors.NewInternalError(err))
+		log.HttpError("error responding to request:", err)
+	}
+}
+
 func competitorMux(w http.ResponseWriter, r *http.Request) {
 	var (
 		values body

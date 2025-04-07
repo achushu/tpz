@@ -1,11 +1,14 @@
 competition:
-    name: 2023 University Wushu Games
+    name: 2024 University Wushu Games
     theme: '/static/theme-red.css'
 
 server:
     port: 8000
     home: './app'
     static: './app/static'
+
+judge:
+    login: false
 
 logging:
     access: ""
