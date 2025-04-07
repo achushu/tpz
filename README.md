@@ -63,10 +63,10 @@ NOTE: The installer will create a user, `tpzadmin` to administer the `tpz` datab
 3. Install or configure PostgreSQL (other SQL dbs, ie. MySQL, may work -- untested)
    - Install PostgreSQL: `sudo ./install_pg.sh`
    - OR configure existing installation: `sudo ./config_pg.sh`
-4. Create the `tpz` database as the superuser (postgres)
-   - `sudo -u postgres ./setup_database.sh`
-5. Insert competition data as the superuser
-   - `sudo -u postgres psql -d tpz --file=competition.sql`
+4. Place the competition data file (`competition.sql`) in `install/pg`
+5. Create the `tpz` database as the superuser (postgres)
+   - (New installation) `sudo -u postgres ./setup_database.sh`
+   - (Existing installation) `sudo -u postgres ./reset_database.sh`
 
 ## Recommended Hardware and Setup
 
@@ -78,6 +78,11 @@ NOTE: The installer will create a user, `tpzadmin` to administer the `tpz` datab
 - Build scripts target Linux as the platform
 - Alternatively: build manually from the project home with `go build [-tags <TAG> [,TAG2 ...]] -o main.go .`
   - Example: `go build -tags debug,nodb -o tpz.exe .`
+
+### Cross-Compile For Linux From Windows
+
+`$Env:GOOS = "linux"`
+`go build -tags pg -o bin\tpz .`
 
 ### Build Tags
 
@@ -117,6 +122,6 @@ User passwords are hashed first with SHA-512 and followed by bcrypt
 
 This software has been used at the following competitions:
 
-- Presidential Wushu Cup (2023, 2024)
-- Terpwushu University Wushu Games (2017, 2018, 2019, 2022, 2023)
-- Terpwushu Intercollege Wushu Games (2022, 2023)
+- Presidential Wushu Cup (2023-2024)
+- Terpwushu University Wushu Games (2017-2019, 2022-2024)
+- Terpwushu Intercollege Wushu Games (2022-2023)
