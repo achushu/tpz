@@ -20,9 +20,9 @@ func init() {
 	setSettingsHandler := routes.LoginRequired(http.HandlerFunc(setSettings))
 	addToEventHandler := routes.LoginRequired(http.HandlerFunc(addToEvent))
 	removeFromEventHandler := routes.LoginRequired(http.HandlerFunc(removeFromEvent))
-	changeEventHandler := routes.LoginRequired(http.HandlerFunc(changeEvent))
-	changeCompetitorHandler := routes.LoginRequired(http.HandlerFunc(changeCompetitor))
 	moveEventHandler := routes.LoginRequired(http.HandlerFunc(moveEvent))
+	changeEventHandler := routes.JudgeLogin(http.HandlerFunc(changeEvent))
+	changeCompetitorHandler := routes.JudgeLogin(http.HandlerFunc(changeCompetitor))
 
 	routes.AddSubroute(namespace, []routes.Route{
 		routes.New("/get-settings", getSettingsHandler),

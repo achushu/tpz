@@ -19,13 +19,13 @@ func init() {
 	getScoresRoute := routes.Log(http.HandlerFunc(getScores))
 	getDeductionsRoute := routes.Log(http.HandlerFunc(getDeductions))
 	getNanduScoresRoute := routes.Log(http.HandlerFunc(getNanduScores))
-	submitScoreRoute := routes.LoginRequired(http.HandlerFunc(submitScore))
-	deleteScoreRoute := routes.LoginRequired(http.HandlerFunc(deleteScore))
-	submitAdjustmentRoute := routes.LoginRequired(http.HandlerFunc(submitAdjustment))
-	submitDeductionRoute := routes.LoginRequired(http.HandlerFunc(submitDeduction))
-	submitNanduRoute := routes.LoginRequired(http.HandlerFunc(submitNandu))
-	rescoreRoute := routes.Log(http.HandlerFunc(rescore))
-	finalizeScoreRoute := routes.LoginRequired(http.HandlerFunc(finalizeScore))
+	submitScoreRoute := routes.JudgeLogin(http.HandlerFunc(submitScore))
+	deleteScoreRoute := routes.JudgeLogin(http.HandlerFunc(deleteScore))
+	submitAdjustmentRoute := routes.JudgeLogin(http.HandlerFunc(submitAdjustment))
+	submitDeductionRoute := routes.JudgeLogin(http.HandlerFunc(submitDeduction))
+	submitNanduRoute := routes.JudgeLogin(http.HandlerFunc(submitNandu))
+	rescoreRoute := routes.JudgeLogin(http.HandlerFunc(rescore))
+	finalizeScoreRoute := routes.JudgeLogin(http.HandlerFunc(finalizeScore))
 
 	routes.AddSubroute(namespace, []routes.Route{
 		routes.New("/{ringID:\\d+}/get-scores", getScoresRoute),
