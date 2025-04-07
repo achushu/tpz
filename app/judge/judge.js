@@ -380,6 +380,7 @@ class JudgeView {
             this.cache.eventName = data.event_name;
             this.cache.eventId = data.event_id;
             this.cache.exp = data.event_exp;
+            this.cache.competitorName = data.fname + " " + data.lname;
             this.cache.competitorId = data.competitor_id;
             this.cache.routineId = data.routine_id;
             this.eventDisplay.update(
@@ -425,7 +426,7 @@ class HeadJudgeView extends JudgeView {
         this.deductionResult = new DeductionResultPanel(this.cfg);
         this.nanduResult = new NanduResultPanel(this.cfg);
         this.scoreList = new ScoreList(this.cfg, this.cache);
-        this.scoreDisplay = new ScoreDisplay(this.cfg);
+        this.scoreDisplay = new ScoreDisplay(this.cfg, this.cache);
         this.scoreManager = new ScoreManager(this.cfg);
 
         this.eventTimer.register(this.deductionResult.handleTimer);
@@ -450,6 +451,7 @@ class HeadJudgeView extends JudgeView {
         });
         this.pub = new ScorePublisher(
             this.cfg,
+            this.cache,
             () => {
                 return this.pubWarn();
             },
@@ -577,9 +579,7 @@ class ScoreJudgeView extends JudgeView {
                     cfg.cb.onCompetitorChange();
                     break;
                 case "rescore":
-                    TPZ.alert("Please re-enter a score", () => {
-                        this.scoringPanel.clear();
-                    });
+                    this.scoringPanel.clear();
                     break;
             }
         };
@@ -772,8 +772,9 @@ class ScorePublisher extends ViewObject {
         pub: "publish-button",
     };
 
-    constructor(cfg, warn, cb) {
+    constructor(cfg, cache, warn, cb) {
         super(cfg);
+        this.cache = cache;
         this.warn = warn;
         this.cb = cb;
     }
@@ -790,7 +791,8 @@ class ScorePublisher extends ViewObject {
 
     publish() {
         if (this.warn != undefined && this.warn()) return;
-        TPZ.confirm(this.txt.publishWarn, this.cb);
+        let text = "<b>" + this.cache.calculatedScore + "</b>";
+        TPZ.customConfirm(this.cache.competitorName, text, this.cb);
     }
 
     disable() {
@@ -894,8 +896,9 @@ class ScoreDisplay extends ViewObject {
         score: "final-score",
     };
 
-    constructor(cfg) {
+    constructor(cfg, cache) {
         super(cfg);
+        this.cache = cache;
     }
 
     add(target) {
@@ -918,6 +921,7 @@ class ScoreDisplay extends ViewObject {
         } else if (calc != undefined) {
             this.label.textContent = `${this.txt.calculatedScore}: `;
             this.display.textContent = calc;
+            this.cache.calculatedScore = calc;
         }
     }
 

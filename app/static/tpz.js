@@ -192,6 +192,10 @@ var TPZ = (function () {
         renderModal("Confirm", text, "confirm", ok);
     }
 
+    function customConfirm(title, text, ok) {
+        renderModal(title, text, "confirm", ok);
+    }
+
     function renderModal(title, body, style, okCB) {
         let btnHtml = "";
         switch (style) {
@@ -228,11 +232,11 @@ var TPZ = (function () {
         let okBtn = modal.find("#modal-ok-btn");
         okBtn.on("click", () => {
             modal.modal("hide");
+            okCB();
         });
         // destroy the modal on any dismiss
         modal.on("hidden.bs.modal", () => {
             removeModal();
-            okCB();
         });
         $(modal).modal();
     }
@@ -298,6 +302,7 @@ var TPZ = (function () {
         appendElements: appendElements,
         alert: alert,
         confirm: confirm,
+        customConfirm: customConfirm,
         appendToPanel: appendToPanel,
         clearPanel: clearPanel,
         createRadioGroup: createRadioGroup,
