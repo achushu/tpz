@@ -184,76 +184,61 @@ var TPZ = (function () {
         return undefined;
     }
 
-    function alert(text) {
-        renderAlertModal(text);
-        let modal = $("#alert-modal");
-        // destroy the modal on any dismiss
-        modal.on("hidden.bs.modal", function () {
-            removeAlertModal();
-        });
-        $(modal).modal();
+    function alert(text, ok) {
+        renderModal("Warning!", text, "alert", ok);
     }
 
     function confirm(text, ok) {
-        renderConfirmModal(text);
-        let modal = $("#confirm-modal");
-        let okBtn = modal.find(".btn-primary");
-        okBtn.on("click", function () {
-            ok();
+        renderModal("Confirm", text, "confirm", ok);
+    }
+
+    function renderModal(title, body, style, okCB) {
+        let btnHtml = "";
+        switch (style) {
+            case "alert":
+                btnHtml =
+                    '<button id="modal-ok-btn" type="button" class="btn btn-secondary" data-dismiss="modal">OK</button>';
+                break;
+            case "confirm":
+                btnHtml =
+                    '<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+                    '<button id="modal-ok-btn" type="button" class="btn btn-primary" data-dismiss="modal">OK</button>';
+                break;
+        }
+        let modalBox = renderHtml(
+            '<div class="modal fade" id="tpz-modal" tabindex="-1" aria-labelledby="#tpz-modal-label" aria-hidden="true">' +
+                '<div class="modal-dialog modal-dialog-centered modal-sm">' +
+                '<div class="modal-content">' +
+                '<div class="modal-header">' +
+                '<h5 class="modal-title" id="tpz-modal-label">' +
+                title +
+                "</h5>" +
+                '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
+                '<span aria-hidden="true">&times;</span></button></div>' +
+                '<div class="modal-body">' +
+                body +
+                "</div>" +
+                '<div class="modal-footer">' +
+                btnHtml +
+                "</div></div></div></div>"
+        );
+        appendToPanel(modalBox);
+
+        let modal = $("#tpz-modal");
+        let okBtn = modal.find("#modal-ok-btn");
+        okBtn.on("click", () => {
             modal.modal("hide");
         });
         // destroy the modal on any dismiss
-        modal.on("hidden.bs.modal", function () {
-            removeConfirmModal();
+        modal.on("hidden.bs.modal", () => {
+            removeModal();
+            okCB();
         });
         $(modal).modal();
     }
 
-    function renderAlertModal(bodyText) {
-        let modal = renderHtml(
-            '<div class="modal fade" id="alert-modal" tabindex="-1" aria-labelledby="#alert-modal-label" aria-hidden="true">' +
-                '<div class="modal-dialog modal-dialog-centered modal-sm">' +
-                '<div class="modal-content">' +
-                '<div class="modal-header">' +
-                '<h5 class="modal-title" id="alert-modal-label">Warning!</h5>' +
-                '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
-                '<span aria-hidden="true">&times;</span></button></div>' +
-                '<div class="modal-body">' +
-                bodyText +
-                "</div>" +
-                '<div class="modal-footer">' +
-                '<button type="button" class="btn btn-secondary" data-dismiss="modal">OK</button>' +
-                "</div></div></div></div>"
-        );
-        appendToPanel(modal);
-    }
-
-    function removeAlertModal() {
-        let modal = getElementById("alert-modal");
-        modal.remove();
-    }
-
-    function renderConfirmModal(bodyText) {
-        let modal = renderHtml(
-            '<div class="modal fade" id="confirm-modal" tabindex="-1" aria-labelledby="#confirm-modal-label" aria-hidden="true">' +
-                '<div class="modal-dialog modal-dialog-centered modal-sm">' +
-                '<div class="modal-content"><div class="modal-header">' +
-                '<h5 class="modal-title" id="confirm-modal-label">Confirm</h5>' +
-                '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
-                '<span aria-hidden="true">&times;</span></button></div>' +
-                '<div class="modal-body">' +
-                bodyText +
-                "</div>" +
-                '<div class="modal-footer">' +
-                '<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
-                '<button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>' +
-                "</div></div></div></div>"
-        );
-        appendToPanel(modal);
-    }
-
-    function removeConfirmModal() {
-        let modal = getElementById("confirm-modal");
+    function removeModal() {
+        let modal = getElementById("tpz-modal");
         modal.remove();
     }
 

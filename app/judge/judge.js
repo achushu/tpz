@@ -577,8 +577,9 @@ class ScoreJudgeView extends JudgeView {
                     cfg.cb.onCompetitorChange();
                     break;
                 case "rescore":
-                    TPZ.alert("Please re-enter a score");
-                    this.scoringPanel.clear();
+                    TPZ.alert("Please re-enter a score", () => {
+                        this.scoringPanel.clear();
+                    });
                     break;
             }
         };
@@ -1162,7 +1163,7 @@ class ScoringPanel extends ViewObject {
         this.box.value = "";
         this.box.disabled = false;
         this.submit.disabled = false;
-        this.focus();
+        this.box.focus();
     }
 
     setScore(score) {
