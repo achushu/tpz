@@ -275,7 +275,7 @@ func submitNandu(w http.ResponseWriter, r *http.Request) {
 		ring.ParseNanduScores(nan.Judge, nan.Result)
 		ring.NanduResult = data.DetermineNandu(ring.NanduScores)
 		marks := data.SliceToNanduMarks(nan.Result)
-		out.Debugf("%s save nandu results %s", nan.Judge, marks)
+		out.Debugf("%s save nandu results %s\n", nan.Judge, marks)
 		if err := data.SaveNanduScore(nan.Routine, nan.Judge, marks); err != nil {
 			routes.RenderError(w, errors.NewInternalError(err))
 			out.Errorln("error saving nandu result:", err, "\n", nan)

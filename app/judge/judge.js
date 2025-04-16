@@ -1633,6 +1633,7 @@ class DeductionPanel extends ViewObject {
 
 // TODO: Allow user to press [z | x] to mark next skill
 class NanduPanel extends ViewObject {
+    lineMax = 4;
     id = {
         nanduPanel: "nandu-panel",
         nanduSheet: "nandu-sheet",
@@ -1670,6 +1671,46 @@ class NanduPanel extends ViewObject {
         this.sheet = sheet;
     }
 
+    newRow(section, row) {
+        let rowId = `s${section}-r${row}`;
+        let html = `<tr id=${rowId}>`;
+        for (let i = 0; i < this.lineMax; i++) {
+            let cellId = `${rowId}-${i}`;
+            html += `<td id="${cellId}"></td>`;
+        }
+        html += "</td>";
+        return TPZ.renderHtml(html);
+    }
+
+    addNanduComponent(section, row, cell, code, name) {
+        let cellId = `s${section}-r${row}-${cell}`;
+        let n = TPZ.getElementById(cellId);
+        n.classList.add("nandu-component");
+        n.innerText = code;
+        n.appendChild(TPZ.renderHtml(`<span class="nandu-mark"></span>`));
+
+        n.addEventListener("click", () => {
+            // Store completion success as a data value
+            let success = n.dataset.success;
+            if (success === undefined) {
+                success = true;
+            } else {
+                success = !(success === "true");
+            }
+            n.dataset.success = success;
+            if (success) {
+                n.classList.remove(this.class.failure);
+                n.classList.add(this.class.success);
+                n.querySelector(".nandu-mark").innerHTML = "&#x2705";
+            } else {
+                n.classList.add(this.class.failure);
+                n.classList.remove(this.class.success);
+                n.querySelector(".nandu-mark").innerHTML = "&#x274C";
+            }
+        });
+        return n;
+    }
+
     render(nandusheet) {
         this.panel.innerHTML =
             `<p>${this.txt.nanduToggle}</p><div id="${this.id.nanduSheet}"></div>` +
@@ -1677,12 +1718,15 @@ class NanduPanel extends ViewObject {
 
         for (let i in nandusheet) {
             // Create the table describing the form section
-            let sId = parseInt(i) + 1;
+            let sectionLabel = parseInt(i) + 1;
+            let rowCount = 0;
             let sectionTable = TPZ.renderHtml(
-                `<table class="table nandu" id="${sId}"><thead><tr><td class="nandu-code"/>` +
-                    `<td>S${sId}</td><td class="nandu-mark"/></tr></thead><tbody></tbody></table>`
+                `<table class="table nandu" id="s${sectionLabel}">` +
+                    `<caption>Section ${sectionLabel}</caption></table>`
             );
             TPZ.getElementById(this.id.nanduSheet).append(sectionTable);
+            let sectionBody = TPZ.renderHtml("<tbody></tbody>");
+            sectionTable.append(sectionBody);
 
             // Add the nandu for this section
             let combos = this.parseNanduString(nandusheet[i]);
@@ -1691,24 +1735,28 @@ class NanduPanel extends ViewObject {
                     return;
                 }
                 let combo = this.parseNanduCombo(val);
-                let nanduId = "n" + this.nanduCount;
-                this.nanduCount += 1;
-                let baseNandu = this.createNanduComponent(
-                    nanduId,
+                // start a new row
+                rowCount++;
+                let rowItemCount = 0;
+                let row = this.newRow(sectionLabel, rowCount);
+                sectionBody.append(row);
+                this.addNanduComponent(
+                    sectionLabel,
+                    rowCount,
+                    rowItemCount,
                     combo.base.code,
                     combo.base.name
                 );
-                sectionTable.appendChild(baseNandu);
-                // Add in any connections
-                for (let j in combo.connections) {
-                    nanduId = "n" + this.nanduCount;
-                    this.nanduCount += 1;
-                    let nanduConn = this.createNanduComponent(
-                        nanduId,
-                        combo.connections[j].code,
-                        combo.connections[j].name
+                rowItemCount++;
+                for (let n of combo.connections) {
+                    this.addNanduComponent(
+                        sectionLabel,
+                        rowCount,
+                        rowItemCount,
+                        n.code,
+                        n.name
                     );
-                    sectionTable.appendChild(nanduConn);
+                    rowItemCount++;
                 }
             });
         }
@@ -1784,7 +1832,7 @@ class NanduPanel extends ViewObject {
         "415A": { name: "double sidekick in flight", value: 0.2 },
         "423A": { name: "360 tornado land on side", value: 0.2 },
         "447C": { name: "kip-up", value: 0.4 },
-        "(A)": { name: "(connect difficult movement)", value: 0.1 },
+        "(A)": { name: "(connection)", value: 0.1 },
         "1A": { name: "horse stance", value: 0.1 },
         "2A": { name: "butterfly stance", value: 0.1 },
         "3A": { name: "180 to standing with knee raised", value: 0.1 },
@@ -1793,14 +1841,15 @@ class NanduPanel extends ViewObject {
         "7A": { name: "bow stance", value: 0.1 },
         "8A": { name: "throw and catch", value: 0.1 },
         "9A": { name: "land on takeoff foot", value: 0.1 },
-        "(B)": { name: "(connect difficult movement)", value: 0.15 },
+        "(B)": { name: "(connection)", value: 0.15 },
         "1B": { name: "horse stance", value: 0.15 },
         "2B": { name: "butterfly stance", value: 0.15 },
         "3B": { name: "stand with knee raised", value: 0.15 },
         "4B": { name: "front split", value: 0.15 },
         "5B": { name: "dragons dive", value: 0.15 },
         "8B": { name: "throw and catch", value: 0.15 },
-        "(C)": { name: "(connect difficult movement)", value: 0.2 },
+        "9B": { name: "land on takeoff foot", value: 0.15 },
+        "(C)": { name: "(connection)", value: 0.2 },
         "1C": { name: "horse stance", value: 0.2 },
         "2C": { name: "butterfly stance", value: 0.2 },
         "3C": { name: "stand with knee raised", value: 0.2 },
@@ -1815,33 +1864,6 @@ class NanduPanel extends ViewObject {
         "324B": { name: "360 lotus kick", value: 0.3 },
         "323C": { name: "540 tornado kick", value: 0.4 },
     };
-
-    createNanduComponent(id, code, name) {
-        let n = TPZ.renderHtml(
-            `<tr id="${id}" class="nandu-component"><th scope="row" class="nandu-code">${code}</th>` +
-                `<td class="nandu-name">${name}</td><td class="nandu-mark"></td></tr>`
-        );
-        n.addEventListener("click", () => {
-            // Store completion success as a data value
-            let success = n.dataset.success;
-            if (success === undefined) {
-                success = true;
-            } else {
-                success = !(success === "true");
-            }
-            n.dataset.success = success;
-            if (success) {
-                n.classList.remove(this.class.failure);
-                n.classList.add(this.class.success);
-                n.querySelector(".nandu-mark").innerHTML = "&#x2705";
-            } else {
-                n.classList.add(this.class.failure);
-                n.classList.remove(this.class.success);
-                n.querySelector(".nandu-mark").innerHTML = "&#x274C";
-            }
-        });
-        return n;
-    }
 
     parseNanduString(s) {
         return s.split(",");
