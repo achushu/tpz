@@ -147,6 +147,9 @@ var TPZJudge = (() => {
         let tag = TPZ.getAuthId();
         if (tag !== undefined) {
             cfg.clientId = tag;
+        } else {
+            // generate a temporary ID
+            cfg.clientId = Math.random().toString().substring(2, 10);
         }
     }
 
@@ -421,7 +424,7 @@ class HeadJudgeView extends JudgeView {
         super(cfg, cfg.txt.titleHeadJudge, "head");
         this.eventControl = new EventControlPanel(this.cfg, this.cache);
         this.eventTimer = new EventTimer(this.cfg, this.cache);
-        this.scoringPanel = new ScoringPanel(this.cfg, this.cache);
+        this.scoringBox = new ScoringPanel(this.cfg, this.cache, true);
         this.adjustments = new AdjustmentPanel(this.cfg, this.cache);
         this.deductionResult = new DeductionResultPanel(this.cfg);
         this.nanduResult = new NanduResultPanel(this.cfg);
@@ -439,8 +442,8 @@ class HeadJudgeView extends JudgeView {
                 for (let k of submitted) {
                     let score = data.scores[k].score;
                     if (k == this.cfg.clientId) {
-                        this.scoringPanel.setScore(score);
-                        this.scoringPanel.disable();
+                        this.scoringBox.setScore(score);
+                        this.scoringBox.disable();
                     }
                 }
             }
@@ -461,7 +464,14 @@ class HeadJudgeView extends JudgeView {
         );
         this.eventControl.add();
         this.eventTimer.add();
-        this.scoringPanel.add();
+
+        this.headScorePanel = TPZ.renderHtml(
+            `<div id="head-score-panel"></div>`
+        );
+        TPZ.appendToPanel(this.headScorePanel);
+        this.scoringBox.add(this.headScorePanel);
+        this.scoreList.add(this.headScorePanel);
+        this.adjustments.add(this.headScorePanel);
 
         this.panel = TPZ.renderHtml(`<div class="panel"></div>`);
         TPZ.appendToPanel(this.panel);
@@ -478,7 +488,7 @@ class HeadJudgeView extends JudgeView {
                     this.scoreManager.update();
                     break;
                 case "rescore":
-                    this.scoringPanel.clear();
+                    this.scoringBox.clear();
                     this.scoreManager.update();
                     break;
                 case "adjust-score":
@@ -511,7 +521,7 @@ class HeadJudgeView extends JudgeView {
         // get the current event / competitor
         // or select the first event
         this.updateEventInfo(() => {
-            this.scoringPanel.render();
+            this.scoringBox.render();
             this.eventControl.render();
         });
     }
@@ -520,10 +530,9 @@ class HeadJudgeView extends JudgeView {
         this.panel.innerHTML = "";
 
         this.eventTimer.reset();
-        this.scoringPanel.render();
+        this.scoringBox.render();
         // get previously saved data (if any)
         this.scoreManager.update();
-        this.scoreList.add(this.panel);
         switch (this.cache.ruleset.name) {
             case "IWUF":
                 this.deductionResult.add(this.panel);
@@ -533,7 +542,6 @@ class HeadJudgeView extends JudgeView {
                 this.deductionResult.add(this.panel);
                 break;
         }
-        this.adjustments.add(this.panel);
         this.scoreDisplay.add(this.panel);
         this.pub.add(this.panel);
     }
@@ -584,10 +592,13 @@ class ScoreJudgeView extends JudgeView {
             }
         };
         this.connect();
+
+        this.panel = TPZ.renderHtml(`<div class="panel"></div>`);
+        TPZ.appendToPanel(this.panel);
+        this.scoringPanel.add(this.panel);
     }
 
     render() {
-        this.scoringPanel.add();
         TPZ.addScratchpad(this.cache.scratch);
         this.cfg.cb.onCompetitorChange = () => {
             this.update();
@@ -721,10 +732,10 @@ class ScoreList extends ViewObject {
 
     add(target) {
         let p = TPZ.renderHtml(
-            `<div>${this.txt.scoresLabel} (<span id="${this.id.ct}">0</span>):` +
-                `<ul id="${this.id.list}"></ul>` +
-                `<div>${this.txt.spread}: <span id="${this.id.spread}"></span>` +
-                `<button id="${this.id.btn}" class="btn btn-secondary">${this.txt.rescoreBtn}</button></div></div>`
+            `<div id="scores-submitted">${this.txt.spread}: <span id="${this.id.spread}"></span>` +
+                `<button id="${this.id.btn}" class="btn btn-secondary">${this.txt.rescoreBtn}</button>` +
+                `<div>${this.txt.scoresLabel} (<span id="${this.id.ct}">0</span>):` +
+                `<ul id="${this.id.list}"></ul></div></div>`
         );
         TPZ.appendElements(target, p);
         this.counter = TPZ.getElementById(this.id.ct);
@@ -818,10 +829,10 @@ class AdjustmentPanel extends ViewObject {
     add(target) {
         let adjPanel = TPZ.renderHtml(`
         <div id="adjustment-panel">
-            ${this.txt.adjAdd}: <span id="adjust-minus">&nbsp;-&nbsp;</span><input id="${this.id.adj}" type="text" class="score-input"/>
+            ${this.txt.adjAdd}:<div><span id="adjust-minus">&nbsp;-&nbsp;</span><input id="${this.id.adj}" type="text" class="score-input"/>
             ${this.txt.adjReason}: <input id="${this.id.reason}" type="text" />
             <button id="${this.id.btn}" class="btn btn-secondary">${this.txt.add}</button></div>
-            <p id="${this.id.listLabel}"></p><ul id="${this.id.list}"></ul>`);
+            <p id="${this.id.listLabel}"></p><ul id="${this.id.list}"></ul></div>`);
         target.appendChild(adjPanel);
         this.adj = TPZ.getElementById(this.id.adj);
         this.reason = TPZ.getElementById(this.id.reason);
@@ -1102,13 +1113,15 @@ class ScoringPanel extends ViewObject {
         scoreSubmit: "score-submit",
     };
 
-    constructor(cfg, state) {
+    constructor(cfg, state, compact) {
         super(cfg);
         this.state = state;
+        this.compact = compact;
     }
 
-    add() {
-        TPZ.appendToPanel(
+    add(target) {
+        TPZ.appendElements(
+            target,
             TPZ.renderHtml(
                 `<div id="${this.id.scorePanel}" class="panel"></div>`
             )
@@ -1938,7 +1951,7 @@ class DeductionResultPanel extends ViewObject {
         let deductionsPanel = TPZ.renderHtml(
             'Deductions: <div id="ded-time"></div>' +
                 '<span id="deduction-results"></span>' +
-                '<table id="deduction-table"><caption>Timeline</caption></table>'
+                '<table id="deduction-table"><caption>Codes</caption></table>'
         );
         TPZ.appendElements(target, deductionsPanel);
         DeductionTimeline.init("ded-time");

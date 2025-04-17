@@ -73,10 +73,6 @@
   font-size: 1.5em;
 }
 
-#adjustment-panel {
-  margin-top: 1rem;
-}
-
 #adjust-minus {
   font-size: 2em;
   font-weight: bold;
@@ -93,6 +89,15 @@
   font-weight: bold;
 }
 
+#head-score-panel {
+  display: flex;
+  padding: 10px 0;
+}
+
+#head-score-panel > #score-panel {
+  padding: 0;
+}
+
 #score-hint {
   font-weight: bold;
 }
@@ -100,6 +105,12 @@
 #score-submit {
   margin-left: 1em;
   height: 4em;
+}
+
+#scores-submitted {
+  display: block;
+  margin-left: 30px;
+  width: 200px;
 }
 
 #rescore-btn {
@@ -113,6 +124,7 @@
 
 #deduction-table > caption {
   caption-side: top;
+  padding-top: 0;
 }
 
 #deduction-table > tr > td {
@@ -179,6 +191,10 @@ tbody tr {
 
 #ded-cheatsheet tr:nth-child(even) {
   background-color: lightgray;
+}
+
+#nandu-label {
+  margin: 0.5em 0 0.5em 0;
 }
 
 #nandu-table th, #nandu-table td {
