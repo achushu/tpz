@@ -78,6 +78,10 @@
   font-weight: bold;
 }
 
+#adjustment-reason {
+  width: 150px;
+}
+
 .score-input {
   font-size: 2em;
   width: 2.2em;
