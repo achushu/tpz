@@ -188,15 +188,15 @@ var TPZ = (function () {
         renderModal("Warning!", text, "alert", ok);
     }
 
-    function confirm(text, ok) {
-        renderModal("Confirm", text, "confirm", ok);
+    function confirm(text, ok, cancel) {
+        renderModal("Confirm", text, "confirm", ok, cancel);
     }
 
-    function customConfirm(title, text, ok) {
-        renderModal(title, text, "confirm", ok);
+    function customConfirm(title, text, ok, cancel) {
+        renderModal(title, text, "confirm", ok, cancel);
     }
 
-    function renderModal(title, body, style, okCB) {
+    function renderModal(title, body, style, okCB, cancelCB) {
         let btnHtml = "";
         switch (style) {
             case "alert":
@@ -205,7 +205,7 @@ var TPZ = (function () {
                 break;
             case "confirm":
                 btnHtml =
-                    '<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+                    '<button id="modal-cancel-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
                     '<button id="modal-ok-btn" type="button" class="btn btn-primary" data-dismiss="modal">OK</button>';
                 break;
         }
@@ -234,6 +234,13 @@ var TPZ = (function () {
             modal.modal("hide");
             okCB();
         });
+        let cancelBtn = modal.find("#modal-cancel-btn");
+        if (cancelBtn.length > 0 && cancelBtn !== undefined) {
+            cancelBtn.on("click", () => {
+                modal.modal("hide");
+                cancelCB();
+            });
+        }
         // destroy the modal on any dismiss
         modal.on("hidden.bs.modal", () => {
             removeModal();

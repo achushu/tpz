@@ -432,12 +432,15 @@ class HeadJudgeView extends JudgeView {
         this.scoreDisplay = new ScoreDisplay(this.cfg, this.cache);
         this.scoreManager = new ScoreManager(this.cfg);
 
+        this.cache.scoresExpected = 0;
+        this.cache.scoresSubmitted = 0;
         this.eventTimer.register(this.deductionResult.handleTimer);
         this.scoreManager.registerHandler((data) => {
             this.scoreList.onUpdate(data);
             this.scoreDisplay.onUpdate(data);
             // check for own submission
             let submitted = Object.keys(data.scores);
+            this.cache.scoresSubmitted = submitted.length;
             if (submitted.length > 0) {
                 for (let k of submitted) {
                     let score = data.scores[k].score;
@@ -492,6 +495,7 @@ class HeadJudgeView extends JudgeView {
                     this.scoreManager.update();
                     break;
                 case "adjust-score":
+                    this.cache.scoresSubmitted++;
                     this.scoreManager.update();
                     break;
                 case "submit-deductions":
@@ -547,6 +551,20 @@ class HeadJudgeView extends JudgeView {
     }
 
     pubWarn() {
+        if (this.cache.scoresSubmitted < this.cache.scoresExpected) {
+            TPZ.customConfirm(
+                "Missing scores",
+                `<div>Only <b>${this.cache.scoresSubmitted}</b> scores submitted</div>
+                <div>Expected <b>${this.cache.scoresExpected}</b> scores</div>
+                <div>Continue?</div>`,
+                () => {
+                    return true;
+                },
+                () => {
+                    return false;
+                }
+            );
+        }
         if (this.adjustments.hasUnsubmitted()) {
             TPZ.alert(this.txt.adjWarn);
             return true;
@@ -556,6 +574,7 @@ class HeadJudgeView extends JudgeView {
 
     publish() {
         let data = { ringID: parseInt(this.cfg.ringId) };
+        this.cache.scoresExpected = this.cache.scoresSubmitted;
         TPZ.httpPostJson(this.cfg.api.publishScore, data, () => {
             this.setPublished();
             // automatically move onto the next competitor
