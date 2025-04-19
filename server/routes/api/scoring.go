@@ -22,6 +22,7 @@ func init() {
 	submitScoreRoute := routes.JudgeLogin(http.HandlerFunc(submitScore))
 	deleteScoreRoute := routes.JudgeLogin(http.HandlerFunc(deleteScore))
 	submitAdjustmentRoute := routes.JudgeLogin(http.HandlerFunc(submitAdjustment))
+	markBlankDeductionRoute := routes.JudgeLogin(http.HandlerFunc(markBlankDeduction))
 	submitDeductionRoute := routes.JudgeLogin(http.HandlerFunc(submitDeduction))
 	submitNanduRoute := routes.JudgeLogin(http.HandlerFunc(submitNandu))
 	rescoreRoute := routes.JudgeLogin(http.HandlerFunc(rescore))
@@ -34,6 +35,7 @@ func init() {
 		routes.New("/submit-score", submitScoreRoute),
 		routes.New("/delete-score/{id:\\d+}", deleteScoreRoute),
 		routes.New("/submit-adjustment", submitAdjustmentRoute),
+		routes.New("/mark-blank-deduction", markBlankDeductionRoute),
 		routes.New("/submit-deduction", submitDeductionRoute),
 		routes.New("/submit-nandu", submitNanduRoute),
 		routes.New("/rescore", rescoreRoute),
@@ -189,6 +191,44 @@ type deduction struct {
 	JudgeID   string `json:"judgeID"`
 	Code      string `json:"code"`
 	RingID    int    `json:"ringID"`
+}
+
+func markBlankDeduction(w http.ResponseWriter, r *http.Request) {
+	var (
+		ring *data.RingState
+		ded  deduction
+		msg  []byte
+		err  error
+	)
+	out.Println("new deduction")
+
+	if !decodeBodyOrError(&ded, w, r) {
+		out.Println("decode error")
+		return
+	}
+	defer r.Body.Close()
+
+	if ring = getRingOrError(ded.RingID, w); ring == nil {
+		return
+	}
+
+	dm := data.NewDeductionMark(ded.RoutineID, ded.JudgeID, "", int64(ded.Timestamp))
+	out.Printf("%s new deduction %d\n", dm.Judge, dm.ID)
+	if err = data.SaveDeductionMark(dm); err != nil {
+		routes.RenderError(w, errors.NewInternalError(err))
+		out.Errorln("error saving deduction:", err, "\n", ded)
+		return
+	}
+	ring.SetDeduction(dm)
+	msg, err = sockets.ConstructMessage(sockets.SubmitDeductions, nil)
+	if err != nil {
+		log.WsError("could not construct submit-deduction notification", err)
+	}
+	err = sockets.NotifyHeadJudge(msg, ded.RingID)
+	if err != nil {
+		log.WsError("could not notify head judge", err)
+	}
+	emptyResponse(w)
 }
 
 func submitDeduction(w http.ResponseWriter, r *http.Request) {

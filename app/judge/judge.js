@@ -71,10 +71,12 @@ var TPZJudge = (() => {
                 return `/api/${cfg.ringId}/get-scores`;
             },
             listRings: "/api/get-rings",
+            markDeduction: "/api/mark-blank-deduction",
             publishScore: "/api/finalize-score",
             rescore: "/api/rescore",
             settings: "/api/get-settings",
             submitAdj: "/api/submit-adjustment",
+            submitDeduction: "/api/submit-deduction",
             submitScore: "/api/submit-score",
         },
         ws: "/judge/server",
@@ -1335,6 +1337,7 @@ class DeductionPanel extends ViewObject {
 
     constructor(cfg, state) {
         super(cfg);
+        this.cfg = cfg;
         this.state = state;
     }
 
@@ -1397,8 +1400,8 @@ class DeductionPanel extends ViewObject {
             } else if ("0" <= e.key && e.key <= "9" && !this.typingMode) {
                 // if user starts typing a number, jump to first unfilled box
                 this.typingMode = true;
-                let next = this.firstEmpty();
-                next.focus();
+                //let next = this.firstEmpty();
+                //next.focus();
             }
         });
         document.body.addEventListener("keyup", (e) => {
@@ -1468,6 +1471,14 @@ class DeductionPanel extends ViewObject {
             dbox.classList.remove("deduction-focus");
         });
         this.deductionCount += 1;
+        // submit the blank deduction
+        let ded = {
+            timestamp: parseInt(timestamp),
+            judgeID: this.cfg.clientId,
+            routineID: this.state.routineId,
+            ringID: parseInt(this.cfg.ringId),
+        };
+        TPZ.httpSendJson(this.cfg.api.markDeduction, "POST", ded);
     }
 
     validate(code) {
@@ -1516,21 +1527,21 @@ class DeductionPanel extends ViewObject {
             alert(`Deduction #${label}: ${code} is not a valid code`);
             return;
         }
-        let timestamp = parseInt(deductElement.dataset.ts);
         let ded = {
-            timestamp: timestamp,
+            timestamp: parseInt(deductElement.dataset.ts),
             code: code,
             judgeID: this.cfg.clientId,
             routineID: this.state.routineId,
             ringID: parseInt(this.cfg.ringId),
         };
-        let method = "POST";
+        //let method = "POST";
+        let method = "UPDATE"; // all submissions are now "updates"
         if (deductElement.dataset.submitted == "true") {
             // this deduction has been submitted before
             // send an update
             method = "UPDATE";
         }
-        TPZ.httpSendJson("/api/submit-deduction", method, ded, () => {
+        TPZ.httpSendJson(this.cfg.api.submitDeduction, method, ded, () => {
             deductElement.querySelector(".deduction-submitted").innerHTML =
                 "&#x2705;";
             deductElement.dataset.changed = false;
@@ -1542,20 +1553,13 @@ class DeductionPanel extends ViewObject {
         let dbox = TPZ.getElementById(deductId);
         let label = dbox.querySelector(".deduction-label").textContent;
         if (confirm(`Remove deduction #${label}?`)) {
-            if (dbox.dataset.submitted == "true") {
-                let ded = {
-                    timestamp: parseInt(dbox.dataset.ts),
-                    judgeID: this.cfg.clientId,
-                    routineID: this.state.routineId,
-                    ringID: parseInt(this.cfg.ringId),
-                };
-                TPZ.httpSendJson(
-                    "/api/submit-deduction",
-                    "DELETE",
-                    ded,
-                    () => {}
-                );
-            }
+            let ded = {
+                timestamp: parseInt(dbox.dataset.ts),
+                judgeID: this.cfg.clientId,
+                routineID: this.state.routineId,
+                ringID: parseInt(this.cfg.ringId),
+            };
+            TPZ.httpSendJson("/api/submit-deduction", "DELETE", ded);
             dbox.remove();
         }
     }
@@ -2023,8 +2027,12 @@ class DeductionResultPanel extends ViewObject {
             for (let i in deductions) {
                 let d = deductions[i];
                 times.push(d.timestamp);
+                let code = d.code;
+                if (code === "") {
+                    code = "&nbsp;&nbsp;";
+                }
                 codes.push(d.code);
-                let cell = TPZ.renderHtml("<td>" + d.code + "</td>");
+                let cell = TPZ.renderHtml("<td>" + code + "</td>");
                 dRow.appendChild(cell);
                 if (d.applied) {
                     cell.classList.add("applied");

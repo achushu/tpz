@@ -232,13 +232,17 @@ var TPZ = (function () {
         let okBtn = modal.find("#modal-ok-btn");
         okBtn.on("click", () => {
             modal.modal("hide");
-            okCB();
+            if (okCB) {
+                okCB();
+            }
         });
         let cancelBtn = modal.find("#modal-cancel-btn");
         if (cancelBtn.length > 0 && cancelBtn !== undefined) {
             cancelBtn.on("click", () => {
                 modal.modal("hide");
-                cancelCB();
+                if (cancelCB) {
+                    cancelCB();
+                }
             });
         }
         // destroy the modal on any dismiss
@@ -258,20 +262,24 @@ var TPZ = (function () {
     function httpGet(url, onReady, async = true) {
         var r = new XMLHttpRequest();
         r.open("GET", url, async);
-        r.onreadystatechange = function () {
-            if (r.readyState != 4 || r.status != 200) return;
-            onReady(r.responseText);
-        };
+        if (onReady) {
+            r.onreadystatechange = function () {
+                if (r.readyState != 4 || r.status != 200) return;
+                onReady(r.responseText);
+            };
+        }
         r.send();
     }
 
     function httpGetJson(url, onReady, async = true) {
         var r = new XMLHttpRequest();
         r.open("GET", url, async);
-        r.onreadystatechange = function () {
-            if (r.readyState != 4 || r.status != 200) return;
-            onReady(JSON.parse(r.responseText));
-        };
+        if (onReady) {
+            r.onreadystatechange = function () {
+                if (r.readyState != 4 || r.status != 200) return;
+                onReady(JSON.parse(r.responseText));
+            };
+        }
         r.send();
     }
 
