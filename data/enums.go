@@ -502,6 +502,7 @@ var (
 		"4B":  {"4B", 0.15, "front split"},
 		"5B":  {"5B", 0.15, "dragons dive"},
 		"8B":  {"8B", 0.15, "throw and catch"},
+		"9B":  {"9B", 0.15, "land on takeoff foot"},
 		"(C)": {"(C)", 0.2, ""},
 		"1C":  {"1C", 0.2, "horse stance"},
 		"2C":  {"2C", 0.2, "butterfly stance"},

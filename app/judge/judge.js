@@ -1364,25 +1364,32 @@ class DeductionPanel extends ViewObject {
             `<div><button id="${this.id.deductBtn}" class="btn btn-info">${this.txt.deductAdd}</button></div>` +
             `<div id="ded-cheatsheet"><table>` +
             `<thead><tr><th>Deduction Cheatsheet (2005)</th></tr></thead><tbody>` +
-            `<tr><td><b>14</b></td><td>cross-leg balance (扣腿平衡)</td></tr>` +
-            `<tr><td><b>15</b></td><td>low balance w/ leg forward (前举腿低势平衡)</td></tr>` +
-            `<tr><td><b>21</b></td><td>back sweep (后扫踢)</td></tr>` +
-            `<tr><td><b>22</b></td><td>front split (跌叉)</td></tr>` +
-            `<tr><td><b>30</b></td><td>jump kick [flying, tornado, lotus, outside] (腾空飞脚、旋风脚、腾空摆莲、腾空外摆腿)</td></tr>` +
-            `<tr><td><b>33</b></td><td>butterfly kick (旋子)</td></tr>` +
-            `<tr><td><b>50</b></td><td>bow stance (弓步)</td></tr>` +
-            `<tr><td><b>51</b></td><td>horse stance (马步)</td></tr>` +
-            `<tr><td><b>52</b></td><td>empty [cat] stance (虚步)</td></tr>` +
-            `<tr><td><b>53</b></td><td>crouch [drop] stance (仆步)</td></tr>` +
-            `<tr><td><b>55</b></td><td>butterfly stance (蝶步)</td></tr>` +
-            `<tr><td><b>70</b></td><td>body sway / loss of balance (上体晃动、脚移动或跳动)</td></tr>` +
-            `<tr><td><b>71</b></td><td>extra support (附加支撑)</td></tr>` +
-            `<tr><td><b>72</b></td><td>body fall (倒地)</td></tr>` +
-            `<tr><td><b>73</b></td><td>weapon touches ground, handle falls, hits body, deforms (器械触地、脱把、碰身、变形)</td></tr>` +
-            `<tr><td><b>76</b></td><td>weapon ornament dropped or tangled with body / loose buttons, torn costume, shoes off (刀彩、剑穗、枪缨、服饰、头饰掉地；刀彩、剑穗、软器械缠手 (缠身)；服装开纽或撕裂；鞋脱落)</td></tr>` +
-            `<tr><td><b>77</b></td><td>longtime balance less than two seconds (持久平衡静止时间不足 2 秒)</td></tr>` +
-            `<tr><td><b>78</b></td><td>body touches outside carpet (身体任何一部分触及线外地面)</td></tr>` +
-            `<tr><td><b>79</b></td><td>movement forgotten (遗忘)</td></tr>` +
+            `<tr><td><b>14</b></td><td>cross-leg balance</td></tr>` +
+            `<tr><td><b>15</b></td><td>low balance w/ leg forward</td></tr>` +
+            `<tr><td><b>16</b></td><td>low balance w/ leg behind</td></tr>` +
+            `<tr><td><b>20</b></td><td>front sweep</td></tr>` +
+            `<tr><td><b>21</b></td><td>back sweep</td></tr>` +
+            `<tr><td><b>22</b></td><td>front split</td></tr>` +
+            `<tr><td><b>23</b></td><td>snap kick / side kick</td></tr>` +
+            `<tr><td><b>30</b></td><td>jump kick [flying, tornado, lotus, outside]</td></tr>` +
+            `<tr><td><b>32</b></td><td>aerial cartwheel</td></tr>` +
+            `<tr><td><b>33</b></td><td>butterfly kick</td></tr>` +
+            `<tr><td><b>34</b></td><td>jump snap kick</td></tr>` +
+            //`<tr><td><b>50</b></td><td>bow stance (弓步)</td></tr>` +
+            //`<tr><td><b>51</b></td><td>horse stance (马步)</td></tr>` +
+            //`<tr><td><b>52</b></td><td>empty [cat] stance (虚步)</td></tr>` +
+            //`<tr><td><b>53</b></td><td>crouch [drop] stance (仆步)</td></tr>` +
+            //`<tr><td><b>55</b></td><td>butterfly stance (蝶步)</td></tr>` +
+            `<tr><td><b>62</b></td><td>sword wrapping</td></tr>` +
+            `<tr><td><b>63</b></td><td>spear parry</td></tr>` +
+            `<tr><td><b>70</b></td><td>body sway / loss of balance</td></tr>` +
+            `<tr><td><b>71</b></td><td>extra support</td></tr>` +
+            `<tr><td><b>72</b></td><td>body fall</td></tr>` +
+            `<tr><td><b>73</b></td><td>weapon touches ground, handle falls, hits body, deforms</td></tr>` +
+            `<tr><td><b>76</b></td><td>weapon ornament dropped or tangled, loose buttons, torn costume, shoes off</td></tr>` +
+            `<tr><td><b>77</b></td><td>longtime balance less than two seconds</td></tr>` +
+            `<tr><td><b>78</b></td><td>body touches outside carpet</td></tr>` +
+            `<tr><td><b>79</b></td><td>movement forgotten</td></tr>` +
             `</tbody></table></div>`;
 
         this.deductionCount = 0;
@@ -1608,7 +1615,7 @@ class DeductionPanel extends ViewObject {
         31: { name: "jump front straight kick (腾空正踢腿)", value: 0.1 },
         32: { name: "aerial cartwheel [360] (侧空翻 [360])", value: 0.1 },
         33: { name: "butterfly kick (旋子)", value: 0.1 },
-        34: { name: "jump front snap kick (腾空箭弹)", value: 0.1 },
+        34: { name: "jump snap kick (腾空箭弹)", value: 0.1 },
         40: { name: "tornado 360 fall (腾空盘腿 360 度侧扑)", value: 0.1 },
         41: { name: "kip-up (鲤鱼打挺直立)", value: 0.1 },
         42: { name: "double flying side kick (腾空双侧踹)", value: 0.1 },

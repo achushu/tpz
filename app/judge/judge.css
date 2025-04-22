@@ -184,9 +184,9 @@ tbody tr {
 
 #ded-cheatsheet tr {
   display: flex;
-  width: 500px;
+  width: 350px;
   height: 1.8rem;
-  overflow: hidden;
+  overflow: auto;
 }
 
 #ded-cheatsheet tr:nth-child(odd) {

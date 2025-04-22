@@ -200,10 +200,8 @@ func markBlankDeduction(w http.ResponseWriter, r *http.Request) {
 		msg  []byte
 		err  error
 	)
-	out.Println("new deduction")
 
 	if !decodeBodyOrError(&ded, w, r) {
-		out.Println("decode error")
 		return
 	}
 	defer r.Body.Close()
