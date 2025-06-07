@@ -95,7 +95,8 @@ func AdjustedAverage(scores []*Score) float64 {
 			max = s
 		}
 	}
-	if count < 4 {
+	// Use all scores if < 5 judges
+	if count <= 4 {
 		return types.RoundFloat(sum/float64(count), 0.001)
 	} else {
 		return types.RoundFloat((sum-min-max)/float64(count-2), 0.001)
