@@ -160,14 +160,11 @@ var TPZJudge = (() => {
         TPZ.httpGetJson(cfg.api.settings, (settings) => {
             let rtt = performance.now() - start;
             setPing(rtt);
-            if (cfg.time.offset == 0) {
-                // determine time difference between client and server clocks
-                let now = Date.now();
-                let serverTime = parseInt(settings.timestamp);
-                serverTime -= rtt / 2;
-                TPZ.setTimeOffset(serverTime - now);
-                cfg.time.offset = serverTime - now;
-            }
+            // determine time difference between client and server clocks
+            let now = Date.now();
+            let serverTime = parseInt(settings.timestamp);
+            serverTime -= rtt / 2;
+            TPZ.setTimeOffset(serverTime - now);
             settings.poll === "true"
                 ? (cfg.poll.enabled = true)
                 : (cfg.poll.enabled = false);
