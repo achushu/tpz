@@ -11,10 +11,12 @@ import (
 )
 
 var inputFiles = []string{
-	"input/uwg-2024-ring1-AM.txt",
-	"input/uwg-2024-ring2-AM.txt",
-	"input/uwg-2024-ring1-PM.txt",
-	"input/uwg-2024-ring2-PM.txt",
+	"input/collegiates-2025_ring1-AM.txt",
+	"input/collegiates-2025_ring1-PM.txt",
+	"input/collegiates-2025_ring2-AM.txt",
+	"input/collegiates-2025_ring2-PM.txt",
+	"input/collegiates-2025_ring3-AM.txt",
+	"input/collegiates-2025_ring3-PM.txt",
 }
 
 const (
@@ -375,9 +377,10 @@ func parseEvent(eventName string) EventDetails {
 		styleEndIdx-- // "Comp" occurs before gender
 	}
 
-	gender := data.ToGender(tokens[len(tokens)-1])
+	genderIdx := len(tokens) - 1
+	gender := data.ToGender(tokens[genderIdx])
 
-	styleName := strings.Join(tokens[idx:2], " ")
+	styleName := strings.Join(tokens[idx:genderIdx], " ")
 
 	return EventDetails{
 		ID: eventID,
