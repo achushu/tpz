@@ -27,7 +27,7 @@ func Connect(cfg *Config) error {
 	}
 
 	url := fmt.Sprintf(
-		"postgres://%s:%s@%s/%s",
+		"postgres://%s:%s@%s/%s?sslmode=disable",
 		cfg.Username,
 		cfg.Password,
 		cfg.Host,
