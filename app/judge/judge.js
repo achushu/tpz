@@ -294,7 +294,7 @@ class JudgeView {
         ruleset: {
             name: "",
             maxScore: 10,
-            limitHundredths: true,
+            limitHundredths: false,
         },
         scratch: "",
         timerInterval: 0,
