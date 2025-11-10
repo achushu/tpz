@@ -421,6 +421,15 @@ var (
 		Style:      Changquan,
 		Experience: Advanced,
 	}
+	IWUFTJBHF = &Event{
+		ID:         3,
+		Ring:       2,
+		Name:       "Taiji BH F (IWUF)",
+		Order:      0,
+		Ruleset:    IWUF,
+		Style:      Taijiquan,
+		Experience: Advanced,
+	}
 	IWUFABNQM = &Event{
 		ID:         4,
 		Ring:       2,
@@ -451,7 +460,7 @@ var (
 	allEvents = []*Event{
 		AdvCQF,
 		BegCQM,
-		IWUFCQF,
+		IWUFTJBHF,
 		IWUFABNQM,
 	}
 	routines = []*Routine{
@@ -484,7 +493,7 @@ var (
 		// Changquan F IWUF
 		{
 			ID:         5,
-			Event:      IWUFCQF.ID,
+			Event:      IWUFTJBHF.ID,
 			Competitor: Alice.ID,
 			Order:      1,
 		},
@@ -499,12 +508,17 @@ var (
 
 	nanduSheets = []*Nandusheet{
 		{
-			ID:       1,
-			Routine:  5,
-			Segment1: "312A+6A,324B+1B,312A+335A(B),323A+1A",
-			Segment2: "324A+1A",
-			Segment3: "",
-			Segment4: "333A",
+			ID:      1,
+			Routine: 5,
+			// 312B+8,312A+324B+5;312A+3,323A+3;143B;
+			Segment1: "312B+8,312A+324B+5",
+			Segment2: "312A+3,323A+3",
+			Segment3: "143B",
+			Segment4: "",
+			// Segment1: "312A+6A,324B+1B,312A+335A(B),323A+1A",
+			// Segment2: "324A+1A",
+			// Segment3: "",
+			// Segment4: "333A",
 		},
 	}
 	scores       = make([]*Score, 0)
