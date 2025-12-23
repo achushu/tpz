@@ -15,7 +15,13 @@ var inputFiles = []string{
 	//	"input/pwc-2025-green.csv",
 	//	"input/pwc-2025-iwuf-blue.csv",
 	//	"input/pwc-2025-iwuf-green.csv",
-	"input/uwg-2025-ring1-AM.txt",
+	//	"input/uwg-2025-ring1-AM.txt",
+	//	"input/uwg-2025-ring1-PM.txt",
+	//	"input/uwg-2025-ring2-AM.txt",
+	//	"input/uwg-2025-ring2-PM.txt",
+	"input/pwc-2025-winter-friday.csv",
+	"input/pwc-2025-winter-saturday.csv",
+	"input/pwc-2025-winter-sunday.csv",
 }
 
 const (
@@ -91,7 +97,7 @@ func styleMap(styleName string) int {
 }
 
 func main() error {
-	fileType := UWG
+	fileType := PWC
 	var fmtFn func([]string) error
 
 	// remove previous output

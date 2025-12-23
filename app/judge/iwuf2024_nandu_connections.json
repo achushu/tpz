@@ -1,0 +1,614 @@
+{
+   "changquan": {
+       "244A+6": {
+            "en": "Front Sweep 540° + Cross-Legged Sitting",
+            "zh": "前扫腿 540°+坐盘",
+            "grade": "A",
+            "value": 0.1
+        },
+        "312A+6": {
+            "en": "Jumping Front Slap Kick + Cross-Legged Sitting",
+            "zh": "腾空飞脚+坐盘",
+            "grade": "A",
+            "value": 0.1
+        },
+        "312A+323A": {
+            "en": "Jumping Front Slap Kick + (within 2 steps) Tornado Kick 360°",
+            "zh": "腾空飞脚+（2步内）旋风脚 360°",
+            "grade": "A",
+            "value": 0.1
+        },
+        "312A+324A": {
+            "en": "Jumping Front Slap Kick + (within 2 steps) Jumping Lotus Kick 360°",
+            "zh": "腾空飞脚+（2步内）腾空摆莲 360°",
+            "grade": "A",
+            "value": 0.1
+        },
+        "312A+353B": {
+            "en": "Jumping Front Slap Kick + (within 4 steps) Butterfly Twist 360°",
+            "zh": "腾空飞脚+（4步内）旋子转体 360°",
+            "grade": "A",
+            "value": 0.1
+        },
+        "323A+1": {
+            "en": "Tornado Kick 360° + Horse Stance",
+            "zh": "旋风脚 360°+马步",
+            "grade": "A",
+            "value": 0.1
+        },
+        "323A+4": {
+            "en": "Tornado Kick 360° + Falling Front Split",
+            "zh": "旋风脚 360°+跌竖叉",
+            "grade": "A",
+            "value": 0.1
+        },
+        "323A+6": {
+            "en": "Tornado Kick 360° + Cross-Legged Sitting",
+            "zh": "旋风脚 360°+坐盘",
+            "grade": "A",
+            "value": 0.1
+        },
+        "323A+324A": {
+            "en": "Tornado Kick 360° + Jumping Lotus Kick 360°",
+            "zh": "旋风脚 360°+腾空摆莲 360°",
+            "grade": "A",
+            "value": 0.1
+        },
+		"323A+353B": {
+            "en": "Tornado Kick 360° + (within 4 steps) Butterfly Twist 360°",
+            "zh": "旋风脚360°+（4步内）旋子转体360°",
+            "grade": "A",
+            "value": 0.1
+		},
+        "324A+1": {
+            "en": "Jumping Lotus Kick 360° + Horse Stance",
+            "zh": "腾空摆莲 360°+马步",
+            "grade": "A",
+            "value": 0.1
+        },
+        "324A+4": {
+            "en": "Jumping Lotus Kick 360° + Falling Front Split",
+            "zh": "腾空摆莲 360°+跌竖叉",
+            "grade": "A",
+            "value": 0.1
+        },
+		"324A+6": {
+            "en": "Jumping Lotus Kick 360° + Cross-Legged Sitting",
+            "zh": "腾空摆莲360°+坐盘",
+            "grade": "A",
+            "value": 0.1
+		},
+        "324A+7": {
+            "en": "Jumping Lotus Kick 360° + Bow Stance",
+            "zh": "腾空摆莲 360°+弓步",
+            "grade": "A",
+            "value": 0.1
+        },
+        "333A+353B": {
+            "en": "Butterfly Kick + (within 1 step) Butterfly Twist 360°",
+            "zh": "旋子+（1步内）旋子转体 360°",
+            "grade": "A",
+            "value": 0.1
+        },
+        "333A+6": {
+            "en": "Butterfly Kick + Cross-Legged Sitting",
+            "zh": "旋子+坐盘",
+            "grade": "A",
+            "value": 0.1
+        },
+        "335A+4": {
+            "en": "Aerial Cartwheel + Falling Front Split",
+            "zh": "侧空翻+跌竖叉",
+            "grade": "A",
+            "value": 0.1
+        },
+        "335A+353B": {
+            "en": "Aerial Cartwheel + (within 4 steps) Butterfly Twist 360°",
+            "zh": "侧空翻+（4步内）旋子转体 360°",
+            "grade": "A",
+            "value": 0.1
+        },
+        "312A+9": {
+            "en": "Throw + Jumping Front Slap Kick + Catch",
+            "zh": "抛+腾空飞脚+接",
+            "grade": "A",
+            "value": 0.1
+        },
+        "445A+9": {
+            "en": "Throw + Forward Dive Roll + Catch",
+            "zh": "抛+抢背+接",
+            "grade": "A",
+            "value": 0.1
+        },
+       "312A+335A": {
+            "en": "Jumping Front Slap Kick + (within 1 step) Aerial Cartwheel",
+            "zh": "腾空飞脚+（1步内）侧空翻",
+            "grade": "B",
+            "value": 0.15
+        },
+        "312A+323B": {
+            "en": "Jumping Front Slap Kick + (within 2 steps) Tornado Kick 540°",
+            "zh": "腾空飞脚+（2步内）旋风脚 540°",
+            "grade": "B",
+            "value": 0.15
+        },
+        "312A+324B": {
+            "en": "Jumping Front Slap Kick + Jumping Lotus Kick 540°",
+            "zh": "腾空飞脚+腾空摆莲 540°",
+            "grade": "B",
+            "value": 0.15
+        },
+        "323A+3": {
+            "en": "Tornado Kick 360° + Single Raised-Knee Stance",
+            "zh": "旋风脚 360°+提膝独立",
+            "grade": "B",
+            "value": 0.15
+        },
+        "323A+324B": {
+            "en": "Tornado Kick 360° + Jumping Lotus Kick 540°",
+            "zh": "旋风脚 360°+腾空摆莲 540°",
+            "grade": "B",
+            "value": 0.15
+        },
+        "323B+1": {
+            "en": "Tornado Kick 540° + Horse Stance",
+            "zh": "旋风脚 540°+马步",
+            "grade": "B",
+            "value": 0.15
+        },
+        "323B+4": {
+            "en": "Tornado Kick 540° + Falling Front Split",
+            "zh": "旋风脚 540°+跌竖叉",
+            "grade": "B",
+            "value": 0.15
+        },
+        "323B+6": {
+            "en": "Tornado Kick 540° + Cross-Legged Sitting",
+            "zh": "旋风脚 540°+坐盘",
+            "grade": "B",
+            "value": 0.15
+        },
+        "324A+3": {
+            "en": "Jumping Lotus Kick 360° + Single Raised-Knee Stance",
+            "zh": "腾空摆莲 360°+提膝独立",
+            "grade": "B",
+            "value": 0.15
+        },
+        "324B+1": {
+            "en": "Jumping Lotus Kick 540° + Horse Stance",
+            "zh": "腾空摆莲 540°+马步",
+            "grade": "B",
+            "value": 0.15
+        },
+        "324B+6": {
+            "en": "Jumping Lotus Kick 540° + Cross-Legged Sitting",
+            "zh": "腾空摆莲 540°+坐盘",
+            "grade": "B",
+            "value": 0.15
+        },
+        "333A+244A": {
+            "en": "Butterfly Kick + Front Sweep 540°",
+            "zh": "旋子+前扫腿 540°",
+            "grade": "B",
+            "value": 0.15
+        },
+        "353B+4": {
+            "en": "Butterfly Twist 360° + Falling Front Split",
+            "zh": "旋子转体 360°+跌竖叉",
+            "grade": "B",
+            "value": 0.15
+        },
+        "353B+323B": {
+            "en": "Butterfly Twist 360° + (within 4 steps) Tornado Kick 540°",
+            "zh": "旋子转体 360°+（4步内）旋风脚 540°",
+            "grade": "B",
+            "value": 0.15
+        },
+        "335A+323B": {
+            "en": "Aerial Cartwheel + (within 4 steps) Tornado Kick 540°",
+            "zh": "侧空翻+（4步内）旋风脚 540°",
+            "grade": "B",
+            "value": 0.15
+        },
+        "323A+9": {
+            "en": "Throw + Tornado Kick 360° + Catch",
+            "zh": "抛+旋风脚 360°+接",
+            "grade": "B",
+            "value": 0.15
+        },
+        "324A+9": {
+            "en": "Throw + Jumping Lotus Kick 360° + Catch",
+            "zh": "抛+腾空摆莲 360°+接",
+            "grade": "B",
+            "value": 0.15
+        },
+       "312A+323C": {
+            "en": "Jumping Front Slap Kick + (within 4 steps) Tornado Kick 630° (F)/720°",
+            "zh": "腾空飞脚+（4步内）旋风脚 630°（女）/720°",
+            "grade": "C",
+            "value": 0.2
+        },
+        "312A+324C": {
+            "en": "Jumping Front Slap Kick + Jumping Lotus Kick 630° (F)/720°",
+            "zh": "腾空飞脚+腾空摆莲 630°（女）/720°",
+            "grade": "C",
+            "value": 0.2
+        },
+        "312A+353C": {
+            "en": "Jumping Front Slap Kick + (within 4 steps) Butterfly Twist 720°",
+            "zh": "腾空飞脚+（4步内）旋子转体 720°",
+            "grade": "C",
+            "value": 0.2
+        },
+        "323A+353C": {
+            "en": "Tornado Kick 360° + (within 4 steps) Butterfly Twist 720°",
+            "zh": "旋风脚 360°+（4步内）旋子转体 720°",
+            "grade": "C",
+            "value": 0.2
+        },
+        "323B+3": {
+            "en": "Tornado Kick 540° + Single Raised-Knee Stance",
+            "zh": "旋风脚 540°+提膝独立",
+            "grade": "C",
+            "value": 0.2
+        },
+        "323B+324B": {
+            "en": "Tornado Kick 540° + Jumping Lotus Kick 540°",
+            "zh": "旋风脚 540°+腾空摆莲 540°",
+            "grade": "C",
+            "value": 0.2
+        },
+        "323C+1": {
+            "en": "Tornado Kick 630° (F)/720° + Horse Stance",
+            "zh": "旋风脚 630°（女）/720°+马步",
+            "grade": "C",
+            "value": 0.2
+        },
+        "323C+6": {
+            "en": "Tornado Kick 630° (F)/720° + Cross-Legged Sitting",
+            "zh": "旋风脚 630°（女）/720°+坐盘",
+            "grade": "C",
+            "value": 0.2
+        },
+        "324B+0": {
+            "en": "Jumping Lotus Kick 540° + Crouching Stance",
+            "zh": "腾空摆莲 540°+仆步",
+            "grade": "C",
+            "value": 0.2
+        },
+        "324B+3": {
+            "en": "Jumping Lotus Kick 540° + Single Raised-Knee Stance",
+            "zh": "腾空摆莲 540°+提膝独立",
+            "grade": "C",
+            "value": 0.2
+        },
+        "324C+6": {
+            "en": "Jumping Lotus Kick 630° (F)/720° + Cross-Legged Sitting",
+            "zh": "腾空摆莲 630°（女）/720°+坐盘",
+            "grade": "C",
+            "value": 0.2
+        },
+        "333A+353C": {
+            "en": "Butterfly Kick + (within 4 steps) Butterfly Twist 720°",
+            "zh": "旋子+（4步内）旋子转体 720°",
+            "grade": "C",
+            "value": 0.2
+        },
+        "353B+323C": {
+            "en": "Butterfly Twist 360° + (within 4 steps) Tornado Kick 630° (F)/720°",
+            "zh": "旋子转体 360°+（4步内）旋风脚 630°（女）/720°",
+            "grade": "C",
+            "value": 0.2
+        },
+        "335A+323C": {
+            "en": "Aerial Cartwheel + (within 4 steps) Tornado Kick 630° (F)/720°",
+            "zh": "侧空翻+（4步内）旋风脚 630°（女）/720°",
+            "grade": "C",
+            "value": 0.2
+        },
+        "335A+353C": {
+            "en": "Aerial Cartwheel + (within 4 steps) Butterfly Twist 720°",
+            "zh": "侧空翻+（4步内）旋子转体 720°",
+            "grade": "C",
+            "value": 0.2
+        },
+       "323B+324C": {
+            "en": "Tornado Kick 540° + Jumping Lotus Kick 630° (F)/720°",
+            "zh": "旋风脚 540°+腾空摆莲 630°（女）/720°",
+            "grade": "D",
+            "value": 0.25
+        },
+        "323C+4": {
+            "en": "Tornado Kick 630° (F)/720° + Falling Front Split",
+            "zh": "旋风脚 630°（女）/720°+跌竖叉",
+            "grade": "D",
+            "value": 0.25
+        },
+        "324C+1": {
+            "en": "Jumping Lotus Kick 630° (F)/720° + Horse Stance",
+            "zh": "腾空摆莲 630°（女）/720°+马步",
+            "grade": "D",
+            "value": 0.25
+        },
+        "353C+4": {
+            "en": "Butterfly Twist 720° + Falling Front Split",
+            "zh": "旋子转体 720°+跌竖叉",
+            "grade": "D",
+            "value": 0.25
+        }
+    },
+   "nanquan": {
+       "312A+3": {
+            "en": "Jumping Front Slap Kick + Single Raised-Knee Stance",
+            "zh": "腾空飞脚+提膝独立",
+            "grade": "A",
+            "value": 0.1
+        },
+        "323A+1": {
+            "en": "Tornado Kick 360° + Horse Stance",
+            "zh": "旋风脚 360°+马步",
+            "grade": "A",
+            "value": 0.1
+        },
+        "323A+2": {
+            "en": "Tornado Kick 360° + Butterfly Stance",
+            "zh": "旋风脚 360°+蝶步",
+            "grade": "A",
+            "value": 0.1
+        },
+        "323A+312A": {
+            "en": "Tornado Kick 360° + (within 2 steps) Jumping Front Slap Kick",
+            "zh": "旋风脚 360°+（2步内）腾空飞脚",
+            "grade": "A",
+            "value": 0.1
+        },
+        "323A+324A": {
+            "en": "Tornado Kick 360° + Jumping Lotus Kick 360°",
+            "zh": "旋风脚 360°+腾空外摆腿 360°",
+            "grade": "A",
+            "value": 0.1
+        },
+        "324A+1": {
+            "en": "Jumping Lotus Kick 360° + Horse Stance",
+            "zh": "腾空外摆腿 360°+马步",
+            "grade": "A",
+            "value": 0.1
+        },
+        "324A+346A": {
+            "en": "Jumping Lotus Kick 360° + No-Step Back Flip",
+            "zh": "腾空外摆腿 360°+原地后空翻",
+            "grade": "A",
+            "value": 0.1
+        },
+        "335A+10": {
+            "en": "Aerial Cartwheel + Scissor Position",
+            "zh": "侧空翻+剪势",
+            "grade": "A",
+            "value": 0.1
+        },
+        "346A+2": {
+            "en": "No-Step Back Flip + Butterfly Stance",
+            "zh": "原地后空翻+蝶步",
+            "grade": "A",
+            "value": 0.1
+        },
+       "312A+346B": {
+            "en": "Jumping Front Slap Kick + (within 2 steps) Single Step Back Flip",
+            "zh": "腾空飞脚+（2步内）单跳后空翻",
+            "grade": "B",
+            "value": 0.15
+        },
+        "323A+324B": {
+            "en": "Tornado Kick 360° + Jumping Lotus Kick 540°",
+            "zh": "旋风脚 360°+腾空外摆腿 540°",
+            "grade": "B",
+            "value": 0.15
+        },
+        "323B+1": {
+            "en": "Tornado Kick 540° + Horse Stance",
+            "zh": "旋风脚 540°+马步",
+            "grade": "B",
+            "value": 0.15
+        },
+        "323B+2": {
+            "en": "Tornado Kick 540° + Butterfly Stance",
+            "zh": "旋风脚 540°+蝶步",
+            "grade": "B",
+            "value": 0.15
+        },
+        "324A+346B": {
+            "en": "Jumping Lotus Kick 360° + (within 2 steps) Single Step Back Flip",
+            "zh": "腾空外摆腿 360°+（2步内）单跳后空翻",
+            "grade": "B",
+            "value": 0.15
+        },
+        "324B+1": {
+            "en": "Jumping Lotus Kick 540° + Horse Stance",
+            "zh": "腾空外摆腿 540°+马步",
+            "grade": "B",
+            "value": 0.15
+        },
+        "346B+2": {
+            "en": "Single Step Back Flip + Butterfly Stance",
+            "zh": "单跳后空翻+蝶步",
+            "grade": "B",
+            "value": 0.15
+        },
+        "447A+2": {
+            "en": "Carp Kip-Up + Butterfly Stance",
+            "zh": "鲤鱼打挺+碟步",
+            "grade": "B",
+            "value": 0.15
+        },
+       "323A+3": {
+            "en": "Tornado Kick 360° + Single Raised-Knee Stance",
+            "zh": "旋风脚 360°+提膝独立",
+            "grade": "C",
+            "value": 0.2
+        },
+        "323A+346B": {
+            "en": "Tornado Kick 360° + (within 2 steps) Single Step Back Flip",
+            "zh": "腾空外摆腿 540°+（2步内）单跳后空翻",
+            "grade": "C",
+            "value": 0.2
+        },
+        "323B+324B": {
+            "en": "Tornado Kick 540° + Jumping Lotus Kick 540°",
+            "zh": "旋风脚 540°+腾空外摆腿 540°",
+            "grade": "C",
+            "value": 0.2
+        },
+        "324A+3": {
+            "en": "Jumping Lotus Kick 360° + Single Raised-Knee Stance",
+            "zh": "腾空外摆腿 360°+提膝独立",
+            "grade": "C",
+            "value": 0.2
+        },
+        "324B+0": {
+            "en": "Jumping Lotus Kick 540° + Crouching Stance",
+            "zh": "腾空外摆腿 540°+仆步",
+            "grade": "C",
+            "value": 0.2
+        },
+        "324B+346B": {
+            "en": "Jumping Lotus Kick 540° + (within 2 steps) Single Step Back Flip",
+            "zh": "腾空外摆腿 540°+（2步内）单跳后空翻",
+            "grade": "C",
+            "value": 0.2
+        },
+        "346B+11": {
+            "en": "Single Step Back Flip + Scorpion Stance",
+            "zh": "单跳后空翻+蝎势",
+            "grade": "C",
+            "value": 0.2
+        },
+       "323C+1": {
+            "en": "Tornado Kick 630° (F)/720° + Horse Stance",
+            "zh": "旋风脚 630°（女）/720°+马步",
+            "grade": "D",
+            "value": 0.25
+        },
+        "324C+1": {
+            "en": "Jumping Lotus Kick 630° (F)/720° + Horse Stance",
+            "zh": "腾空外摆腿 630°（女）/720°+马步",
+            "grade": "D",
+            "value": 0.25
+        },
+        "323B+324C": {
+            "en": "Tornado Kick 540° + Jumping Lotus Kick 630° (F)/720°",
+            "zh": "旋风脚 540°+腾空外摆腿 630°（女）/720°",
+            "grade": "C",
+            "value": 0.2
+        }
+    },
+   "taijiquan": {
+       "142A+3": {
+            "en": "Forward Stepping Kick with Low Step Balance + 180° Body Turn into Single Raised-Knee Stance",
+            "zh": "低势前蹬踩脚平衡+转体 180°成提膝独立",
+            "grade": "A",
+            "value": 0.1
+        },
+        "143A+3": {
+            "en": "Low Balance with Leg Stretched Forward + 180° Body Turn into Single Raised-Knee Stance",
+            "zh": "前举腿低势平衡+转体 180°成提膝独立",
+            "grade": "A",
+            "value": 0.1
+        },
+        "143A+212A": {
+            "en": "Low Balance with Leg Stretched Forward + Heel Kick/Parting Kick",
+            "zh": "前举腿低势平衡+蹬脚/分脚",
+            "grade": "A",
+            "value": 0.1
+        },
+        "312A+3": {
+            "en": "Jumping Front Slap Kick + Single Raised-Knee Stance",
+            "zh": "腾空飞脚+提膝独立",
+            "grade": "A",
+            "value": 0.1
+        },
+        "312A+324B": {
+            "en": "Jumping Front Slap Kick + Jumping Lotus Kick 360°",
+            "zh": "腾空飞脚+腾空摆莲 360°",
+            "grade": "A",
+            "value": 0.1
+        },
+        "323A+3": {
+            "en": "Tornado Kick 180° + Single Raised-Knee Stance",
+            "zh": "旋风脚 180°+提膝独立",
+            "grade": "A",
+            "value": 0.1
+        },
+        "323B+8": {
+            "en": "Tornado Kick 360° + Landing on takeoff foot",
+            "zh": "旋风脚 360°+起跳脚落地",
+            "grade": "A",
+            "value": 0.1
+        },
+        "324B+8": {
+            "en": "Jumping Lotus Kick 540° + Landing on takeoff foot",
+            "zh": "腾空外摆腿 540°+起跳脚落地",
+            "grade": "A",
+            "value": 0.1
+        },
+       "143B+3": {
+            "en": "Low Balance with Leg Crossed Behind + Lotus Kick into 180° Body Turn into Single Raised-Knee Stance",
+            "zh": "后插腿低势平衡+摆莲脚转体 180°成提膝独立",
+            "grade": "B",
+            "value": 0.15
+        },
+        "143B+212A": {
+            "en": "Low Balance with Leg Crossed Behind + Heel Kick/Parting Kick",
+            "zh": "后插腿低势平衡+蹬脚/分脚",
+            "grade": "B",
+            "value": 0.15
+        },
+        "312A+324C": {
+            "en": "Jumping Front Slap Kick + Jumping Lotus Kick 450° (F)/540°",
+            "zh": "腾空飞脚+腾空摆莲 450°（女）/540°",
+            "grade": "B",
+            "value": 0.15
+        },
+        "312B+8": {
+            "en": "Jumping Front Straight Kick + Landing on takeoff foot",
+            "zh": "腾空正踢腿+起跳脚落地",
+            "grade": "B",
+            "value": 0.15
+        },
+        "324B+5": {
+            "en": "Jumping Lotus Kick 360° + Hurdler's Split Position",
+            "zh": "腾空摆莲 360°+跌叉",
+            "grade": "B",
+            "value": 0.15
+        },
+       "323B+3": {
+            "en": "Tornado Kick 360° + Single Raised-Knee Stance",
+            "zh": "旋风脚 360°+提膝独立",
+            "grade": "C",
+            "value": 0.2
+        },
+        "324B+3": {
+            "en": "Jumping Lotus Kick 360° + Single Raised-Knee Stance",
+            "zh": "腾空摆莲 360°+提膝独立",
+            "grade": "C",
+            "value": 0.2
+        },
+        "324C+5": {
+            "en": "Jumping Lotus Kick 450° (F)/540° + Hurdler's Split Position",
+            "zh": "腾空摆莲 450°（女）/540°+跌叉",
+            "grade": "C",
+            "value": 0.2
+        },
+       "323C+3": {
+            "en": "Tornado Kick 450° (F)/540° + Single Raised-Knee Stance",
+            "zh": "旋风脚 450°（女）/540°+提膝独立",
+            "grade": "D",
+            "value": 0.25
+        },
+        "324C+3": {
+            "en": "Jumping Lotus Kick 450° (F)/540° + Single Raised-Knee Stance",
+            "zh": "腾空摆莲 450°（女）/540°+提膝独立",
+            "grade": "D",
+            "value": 0.25
+        }
+    }
+}

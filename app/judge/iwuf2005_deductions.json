@@ -1,0 +1,79 @@
+{
+    "10": { "name": "standing w/ leg to head (侧朝天蹬直立)", "value": 0.1 },
+    "11": { "name": "standing back kick (后踢抱脚直立)", "value": 0.1 },
+    "12": { "name": "backward balance (仰身平衡)", "value": 0.1 },
+    "13": { "name": "sideways balance (十字平衡)", "value": 0.1 },
+    "14": { "name": "cross-leg balance (扣腿平衡)", "value": 0.1 },
+    "15": { "name": "low balance w/ leg forward (前举腿低势平衡)", "value": 0.1 },
+    "16": { "name": "low balance w/ leg behind (后插腿低势平衡)", "value": 0.1 },
+    "17": { "name": "stamp in low body position (低势前蹬踩脚)", "value": 0.1 },
+    "18": { "name": "sidekick balance (侧踹平衡)", "value": 0.1 },
+    "20": { "name": "front sweep (前扫踢)", "value": 0.1 },
+    "21": { "name": "back sweep (后扫踢)", "value": 0.1 },
+    "22": { "name": "front split (跌叉)", "value": 0.1 },
+    "23": { "name": "snap kick (弹腿) / side kick (踹腿)", "value": 0.1 },
+    "24": { "name": "parting kick (分脚) / heel kick (蹬脚)", "value": 0.1 },
+    "25": { "name": "lotus kick (摆莲脚)", "value": 0.1 },
+    "26": { "name": "slap kick (拍脚)", "value": 0.1 },
+    "27": { "name": "dragon's dive (雀地龙)", "value": 0.1 },
+    "28": { "name": "horizontal nail kick (横钉腿)", "value": 0.1 },
+    "30": {
+        "name": "jump kick [flying, tornado, lotus, outside] (腾空飞脚、旋风脚、腾空摆莲、腾空外摆腿)",
+        "value": 0.1
+    },
+    "31": { "name": "jump front straight kick (腾空正踢腿)", "value": 0.1 },
+    "32": { "name": "aerial cartwheel [360] (侧空翻 [360])", "value": 0.1 },
+    "33": { "name": "butterfly kick (旋子)", "value": 0.1 },
+    "34": { "name": "jump snap kick (腾空箭弹)", "value": 0.1 },
+    "40": { "name": "tornado 360 fall (腾空盘腿 360 度侧扑)", "value": 0.1 },
+    "41": { "name": "kip-up (鲤鱼打挺直立)", "value": 0.1 },
+    "42": { "name": "double flying side kick (腾空双侧踹)", "value": 0.1 },
+    "50": { "name": "bow stance (弓步)", "value": 0.1 },
+    "51": { "name": "horse stance (马步)", "value": 0.1 },
+    "52": { "name": "empty [cat] stance (虚步)", "value": 0.1 },
+    "53": { "name": "crouch [drop] stance (仆步)", "value": 0.1 },
+    "54": {
+        "name": "step [forward, back, side] (上步、退步、进步、跟步、侧行步)",
+        "value": 0.1
+    },
+    "55": { "name": "butterfly stance (蝶步)", "value": 0.1 },
+    "56": { "name": "kneeling stance (跪步)", "value": 0.1 },
+    "57": { "name": "dragon-riding stance (骑龙步)", "value": 0.1 },
+    "60": { "name": "upward parry (挂剑) / uppercut (撩剑)", "value": 0.1 },
+    "61": { "name": "sword grip (握剑)", "value": 0.1 },
+    "62": { "name": "sword wrapping (缠头裹脑 )", "value": 0.1 },
+    "63": { "name": "spear parry (拦枪, 拿枪)", "value": 0.1 },
+    "64": { "name": "spear thrust (扎枪)", "value": 0.1 },
+    "65": {
+        "name": "figure-8 (立舞花枪、立舞花棍) / uppercut (双手提撩花棍)",
+        "value": 0.1
+    },
+    "66": { "name": "throw and catch (器械抛接 )", "value": 0.1 },
+    "67": { "name": "pushing the cudgel (顶棍)", "value": 0.1 },
+    "70": {
+        "name": "body sway / shuffle / skip in balance (上体晃动、脚移动或跳动)",
+        "value": 0.1
+    },
+    "71": { "name": "extra support (附加支撑)", "value": 0.2 },
+    "72": { "name": "body fall (倒地)", "value": 0.3 },
+    "73": {
+        "name": "weapon touches ground, handle falls, hits body, deforms (器械触地、脱把、碰身、变形)",
+        "value": 0.1
+    },
+    "74": { "name": "broken weapon (器械折断)", "value": 0.2 },
+    "75": { "name": "dropped weapon (器械掉地)", "value": 0.3 },
+    "76": {
+        "name": "ornament drops from apparatus / body is tangled with apparatus / loose buttons, or torn costume / shoes off (刀彩、剑穗、枪缨、服饰、头饰掉地；刀彩、剑穗、软器械缠手 (缠身)；服装开纽或撕裂；鞋脱落)",
+        "value": 0.1
+    },
+    "77": {
+        "name": "longtime balance less than two seconds (持久平衡静止时间不足 2 秒)",
+        "value": 0.1
+    },
+    "78": {
+        "name": "body touches outside carpet (身体任何一部分触及线外地面)",
+        "value": 0.1
+    },
+    "79": { "name": "movement forgotten (遗忘)", "value": 0.1 },
+    "00": { "name": "deduction", "value": 0.1 }
+}

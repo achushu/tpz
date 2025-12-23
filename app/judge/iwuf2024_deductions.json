@@ -1,0 +1,383 @@
+{
+  "00": { "en": "deduction", "zh": "", "value": 0.1 },
+  "01": {
+    "en": "Face of fist uneven; The thumb is not pressing on the second segment of both the index and middle fingers",
+    "zh": "拳面不平；拇指未压在食指和中指第二指节上",
+    "value": 0.1
+  },
+  "02": {
+    "en": "Four fingers not straight and held together; Thumb is not bent and held in tightly; Five fingers not separated with the first and second segment of each finger not hooked and flexed; Center of the palm not pushed out",
+    "zh": "四指未伸直并拢；拇指未弯曲紧扣于虎口处；五指未弯曲分开后张；掌心未凸出",
+    "value": 0.1
+  },
+  "03": {
+    "en": "The five fingers are not pinched together; Wrist not hooked completely; Five Fingers not pinched together; Wrist flexed (bent) when striking",
+    "zh": "五指未捏拢；腕未屈；五指未捏拢；屈腕",
+    "value": 0.1
+  },
+  "04": {
+    "en": "Index finger and middle finger not kept straight and together; Thumb not pressing on the ring finger and little finger; Index finger not Straight; The other 4 fingers not tightly bent/hooked",
+    "zh": "食指与中指未伸直并拢；拇指未压在无名指与小指上；食指未伸直；其余四指未弯曲扣紧",
+    "value": 0.1
+  },
+  "05": {
+    "en": "Elbow lifted; Arm straightened; Armpit closed",
+    "zh": "抬肘；直臂；夹腋",
+    "value": 0.1
+  },
+  "06": {
+    "en": "Head and body not aligned; Shoulders hunched, rounded lower back, buttocks sticking out; Shoulders shrugged; Waist twisted",
+    "zh": "头、身不正；驼背弓腰突臀；耸肩；扭腰摆臀",
+    "value": 0.1
+  },
+  "10": {
+    "en": "Supporting Leg Bent; Raised Leg Bent",
+    "zh": "支撑腿弯曲；上举腿弯曲",
+    "value": 0.1
+  },
+  "12": {
+    "en": "The raised leg is held below horizontal level",
+    "zh": "前举腿低于水平",
+    "value": 0.1
+  },
+  "13": {
+    "en": "Supporting leg bent; The torso is below horizontal level",
+    "zh": "支撑腿弯曲；躯干低于水平",
+    "value": 0.1
+  },
+  "14": {
+    "en": "Thigh of supporting leg is not at horizontal level",
+    "zh": "支撑腿大腿未达水平",
+    "value": 0.1
+  },
+  "15": {
+    "en": "Supporting leg bent; Raised leg bent",
+    "zh": "支撑腿弯曲；后举腿弯曲",
+    "value": 0.1
+  },
+  "16": {
+    "en": "Torso held 45° or more above horizontal level; Waist not twisted toward the rear in the direction of the supporting leg; Instep of the raised bent leg not extended flat",
+    "zh": "躯干高于水平45°或超过45°；未向支撑腿侧拧腰后视；屈收腿脚背未绷平",
+    "value": 0.1
+  },
+  "17": {
+    "en": "The heel of the supporting leg is raised; Kicking leg bent at knee; The foot of the kicking leg is not turned outwards",
+    "zh": "支撑腿脚跟离地；前腿膝部弯曲；脚尖未外展",
+    "value": 0.1
+  },
+  "18": {
+    "en": "Forward stretched leg bends and/or drops below horizontal level at any point during the transition from standing to squatting",
+    "zh": "屈蹲过程中前举腿弯曲或低于水平",
+    "value": 0.1
+  },
+  "19": {
+    "en": "The foot of the leg crossed behind the supporting leg makes contact with the ground",
+    "zh": "插出腿脚触地",
+    "value": 0.1
+  },
+  "20": {
+    "en": "The thigh of supporting leg is above horizontal level; The sole of sweeping foot leaves the ground after making contact for the sweeping action; Sweeping leg bent 45° or more",
+    "zh": "支撑腿大腿高于水平；扫转腿脚掌在扫转时触地后离地；扫转腿弯曲45°或超过45°",
+    "value": 0.1
+  },
+  "21": {
+    "en": "The sole of sweeping foot leaves the ground after making contact for the sweeping action; Sweeping leg bent 45° or more",
+    "zh": "扫转腿脚掌离地；扫转腿弯曲45°或超过45°",
+    "value": 0.1
+  },
+  "22": {
+    "en": "The sole of the front foot turns inward and touches the ground; Front and rear legs did not form two parallel straight line; Front foot turns in and touches the ground; Angle between the two legs is 45° or less",
+    "zh": "前脚内扣触地；两腿未前后形成两条平行直线；前脚内扣触地；后腿两大腿夹角小于45°",
+    "value": 0.1
+  },
+  "23": {
+    "en": "The kicking leg does not transit from obvious bent (45° or more) to completely straight; The raised leg is below horizontal level; The raised leg is bent",
+    "zh": "弹（蹬、踹）腿由屈到伸摆动小于45°；上举腿低于水平；上举腿未伸直",
+    "value": 0.1
+  },
+  "24": {
+    "en": "Knee/s bent at the apex of the kick; Heel of supporting leg off the floor",
+    "zh": "膝关节弯曲；支撑腿脚跟离地",
+    "value": 0.1
+  },
+  "25": {
+    "en": "Toes of slapped foot not above shoulder height; Slap missed and/or inaudible; Kicking Leg Bent When Slapped; Kicking leg bent; Toes of the kicking leg not above waist level",
+    "zh": "击响腿脚尖未过肩；未击响；击响时摆动腿弯曲；后摆腿弯曲；后摆腿脚尖未过腰",
+    "value": 0.1
+  },
+  "26": {
+    "en": "Raised knee not above waist level; Raised shank/calf of the leg is not turning obliquely inwards; Raised foot's toes not pointed and hooking inwards",
+    "zh": "提膝未过腰；提起腿小腿未斜垂里扣；提起腿脚未崩平内收",
+    "value": 0.1
+  },
+  "27": {
+    "en": "The kicking leg does not transit from bent (angle less than 45°) to completely straight; The kicking leg does not travel horizontally across to the opposite side of the body; The toes of the kicking foot are not flexed inwards",
+    "zh": "摆动腿由屈至伸摆动小于45°；未用摆动腿前脚掌向异侧横向钉击；摆动腿脚尖未勾起",
+    "value": 0.1
+  },
+  "30": {
+    "en": "Toes of slapped foot not above shoulder level; Slap missed and/or inaudible",
+    "zh": "击响腿脚尖未过肩；未击响",
+    "value": 0.1
+  },
+  "31": {
+    "en": "The hanging leg is bend at the moment the toes of the kicking leg touches the forehead or above the forehead; The angle between the torso and the hanging leg is less than 135° the moment the toes of the kicking leg touches the forehead or above the forehead",
+    "zh": "踢腿脚触及或超过前额瞬间悬垂腿弯曲；踢腿脚触及或超过前额瞬间躯干与悬垂腿夹角小于135°",
+    "value": 0.1
+  },
+  "32": {
+    "en": "Leg/s bent 45° or more while in the air",
+    "zh": "空中腿弯曲45°或超过45°",
+    "value": 0.1
+  },
+  "33": {
+    "en": "Leg/s obviously bent 45° or more while in the air; Angle of the torso is 45° or more above horizontal level during the twist",
+    "zh": "空中腿弯曲45°或超过45°；转体时躯干高于水平45°或超过45°",
+    "value": 0.1
+  },
+  "34": {
+    "en": "Snap/Spring (pushing) leg does not transit from an obvious bent (45° or more) to completely straight; Snap/Spring (pushing) leg below horizontal level",
+    "zh": "弹（蹬）腿由屈到伸摆动小于45°；弹（蹬）出腿低于水平",
+    "value": 0.1
+  },
+  "40": {
+    "en": "Toes of the kicking leg not above head level",
+    "zh": "摆动腿脚尖未过头",
+    "value": 0.1
+  },
+  "42": {
+    "en": "The legs are not held close together when kicked out and/or are obviously bent when kicked out",
+    "zh": "踹出腿未并拢伸直",
+    "value": 0.1
+  },
+  "50": {
+    "en": "The knee of the front leg is not above the instep; The thigh of the bending (front) leg is not parallel to the ground; Any portion of the sole of the rear leg obviously off the floor; The rear foot is not hooked inwards with the toes pointing obliquely forwards",
+    "zh": "前腿膝部未达脚背；前腿大腿未达水平；后腿脚掌任一部位明显离地；后腿脚尖未内扣",
+    "value": 0.1
+  },
+  "51": {
+    "en": "Thighs not horizontal; The distance between the inner portions of the two feet is narrower than performer's shoulder width; Knee/s buckling inwards; The heel/s raised off the ground; Toes of foot/feet pointing outward 45° or more",
+    "zh": "大腿未达水平；两脚内侧间距小于本人肩宽；膝内跪；脚跟离地；脚尖外展45°或超过45°",
+    "value": 0.1
+  },
+  "52": {
+    "en": "Thigh of squatting leg is not parallel to the ground; The heel of supporting foot is raised off the ground; Knee and toes of supporting leg misaligned",
+    "zh": "屈蹲腿大腿未达水平；屈蹲腿脚跟离地；屈蹲腿膝与脚尖未对正",
+    "value": 0.1
+  },
+  "53": {
+    "en": "The back of the thigh of the squatting leg is not in contact with the calf; The extended leg is not completely straight; Extended leg's foot is not turned inwards with the sole completely flat on the ground",
+    "zh": "屈蹲腿未全蹲；平铺腿未伸直；平铺腿全脚掌未内扣着地",
+    "value": 0.1
+  },
+  "54": {
+    "en": "The two thighs are not crossed and closed together; The buttocks are not in contact with the calf of the sitting leg",
+    "zh": "两腿未交叉靠拢；臀部未贴坐小腿",
+    "value": 0.1
+  },
+  "55": {
+    "en": "The inner part of the shank/calf of the splayed leg/s is not fully in contact with the ground; The inner part of the ankle/heel of the splayed leg/s is not fully in contact with the ground",
+    "zh": "后腿小腿内侧未着地；后腿脚踝内侧未着地",
+    "value": 0.1
+  },
+  "56": {
+    "en": "The knee of the lower kneeling leg touches the ground; The buttock does not sit fully on the shank/calf of the lower kneeling leg",
+    "zh": "后腿膝部着地；臀部未坐在后腿小腿上",
+    "value": 0.1
+  },
+  "57": {
+    "en": "The thigh of the front leg is not held at a range from horizontal level to 45° (excluding 45°) above horizontal level; The knee of the back leg makes contact with the ground",
+    "zh": "前腿大腿高于水平45°或低于水平；后腿膝部着地",
+    "value": 0.1
+  },
+  "58": {
+    "en": "Neither one of the buttocks are in contact with the floor; Either one of the feet is not in contact with the floor",
+    "zh": "臀部未贴坐地面；脚离地",
+    "value": 0.1
+  },
+  "59": {
+    "en": "Knee and toes of supporting leg misaligned; Foot is dragged when stepping (excluding special techniques); Center of gravity moving/fluctuating up and down when stepping; Toes of the raised foot is above the ankle of the other leg when advancing",
+    "zh": "支撑腿膝与脚尖未对正；脚拖地（特殊动作要求除外）；移动时重心起伏；上步时抬起脚脚尖高于踝关节",
+    "value": 0.1
+  },
+  "60": {
+    "en": "Straight sword and forearm/wrist are aligned; No obvious vertical circle formed",
+    "zh": "直腕；未明显呈立圆",
+    "value": 0.1
+  },
+  "61": {
+    "en": "Any finger wraps around the top of the hand guard and touches the edge of the blade",
+    "zh": "手指触及剑刃",
+    "value": 0.1
+  },
+  "62": {
+    "en": "The back of the broadsword blade is not kept close to the body when wrapping or twining",
+    "zh": "刀背远离身体",
+    "value": 0.1
+  },
+  "63": {
+    "en": "Spear head not travelling in a clearly defined arc; Rear handle of spear end protruding from grip (extending past rear grip); The thrusting arm and the spear shaft do not form a straight line horizontally; Arm and fan are not aligned",
+    "zh": "拦、拿枪枪尖未明显划弧；后手留把；平扎枪臂与枪身未成水平直线；臂与扇骨未呈一直线",
+    "value": 0.1
+  },
+  "64": {
+    "en": "No obvious horizontal circle formed",
+    "zh": "未明显呈平圆",
+    "value": 0.1
+  },
+  "65": {
+    "en": "The spear/cudgel does not rotate in an obvious vertical plane",
+    "zh": "未明显呈立圆",
+    "value": 0.1
+  },
+  "66": {
+    "en": "Weapon caught in a hugging manner; Failure to catch the straight sword/broadsword by the handle; the cudgel/spear shaft with a single hand; Failure to catch the fan by the bottom/handle with a single hand",
+    "zh": "抱接器械；未单手接握剑柄、刀柄、枪身、棍身；未单手接握扇骨底部",
+    "value": 0.1
+  },
+  "67": {
+    "en": "The end of the cudgel handle is not planted firmly on the ground; The tip of the cudgel is below the athlete's head level",
+    "zh": "把端未拄地；梢端低于头",
+    "value": 0.1
+  },
+  "68": {
+    "en": "Tip of the straight sword not travelling in a clearly- defined vertical circle",
+    "zh": "剑尖绕环未明显呈立圆",
+    "value": 0.1
+  },
+  "69": {
+    "en": "No obvious wrist lift",
+    "zh": "手腕未明显上提",
+    "value": 0.1
+  },
+  "70A": {
+    "en": "Torso sways",
+    "zh": "躯干晃动",
+    "value": 0.05
+  },
+  "70B": {
+    "en": "Foot shuffles or skips",
+    "zh": "脚移动或跳动",
+    "value": 0.1
+  },
+  "71": {
+    "en": "Additional Support",
+    "zh": "附加支撑",
+    "value": 0.2
+  },
+  "72": {
+    "en": "Fall",
+    "zh": "倒地",
+    "value": 0.3
+  },
+  "73": {
+    "en": "Weapon unintentionally makes contact with the floor; Loss of grip; Weapon strikes the body; Weapon deforms; Fan surface is detached from fan's ribs",
+    "zh": "器械触地、脱把、碰身、变形，扇面与扇骨脱离",
+    "value": 0.1
+  },
+  "74": {
+    "en": "Weapon Broken; Main or minor ribs of the fan breaks, nails on the ribs falls off/detached",
+    "zh": "器械折断；扇大骨或扇小骨折断、扇钉脱落",
+    "value": 0.2
+  },
+  "75": {
+    "en": "Weapon dropped on the floor",
+    "zh": "器械掉地",
+    "value": 0.3
+  },
+  "76": {
+    "en": "Broad Sword Ribbon; Straight sword Tassel; Spear Tassel; Garment Item; Headwear dropped on the floor; Broad Sword Ribbon; Straight sword Tassel; Soft Weapon entangles hand or body; Costume torn or button opened up; Shoes dropped off",
+    "zh": "刀彩、剑穗、枪缨、服饰、头饰掉地；刀彩、剑穗、软器械缠手（缠身）；服装开纽或撕裂；鞋脱落",
+    "value": 0.1
+  },
+  "77": {
+    "en": "Balance technique not completed rhythmically and quickly according to the characteristics of the event; Balance technique not maintained for at least 2 seconds",
+    "zh": "平衡动作未按项目特点有节奏快速完成；平衡动作静止时间不足2秒钟",
+    "value": 0.1
+  },
+  "78": {
+    "en": "Out-of-bounds",
+    "zh": "出界",
+    "value": 0.1
+  },
+  "79": {
+    "en": "Forgetting (Movement Forgotten)",
+    "zh": "遗忘",
+    "value": 0.1
+  },
+  "80": {
+    "en": "For each missing/altering compulsory/mandatory technique in optional routines; For each missing/additional/altering compulsory/mandatory technique in compulsory routines",
+    "zh": "自选套路：每减少或改变一个规定动作；规定套路：每增加、减少或改变一个规定动作",
+    "value": 0.2
+  },
+  "81": {
+    "en": "Compulsory Routines: Missing or additional step",
+    "zh": "规定套路：每增加或减少一步",
+    "value": 0.1
+  },
+  "82": {
+    "en": "Nanquan, Nandao, Nangun Compulsory Routines: For each missing or additional vocalization or did not vocalize in accordance with the requirement",
+    "zh": "南拳、南刀、南棍规定套路：未按规定发声或每增加或减少一次发声",
+    "value": 0.2
+  },
+  "83": {
+    "en": "A static state (excluding balance techniques) which is held for longer than 2 seconds; During Taijiquan or Taijijian there is an obvious unmethodical pause prior to the execution of Degree of Difficulty technique; Performing non-offensive or non-defensive actions that disrupts the routine's rhythm before executing the Degree of Difficulty techniques",
+    "zh": "静止姿势（平衡动作除外）停顿时间超过2秒；太极拳、太极剑难度动作前出现停顿；难度动作前出现影响套路节奏的无攻防动作演练",
+    "value": 0.1
+  },
+  "84": {
+    "en": "For Changquan type and Nanquan Type events (including weapon routines), movements done in averted directions exceeding 90 degrees; For Taijiquan and Taijijian events, movements done in averted directions exceeding 45 degrees",
+    "zh": "长拳、南拳及其器械动作每偏向超过90°；太极拳、太极剑、太极扇动作每偏向超过45°",
+    "value": 0.1
+  },
+  "85": {
+    "en": "Between 2 groups of Degree of Difficulty techniques, there are less than 2 complete technique movements",
+    "zh": "两组难度之间少于两个完整的技术动作",
+    "value": 0.1
+  },
+  "86": {
+    "en": "Events Requiring Musical Accompaniment: No music or music which includes vocals/lyrics",
+    "zh": "要求配乐的项目未配乐或配乐伴有说唱",
+    "value": 0.5
+  },
+  "90": {
+    "en": "Attack goes wide or off target area; Footwork/Stance, Leg Technique not meeting the requirements; Jumping technique, Tumbling Technique not meeting the requirements; Weapon Technique not meeting the requirements",
+    "zh": "远离或偏离进攻部位；步型、腿法动作与要求不符；跳跃、跌扑动作与要求不符；器械方法与要求不符",
+    "value": 0.1
+  },
+  "91": {
+    "en": "Motionless state held for more than 3 seconds; Jumping technique, Tumbling Technique not meeting the requirements",
+    "zh": "静止姿势超过3秒钟；跳跃、跌扑动作与要求不符",
+    "value": 0.1
+  },
+  "92": {
+    "en": "Duration without attack and defense exceeds 3 seconds; Weapon Technique not meeting the requirements",
+    "zh": "无攻防演练超过3秒钟；器械方法与要求不符",
+    "value": 0.1
+  },
+  "93": {
+    "en": "Misses in attack or defense; Misses in attack or defense during sparring content",
+    "zh": "击打落空或防守落空；对练时击打落空或防守落空",
+    "value": 0.1
+  },
+  "94": {
+    "en": "Waiting for partner to attack; Waiting for partner to attack during sparring content",
+    "zh": "等待对方进攻；对练时等待对方进攻",
+    "value": 0.1
+  },
+  "95": {
+    "en": "Mishit on Partner/s; Mishit on Partner/s during sparring content",
+    "zh": "误中对方；对练时误中对方",
+    "value": 0.1
+  },
+  "96": {
+    "en": "Single technique not executed uniformly",
+    "zh": "同一动作不整齐",
+    "value": 0.1
+  },
+  "97": {
+    "en": "Group formation not uniform",
+    "zh": "队形不整齐",
+    "value": 0.1
+  }
+}

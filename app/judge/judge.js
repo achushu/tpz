@@ -30,9 +30,9 @@ var TPZJudge = (() => {
         rescoreBtn: "Rescore",
         ringFinished: "Finished!",
         scoreLabel: "Score",
-        scoresLabel: "Scores submitted",
+        scoresLabel: "Judge's scores",
         selectJudge: "Select a judge role!",
-        selectLabel: "Select",
+        selectLabel: "Event",
         selectRing: "Select a ring!",
         spread: "Spread",
         startTimer: "Start Timer",
@@ -519,12 +519,14 @@ class HeadJudgeView extends JudgeView {
             this.updateEventInfo((data) => {
                 this.render();
                 this.scoreManager.update();
-                this.nanduResult.render([
-                    data.nandusheet["segment1"],
-                    data.nandusheet["segment2"],
-                    data.nandusheet["segment3"],
-                    data.nandusheet["segment4"],
-                ]);
+                if (data.nandusheet != undefined) {
+                    this.nanduResult.render([
+                        data.nandusheet["segment1"],
+                        data.nandusheet["segment2"],
+                        data.nandusheet["segment3"],
+                        data.nandusheet["segment4"],
+                    ]);
+                }
                 this.nanduResult.update();
             }, false);
         };
@@ -584,7 +586,9 @@ class HeadJudgeView extends JudgeView {
         TPZ.httpPostJson(this.cfg.api.publishScore, data, () => {
             this.setPublished();
             // automatically move onto the next competitor
-            this.eventControl.selectNextCompetitor();
+            setTimeout(() => {
+                this.eventControl.selectNextCompetitor();
+            }, 2000);
         });
     }
 
@@ -827,7 +831,8 @@ class ScorePublisher extends ViewObject {
 
     publish() {
         if (this.warn != undefined && this.warn()) return;
-        let text = "<b>" + this.cache.calculatedScore + "</b>";
+        let text =
+            `<b style="font-size:48px;">` + this.cache.calculatedScore + "</b>";
         TPZ.customConfirm(this.cache.competitorName, text, this.cb);
     }
 
@@ -865,7 +870,7 @@ class AdjustmentPanel extends ViewObject {
             let value = this.adj.value.toUpperCase();
             let code = DEDUCTION_CODES[value];
             if (code != undefined) {
-                this.reason.value = code.en;
+                this.reason.value = value;
             }
         });
         target.appendChild(TPZ.renderHtml("<br/>"));
@@ -1483,11 +1488,8 @@ class DeductionPanel extends ViewObject {
             }
             // When a valid deduction is entered, move on to the next (if possible)
             let deductionText = dbox.querySelector(".deduction-code").value;
-            if (deductionText.length > 0) {
+            if (deductionText.length > 1) {
                 let deductionCode = deductionText;
-                if (deductionCode.length == 1) {
-                    deductionCode = "0" + deductionCode;
-                }
                 if (this.validate(deductionCode)) {
                     dbox.classList.remove("deduction-invalid");
                     this.submit(dbox);

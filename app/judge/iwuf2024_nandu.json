@@ -1,0 +1,290 @@
+{
+   "changquan": {
+       "111A": {
+            "en": "Grasp the foot and bring it to head level with the leg held vertically while remaining standing",
+            "zh": "搬腿朝天直立",
+            "grade": "A",
+            "value": 0.2
+        },
+        "133B": {
+            "en": "Forward Leaning Balance with Arms Outspread",
+            "zh": "十字平衡",
+            "grade": "B",
+            "value": 0.3
+        },
+        "112A": {
+            "en": "Side kick up to catch the foot at head level with the leg held vertically while remaining standing",
+            "zh": "侧踢抱脚直立",
+            "grade": "A",
+            "value": 0.2
+        },
+        "123A": {
+            "en": "Backward Leaning Balance",
+            "zh": "仰身平衡",
+            "grade": "A",
+            "value": 0.2
+        },
+        "153A": {
+            "en": "Exploring the Ocean Balance",
+            "zh": "探海平衡",
+            "grade": "A",
+            "value": 0.2
+        },
+        "163A": {
+            "en": "Gazing at the Moon Balance",
+            "zh": "望月平衡",
+            "grade": "A",
+            "value": 0.2
+        },
+        "244A": {
+            "en": "Front Sweep 540°",
+            "zh": "前扫腿 540°",
+            "grade": "A",
+            "value": 0.2
+        },
+        "244B": {
+            "en": "Front Sweep 900°",
+            "zh": "前扫腿 900°",
+            "grade": "B",
+            "value": 0.3
+        },
+        "312A": {
+            "en": "Jumping Front Slap Kick / Jumping Slant Kick / Jumping Double Front Slap Kick",
+            "zh": "腾空飞脚 / 斜飞脚 / 双飞脚",
+            "grade": "A",
+            "value": 0.2
+        },
+        "312B": {
+            "en": "Jumping Front Straight Kick",
+            "zh": "腾空正踢腿",
+            "grade": "B",
+            "value": 0.3
+        },
+        "323A": {
+            "en": "Tornado Kick 360°",
+            "zh": "旋风脚 360°",
+            "grade": "A",
+            "value": 0.2
+        },
+        "323B": {
+            "en": "Tornado Kick 540°",
+            "zh": "旋风脚 540°",
+            "grade": "B",
+            "value": 0.3
+        },
+        "323C": {
+            "en": "Tornado Kick 630° (F)/720°",
+            "zh": "旋风脚 630°（女）/720°",
+            "grade": "C",
+            "value": 0.4
+        },
+        "324A": {
+            "en": "Jumping Lotus Kick 360°",
+            "zh": "腾空摆莲 360°",
+            "grade": "A",
+            "value": 0.2
+        },
+        "324B": {
+            "en": "Jumping Lotus Kick 540°",
+            "zh": "腾空摆莲 540°",
+            "grade": "B",
+            "value": 0.3
+        },
+        "324C": {
+            "en": "Jumping Lotus Kick 630° (F)/720°",
+            "zh": "腾空摆莲 630°（女）/720°",
+            "grade": "C",
+            "value": 0.4
+        },
+        "333A": {
+            "en": "Butterfly Kick",
+            "zh": "旋子",
+            "grade": "A",
+            "value": 0.2
+        },
+        "353B": {
+            "en": "Butterfly Twist 360°",
+            "zh": "旋子转体 360°",
+            "grade": "B",
+            "value": 0.3
+        },
+        "353C": {
+            "en": "Butterfly Twist 720°",
+            "zh": "旋子转体 720°",
+            "grade": "C",
+            "value": 0.4
+        },
+        "335A": {
+            "en": "Aerial Cartwheel",
+            "zh": "侧空翻",
+            "grade": "A",
+            "value": 0.2
+        },
+        "355B": {
+            "en": "Aerial Cartwheel Twist 360°",
+            "zh": "侧空翻转体 360°",
+            "grade": "B",
+            "value": 0.3
+        }
+    },
+   "nanquan": {
+        "244A": {
+            "en": "Front Sweep 540°",
+            "zh": "前扫腿 540°",
+            "grade": "A",
+            "value": 0.2
+        },
+        "244B": {
+            "en": "Front Sweep 900°",
+            "zh": "前扫腿 900°",
+            "grade": "B",
+            "value": 0.3
+        },
+        "312A": {
+            "en": "Jumping Front Slap Kick",
+            "zh": "腾空飞脚",
+            "grade": "A",
+            "value": 0.2
+        },
+        "323A": {
+            "en": "Tornado Kick 360°",
+            "zh": "旋风脚 360°",
+            "grade": "A",
+            "value": 0.2
+        },
+        "323B": {
+            "en": "Tornado Kick 540°",
+            "zh": "旋风脚 540°",
+            "grade": "B",
+            "value": 0.3
+        },
+        "323C": {
+            "en": "Tornado Kick 630° (F)/720°",
+            "zh": "旋风脚 630°（女）/720°",
+            "grade": "C",
+            "value": 0.4
+        },
+        "324A": {
+            "en": "Jumping Lotus Kick 360°",
+            "zh": "腾空外摆腿 360°",
+            "grade": "A",
+            "value": 0.2
+        },
+        "324B": {
+            "en": "Jumping Lotus Kick 540°",
+            "zh": "腾空外摆腿 540°",
+            "grade": "B",
+            "value": 0.3
+        },
+        "324C": {
+            "en": "Jumping Lotus Kick 630° (F)/720°",
+            "zh": "腾空外摆腿 630°（女）/720°",
+            "grade": "C",
+            "value": 0.4
+        },
+        "335A": {
+            "en": "Aerial Cartwheel",
+            "zh": "侧空翻",
+            "grade": "A",
+            "value": 0.2
+        },
+        "346A": {
+            "en": "No-Step Back Flip",
+            "zh": "原地后空翻",
+            "grade": "A",
+            "value": 0.2
+        },
+        "346B": {
+            "en": "Single Step Back Flip",
+            "zh": "单跳后空翻",
+            "grade": "B",
+            "value": 0.3
+        },
+        "415A": {
+            "en": "Jumping Double Side Kick",
+            "zh": "腾空双侧踹",
+            "grade": "A",
+            "value": 0.2
+        },
+        "423A": {
+            "en": "Flying Cross Legged 360° Kick to Falling on Side",
+            "zh": "腾空盘腿 360°侧扑",
+            "grade": "A",
+            "value": 0.2
+        },
+        "447A": {
+            "en": "Carp Kip-Up",
+            "zh": "鲤鱼打挺",
+            "grade": "A",
+            "value": 0.2
+        }
+    },
+   "taijiquan": {
+        "142A": {
+            "en": "Forward Stepping Kick with Low Step Balance",
+            "zh": "低势前蹬踩脚平衡",
+            "grade": "A",
+            "value": 0.2
+        },
+        "143A": {
+            "en": "Low Balance with Leg Stretched Forward",
+            "zh": "前举腿低势平衡",
+            "grade": "A",
+            "value": 0.2
+        },
+        "143B": {
+            "en": "Low Balance with Leg Crossed Behind",
+            "zh": "后插腿低势平衡",
+            "grade": "B",
+            "value": 0.3
+        },
+        "212A": {
+            "en": "Parting Kick / Heel Kick",
+            "zh": "分脚 / 蹬脚",
+            "grade": "A",
+            "value": 0.2
+        },
+        "312A": {
+            "en": "Jumping Front Slap Kick",
+            "zh": "腾空飞脚",
+            "grade": "A",
+            "value": 0.2
+        },
+        "312B": {
+            "en": "Jumping Front Straight Kick",
+            "zh": "腾空正踢腿",
+            "grade": "B",
+            "value": 0.3
+        },
+        "323A": {
+            "en": "Tornado Kick 180°",
+            "zh": "旋风脚 180°",
+            "grade": "A",
+            "value": 0.2
+        },
+        "323B": {
+            "en": "Tornado Kick 360°",
+            "zh": "旋风脚 360°",
+            "grade": "B",
+            "value": 0.3
+        },
+        "323C": {
+            "en": "Tornado Kick 450° (F)/540°",
+            "zh": "旋风脚 450°（女）/540°",
+            "grade": "C",
+            "value": 0.4
+        },
+        "324B": {
+            "en": "Jumping Lotus Kick 360°",
+            "zh": "腾空摆莲 360°",
+            "grade": "B",
+            "value": 0.3
+        },
+        "324C": {
+            "en": "Jumping Lotus Kick 450° (F)/540°",
+            "zh": "腾空摆莲 450°（女）/540°",
+            "grade": "C",
+            "value": 0.4
+        }
+    }
+}

@@ -51,7 +51,9 @@ func (t Experience) StringShort() string {
 }
 
 func ToExperience(s string) Experience {
-	switch strings.ToLower(s) {
+	exp := strings.ToLower(s)
+	exp = strings.Replace(exp, " ", "", -1)
+	switch exp {
 	case FirstTimer.String():
 		fallthrough
 	case FirstTimer.StringShort():
@@ -463,6 +465,8 @@ var (
 	}
 
 	NanduConnectionCodes = map[string]NanduCode{
+		"323B+1":    {"323B+1", 0.15, ""},
+		"324B+6":    {"324B+6", 0.15, ""},
 		"312B+8":    {"312B+8", 0.15, ""},
 		"312A+324B": {"312A+324B", 0.15, ""},
 		"324B+5":    {"324B+5", 0.15, ""},
