@@ -418,7 +418,7 @@ func getDeductions(w http.ResponseWriter, r *http.Request) {
 	deductions := data.DetermineDeductions(ring.Deductions)
 	info := map[string]interface{}{
 		"deductions": deductions,
-		"score":      data.ToTechnicalScore(deductions["result"], ring.Event.Style),
+		"score":      data.ToTechnicalScore(deductions["result"], ring.Event.Style, ring.Event.Ruleset),
 	}
 	jsonResponse(info, w)
 }

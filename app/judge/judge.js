@@ -4,7 +4,7 @@ var TPZJudge = (() => {
     // English text
     var txtEN = {
         add: "Add",
-        adjAdd: "Add adjustment",
+        adjAdd: "Add adjustment (or deduction)",
         adjLabel: "Adjustments",
         adjReason: "Reason",
         adjWarn: "Please submit or clear the adjustment!",
@@ -30,9 +30,9 @@ var TPZJudge = (() => {
         rescoreBtn: "Rescore",
         ringFinished: "Finished!",
         scoreLabel: "Score",
-        scoresLabel: "Scores submitted",
+        scoresLabel: "Judge's scores",
         selectJudge: "Select a judge role!",
-        selectLabel: "Select",
+        selectLabel: "Event",
         selectRing: "Select a ring!",
         spread: "Spread",
         startTimer: "Start Timer",
@@ -294,7 +294,7 @@ class JudgeView {
         ruleset: {
             name: "",
             maxScore: 10,
-            limitHundredths: true,
+            limitHundredths: false,
         },
         scratch: "",
         timerInterval: 0,
@@ -396,7 +396,7 @@ class JudgeView {
                     this.cache.ruleset.maxScore = 3;
                     break;
                 case "IWUF-AB":
-                    this.cache.ruleset.maxScore = 5;
+                    this.cache.ruleset.maxScore = 3; // new to 2024
                     break;
                 default:
                     this.cache.ruleset.maxScore = 10;
@@ -423,7 +423,7 @@ class HeadJudgeView extends JudgeView {
         super(cfg, cfg.txt.titleHeadJudge, "head");
         this.eventControl = new EventControlPanel(this.cfg, this.cache);
         this.eventTimer = new EventTimer(this.cfg, this.cache);
-        this.scoringBox = new ScoringPanel(this.cfg, this.cache, true);
+        this.scoringPanel = new ScoringPanel(this.cfg, this.cache, true);
         this.adjustments = new AdjustmentPanel(this.cfg, this.cache);
         this.deductionResult = new DeductionResultPanel(this.cfg);
         this.nanduResult = new NanduResultPanel(this.cfg);
@@ -444,8 +444,8 @@ class HeadJudgeView extends JudgeView {
                 for (let k of submitted) {
                     let score = data.scores[k].score;
                     if (k == this.cfg.clientId) {
-                        this.scoringBox.setScore(score);
-                        this.scoringBox.disable();
+                        this.scoringPanel.setScore(score);
+                        this.scoringPanel.disable();
                     }
                 }
             }
@@ -471,7 +471,7 @@ class HeadJudgeView extends JudgeView {
             `<div id="head-score-panel"></div>`
         );
         TPZ.appendToPanel(this.headScorePanel);
-        this.scoringBox.add(this.headScorePanel);
+        this.scoringPanel.add(this.headScorePanel);
         this.scoreList.add(this.headScorePanel);
         this.adjustments.add(this.headScorePanel);
 
@@ -490,7 +490,7 @@ class HeadJudgeView extends JudgeView {
                     this.scoreManager.update();
                     break;
                 case "rescore":
-                    this.scoringBox.clear();
+                    this.scoringPanel.clear();
                     this.scoreManager.update();
                     break;
                 case "adjust-score":
@@ -514,26 +514,35 @@ class HeadJudgeView extends JudgeView {
         this.connect();
 
         this.cfg.cb.onCompetitorChange = () => {
+            window.scrollTo(0, 0);
             this.cache.published = false;
-            this.updateEventInfo(() => {
+            this.updateEventInfo((data) => {
                 this.render();
                 this.scoreManager.update();
+                if (data.nandusheet != undefined) {
+                    this.nanduResult.render([
+                        data.nandusheet["segment1"],
+                        data.nandusheet["segment2"],
+                        data.nandusheet["segment3"],
+                        data.nandusheet["segment4"],
+                    ]);
+                }
+                this.nanduResult.update();
             }, false);
         };
 
         // get the current event / competitor
         // or select the first event
         this.updateEventInfo(() => {
-            this.scoringBox.render();
+            this.scoringPanel.render();
             this.eventControl.render();
         });
     }
 
     render() {
         this.panel.innerHTML = "";
-
         this.eventTimer.reset();
-        this.scoringBox.render();
+        this.scoringPanel.render();
         // get previously saved data (if any)
         this.scoreManager.update();
         switch (this.cache.ruleset.name) {
@@ -577,7 +586,9 @@ class HeadJudgeView extends JudgeView {
         TPZ.httpPostJson(this.cfg.api.publishScore, data, () => {
             this.setPublished();
             // automatically move onto the next competitor
-            this.eventControl.selectNextCompetitor();
+            setTimeout(() => {
+                this.eventControl.selectNextCompetitor();
+            }, 2000);
         });
     }
 
@@ -648,7 +659,7 @@ class TechnicalJudgeView extends JudgeView {
     render() {
         this.deductionPanel = new DeductionPanel(this.cfg, this.cache);
         this.deductionPanel.add();
-        TPZ.addScratchpad(this.cache.scratch);
+        // TPZ.addScratchpad(this.cache.scratch);
         this.cfg.cb.onCompetitorChange = () => {
             this.update();
         };
@@ -820,7 +831,8 @@ class ScorePublisher extends ViewObject {
 
     publish() {
         if (this.warn != undefined && this.warn()) return;
-        let text = "<b>" + this.cache.calculatedScore + "</b>";
+        let text =
+            `<b style="font-size:48px;">` + this.cache.calculatedScore + "</b>";
         TPZ.customConfirm(this.cache.competitorName, text, this.cb);
     }
 
@@ -854,11 +866,23 @@ class AdjustmentPanel extends ViewObject {
         target.appendChild(adjPanel);
         this.adj = TPZ.getElementById(this.id.adj);
         this.reason = TPZ.getElementById(this.id.reason);
+        this.adj.addEventListener("keyup", (event) => {
+            let value = this.adj.value.toUpperCase();
+            let code = DEDUCTION_CODES[value];
+            if (code != undefined) {
+                this.reason.value = value;
+            }
+        });
         target.appendChild(TPZ.renderHtml("<br/>"));
         TPZ.getElementById(this.id.btn).onclick = () => {
-            let adjValue = parseFloat(this.adj.value);
-            if (this.validate(adjValue)) {
-                this.submit(adjValue, this.reason.value);
+            let adjStr = this.adj.value.toUpperCase();
+            let adjFloat = parseFloat(this.adj.value);
+            if (adjStr in DEDUCTION_CODES) {
+                this.submit(DEDUCTION_CODES[adjStr].value, this.reason.value);
+                this.adj.value = "";
+                this.reason.value = "";
+            } else if (this.validate(adjFloat)) {
+                this.submit(adjFloat, this.reason.value);
                 this.adj.value = "";
                 this.reason.value = "";
             } else {
@@ -870,12 +894,17 @@ class AdjustmentPanel extends ViewObject {
 
     validate(value) {
         // Make sure the score is positive and below the max possible
-        if (value > -10 && value < 10) {
+        if (value > -1 && value < 1) {
             if (Math.trunc(value * 10) % 1 === 0) {
                 // Check that the score uses at most the tenths digit
                 return true;
             } else if (Math.trunc(value * 100) % 5 === 0) {
                 // Allow for five-hundredths of a point (special cases)
+                return true;
+            }
+        } else {
+            // Allow deduction codes
+            if (value.toString().toUpperCase() in DEDUCTION_CODES) {
                 return true;
             }
         }
@@ -900,7 +929,7 @@ class AdjustmentPanel extends ViewObject {
 
     update(adjs) {
         // update adjustments list
-        if (adjs && adjs.length > 0) {
+        if (adjs != undefined) {
             // Reset the list
             let total = 0;
             this.list.innerHTML = "";
@@ -911,9 +940,9 @@ class AdjustmentPanel extends ViewObject {
                 total -= adj.amount;
                 this.list.appendChild(item);
             }
-            TPZ.getElementById(
-                this.id.listLabel
-            ).textContent = `${this.txt.adjLabel}: ${total}`;
+            TPZ.getElementById(this.id.listLabel).textContent = `${
+                this.txt.adjLabel
+            }: ${total.toFixed(2)}`;
         }
     }
 }
@@ -1358,7 +1387,8 @@ class DeductionPanel extends ViewObject {
         this.panel.innerHTML =
             `<p>${this.txt.deductAttn}</p><p>${this.txt.deductInstr}</p>` +
             `<p>${this.txt.deductLabel}:</p><ul id="${this.id.deductList}"></ul>` +
-            `<div><button id="${this.id.deductBtn}" class="btn btn-info">${this.txt.deductAdd}</button></div>` +
+            `<div><button id="${this.id.deductBtn}" class="btn btn-info">${this.txt.deductAdd}</button></div>`;
+        /*
             `<div id="ded-cheatsheet"><table>` +
             `<thead><tr><th>Deduction Cheatsheet (2005)</th></tr></thead><tbody>` +
             `<tr><td><b>14</b></td><td>cross-leg balance</td></tr>` +
@@ -1387,7 +1417,7 @@ class DeductionPanel extends ViewObject {
             `<tr><td><b>77</b></td><td>longtime balance less than two seconds</td></tr>` +
             `<tr><td><b>78</b></td><td>body touches outside carpet</td></tr>` +
             `<tr><td><b>79</b></td><td>movement forgotten</td></tr>` +
-            `</tbody></table></div>`;
+            `</tbody></table>`</div>`;*/
 
         this.deductionCount = 0;
         this.deductionsList = TPZ.getElementById(this.id.deductList);
@@ -1445,7 +1475,7 @@ class DeductionPanel extends ViewObject {
             if (event.key == "Tab" || event.key == "Enter") {
                 // user has pressed <TAB> or <ENTER>
                 event.preventDefault();
-                //gotoNextDeductionBox(dbox);
+                this.next(dbox);
                 // submit this deduction
                 //this.submit(dbox);
             } else if (event.which === 32) {
@@ -1453,16 +1483,23 @@ class DeductionPanel extends ViewObject {
             }
         });
         codebox.addEventListener("keyup", (event) => {
+            if (event.key == "Tab" || event.key == "Enter") {
+                return;
+            }
             // When a valid deduction is entered, move on to the next (if possible)
-            let deductionCode = dbox.querySelector(".deduction-code").value;
-            if (deductionCode.length >= 2) {
+            let deductionText = dbox.querySelector(".deduction-code").value;
+            if (deductionText.length > 1) {
+                let deductionCode = deductionText;
                 if (this.validate(deductionCode)) {
                     dbox.classList.remove("deduction-invalid");
                     this.submit(dbox);
-                    this.next(dbox);
                     // add deduction name
                     let dName = this.toName(deductionCode);
                     dbox.querySelector(".deduction-name").textContent = dName;
+                    if (deductionText.length > 1) {
+                        // automatically move to the next box
+                        this.next(dbox);
+                    }
                 } else {
                     dbox.classList.add("deduction-invalid");
                 }
@@ -1501,7 +1538,7 @@ class DeductionPanel extends ViewObject {
         }
         */
         // use the local copy
-        if (this.codes[code] != undefined) {
+        if (code.toUpperCase() in DEDUCTION_CODES) {
             return true;
         }
         return false;
@@ -1510,9 +1547,10 @@ class DeductionPanel extends ViewObject {
     toName(code) {
         // TODO: check if server copy exists
         // use the local copy
-        let c = this.codes[code];
+        code = code.toUpperCase();
+        let c = DEDUCTION_CODES[code];
         if (c != undefined) {
-            return c.name;
+            return c.en;
         }
         return "invalid";
     }
@@ -1527,6 +1565,10 @@ class DeductionPanel extends ViewObject {
             alert(`Deduction #${label} is missing its code!`);
             return;
         }
+        if (code.length == 1) {
+            code = "0" + code;
+        }
+        code = code.toUpperCase();
         if (!this.validate(code)) {
             alert(`Deduction #${label}: ${code} is not a valid code`);
             return;
@@ -1569,9 +1611,18 @@ class DeductionPanel extends ViewObject {
     }
 
     next(deductElement) {
+        console.log("NEXT");
         let nextElement = deductElement.nextElementSibling;
         if (nextElement != undefined) {
             nextElement.querySelector(".deduction-code").focus();
+        } else {
+            nextElement = this.firstEmpty();
+            if (nextElement != undefined) {
+                nextElement.focus();
+            } else {
+                // back to the top
+                document.getElementsByClassName("deduction-code")[0].focus();
+            }
         }
     }
 
@@ -1585,92 +1636,315 @@ class DeductionPanel extends ViewObject {
         }
         return null;
     }
-
-    codes = {
-        10: { name: "standing w/ leg to head (侧朝天蹬直立)", value: 0.1 },
-        11: { name: "standing back kick (后踢抱脚直立)", value: 0.1 },
-        12: { name: "backward balance (仰身平衡)", value: 0.1 },
-        13: { name: "sideways balance (十字平衡)", value: 0.1 },
-        14: { name: "cross-leg balance (扣腿平衡)", value: 0.1 },
-        15: { name: "low balance w/ leg forward (前举腿低势平衡)", value: 0.1 },
-        16: { name: "low balance w/ leg behind (后插腿低势平衡)", value: 0.1 },
-        17: { name: "stamp in low body position (低势前蹬踩脚)", value: 0.1 },
-        18: { name: "sidekick balance (侧踹平衡)", value: 0.1 },
-        20: { name: "front sweep (前扫踢)", value: 0.1 },
-        21: { name: "back sweep (后扫踢)", value: 0.1 },
-        22: { name: "front split (跌叉)", value: 0.1 },
-        23: { name: "snap kick (弹腿) / side kick (踹腿)", value: 0.1 },
-        24: { name: "parting kick (分脚) / heel kick (蹬脚)", value: 0.1 },
-        25: { name: "lotus kick (摆莲脚)", value: 0.1 },
-        26: { name: "slap kick (拍脚)", value: 0.1 },
-        27: { name: "dragon's dive (雀地龙)", value: 0.1 },
-        28: { name: "horizontal nail kick (横钉腿)", value: 0.1 },
-        30: {
-            name: "jump kick [flying, tornado, lotus, outside] (腾空飞脚、旋风脚、腾空摆莲、腾空外摆腿)",
-            value: 0.1,
-        },
-        31: { name: "jump front straight kick (腾空正踢腿)", value: 0.1 },
-        32: { name: "aerial cartwheel [360] (侧空翻 [360])", value: 0.1 },
-        33: { name: "butterfly kick (旋子)", value: 0.1 },
-        34: { name: "jump snap kick (腾空箭弹)", value: 0.1 },
-        40: { name: "tornado 360 fall (腾空盘腿 360 度侧扑)", value: 0.1 },
-        41: { name: "kip-up (鲤鱼打挺直立)", value: 0.1 },
-        42: { name: "double flying side kick (腾空双侧踹)", value: 0.1 },
-        50: { name: "bow stance (弓步)", value: 0.1 },
-        51: { name: "horse stance (马步)", value: 0.1 },
-        52: { name: "empty [cat] stance (虚步)", value: 0.1 },
-        53: { name: "crouch [drop] stance (仆步)", value: 0.1 },
-        54: {
-            name: "step [forward, back, side] (上步、退步、进步、跟步、侧行步)",
-            value: 0.1,
-        },
-        55: { name: "butterfly stance (蝶步)", value: 0.1 },
-        56: { name: "kneeling stance (跪步)", value: 0.1 },
-        57: { name: "dragon-riding stance (骑龙步)", value: 0.1 },
-        60: { name: "upward parry (挂剑) / uppercut (撩剑)", value: 0.1 },
-        61: { name: "sword grip (握剑)", value: 0.1 },
-        62: { name: "sword wrapping (缠头裹脑 )", value: 0.1 },
-        63: { name: "spear parry (拦枪, 拿枪)", value: 0.1 },
-        64: { name: "spear thrust (扎枪)", value: 0.1 },
-        65: {
-            name: "figure-8 (立舞花枪、立舞花棍) / uppercut (双手提撩花棍)",
-            value: 0.1,
-        },
-        66: { name: "throw and catch (器械抛接 )", value: 0.1 },
-        67: { name: "pushing the cudgel (顶棍)", value: 0.1 },
-        70: {
-            name: "body sway / shuffle / skip in balance (上体晃动、脚移动或跳动)",
-            value: 0.1,
-        },
-        71: { name: "extra support (附加支撑)", value: 0.2 },
-        72: { name: "body fall (倒地)", value: 0.3 },
-        73: {
-            name: "weapon touches ground, handle falls, hits body, deforms (器械触地、脱把、碰身、变形)",
-            value: 0.1,
-        },
-        74: { name: "broken weapon (器械折断)", value: 0.2 },
-        75: { name: "dropped weapon (器械掉地)", value: 0.3 },
-        76: {
-            name: "ornament drops from apparatus / body is tangled with apparatus / loose buttons, or torn costume / shoes off (刀彩、剑穗、枪缨、服饰、头饰掉地；刀彩、剑穗、软器械缠手 (缠身)；服装开纽或撕裂；鞋脱落)",
-            value: 0.1,
-        },
-        76: {
-            name: "weapon ornament dropped or tangled with body / loose buttons, torn costume, shoes off (刀彩、剑穗、枪缨、服饰、头饰掉地；刀彩、剑穗、软器械缠手（缠身）；服装开纽或撕裂；鞋脱落)",
-            value: 0.1,
-        },
-        77: {
-            name: "longtime balance less than two seconds (持久平衡静止时间不足 2 秒)",
-            value: 0.1,
-        },
-        78: {
-            name: "body touches outside carpet (身体任何一部分触及线外地面)",
-            value: 0.1,
-        },
-        79: { name: "movement forgotten (遗忘)", value: 0.1 },
-        "00": { name: "deduction", value: 0.1 },
-    };
 }
 
+DEDUCTION_CODES = {
+    99: { en: "deduction", value: 0.1 },
+    "01": {
+        en: "Fist",
+        value: 0.1,
+    },
+    "02": {
+        en: "Palm; Tiger's Claw",
+        value: 0.1,
+    },
+    "03": {
+        en: "Hook; Crane's Beak",
+        value: 0.1,
+    },
+    "04": {
+        en: "Sword Fingers; Single Finger Palm",
+        value: 0.1,
+    },
+    "05": {
+        en: "Hand Techniques",
+        value: 0.1,
+    },
+    "06": {
+        en: "Body Posture",
+        value: 0.1,
+    },
+    10: {
+        en: "Grasp the foot and bring it to head level; Side kick up to catch the foot at head level",
+        value: 0.1,
+    },
+    12: {
+        en: "Backward Leaning Balance",
+        value: 0.1,
+    },
+    13: {
+        en: "Forward Leaning Balance with Arms Outspread",
+        value: 0.1,
+    },
+    14: {
+        en: "[Front / Rear] Cross-legged Balance",
+        value: 0.1,
+    },
+    15: {
+        en: "Sidewards Leaning Balance; Exploring the Ocean Balance",
+        value: 0.1,
+    },
+    16: {
+        en: "Gazing at the Moon Balance",
+        value: 0.1,
+    },
+    17: {
+        en: "Forward Sole Kick with Low Step Balance",
+        value: 0.1,
+    },
+    18: {
+        en: "Low Balance with Leg Stretched Forward",
+        value: 0.1,
+    },
+    19: {
+        en: "Low Balance with Leg Crossed Behind",
+        value: 0.1,
+    },
+    20: {
+        en: "Front Sweep",
+        value: 0.1,
+    },
+    21: {
+        en: "Back Sweep",
+        value: 0.1,
+    },
+    22: {
+        en: "Falling Front Split; Hurdler's Split Position",
+        value: 0.1,
+    },
+    23: {
+        en: "[Snap / Spring / Heel Push / Side / Horizontal Stamping / Tiger Tail / Parting] Kick",
+        value: 0.1,
+    },
+    24: {
+        en: "[Front / Side] Stretch Kick",
+        value: 0.1,
+    },
+    25: {
+        en: "[Inward / Lotus / Front Slap] Kick; Turning Back Crescent Kick",
+        value: 0.1,
+    },
+    26: {
+        en: "Single Knee Raised Position",
+        value: 0.1,
+    },
+    27: {
+        en: "Horizontal Nail Kick",
+        value: 0.1,
+    },
+    30: {
+        en: "Jumping [Front / Slant / Double Front Slap / Tornado / Lotus / Outer Crescent] Kick",
+        value: 0.1,
+    },
+    31: {
+        en: "Jumping Front Straight Kick",
+        value: 0.1,
+    },
+    32: {
+        en: "Aerial Cartwheel [Twist]",
+        value: 0.1,
+    },
+    33: {
+        en: "Butterfly Kick [Twist]",
+        value: 0.1,
+    },
+    34: {
+        en: "Jumping [Snap / Spring / Heel Push] Kick",
+        value: 0.1,
+    },
+    40: {
+        en: "Flying Cross Legged Kick 360° to Landing on Side",
+        value: 0.1,
+    },
+    42: {
+        en: "Jumping Double Side Kick",
+        value: 0.1,
+    },
+    50: {
+        en: "Bow Stance",
+        value: 0.1,
+    },
+    51: {
+        en: "Horse Stance",
+        value: 0.1,
+    },
+    52: {
+        en: "Empty Stance",
+        value: 0.1,
+    },
+    53: {
+        en: "Crouching Stance",
+        value: 0.1,
+    },
+    54: {
+        en: "Cross-Legged Crouching Stance",
+        value: 0.1,
+    },
+    55: {
+        en: "Butterfly Stance",
+        value: 0.1,
+    },
+    56: {
+        en: "Single Kneeling Stance",
+        value: 0.1,
+    },
+    57: {
+        en: "Dragon Riding Stance",
+        value: 0.1,
+    },
+    58: {
+        en: "Cross-Legged Sitting",
+        value: 0.1,
+    },
+    59: {
+        en: "[Advancing / Retreating / Forward / Follow-Up / Sideways] Step",
+        value: 0.1,
+    },
+    60: {
+        en: "Straight Sword [Hooking Parry / Uppercut]; Fan [Hooking Parry / Uppercut]",
+        value: 0.1,
+    },
+    61: {
+        en: "Gripping the Straight Sword; Fan [Opening / Closing]",
+        value: 0.1,
+    },
+    62: {
+        en: "Broadsword Twining; Wrapping with the Broadsword",
+        value: 0.1,
+    },
+    63: {
+        en: "[Outward / Inward] Blocking with the Spear; Spear Thrust; Fan [Thrust / Chop]",
+        value: 0.1,
+    },
+    64: {
+        en: "Horizontal Cudgel Windmill Waving",
+        value: 0.1,
+    },
+    65: {
+        en: "Vertical Figure '8' with the [Spear / Cudgel]; Vertical Uppercutting Cudgel",
+        value: 0.1,
+    },
+    66: {
+        en: "Weapon Throwing & Catching Techniques",
+        value: 0.1,
+    },
+    67: {
+        en: "Cudgel Handle Planting",
+        value: 0.1,
+    },
+    68: {
+        en: "Straight Sword Enveloping",
+        value: 0.1,
+    },
+    69: {
+        en: "Fan Pointing",
+        value: 0.1,
+    },
+    "70A": {
+        en: "Torso sways",
+        value: 0.05,
+    },
+    "70B": {
+        en: "Foot shuffles or skips",
+        value: 0.1,
+    },
+    71: {
+        en: "Additional Support",
+        value: 0.2,
+    },
+    72: {
+        en: "Fall",
+        value: 0.3,
+    },
+    73: {
+        en: "Weapon unintentionally makes contact with the floor; Loss of grip; Weapon strikes the body; Weapon deforms; Fan surface is detached from fan's ribs",
+        value: 0.1,
+    },
+    74: {
+        en: "Weapon Broken; Main or minor ribs of the fan breaks, nails on the ribs falls off/detached",
+        value: 0.2,
+    },
+    75: {
+        en: "Weapon dropped on the floor",
+        value: 0.3,
+    },
+    76: {
+        en: "Broad Sword Ribbon; Straight sword Tassel; Spear Tassel; Garment Item; Headwear dropped on the floor; Broad Sword Ribbon; Straight sword Tassel; Soft Weapon entangles hand or body; Costume torn or button opened up; Shoes dropped off",
+        value: 0.1,
+    },
+    77: {
+        en: "Balance technique not completed rhythmically and quickly according to the characteristics of the event; Balance technique not maintained for at least 2 seconds",
+        value: 0.1,
+    },
+    78: {
+        en: "Out-of-bounds",
+        value: 0.1,
+    },
+    79: {
+        en: "Forgetting (Movement Forgotten)",
+        value: 0.1,
+    },
+    80: {
+        en: "For each missing/altering compulsory/mandatory technique in [compulsory / optional] routines;",
+        value: 0.2,
+    },
+    81: {
+        en: "Compulsory Routines: Missing or additional step",
+        value: 0.1,
+    },
+    82: {
+        en: "Nanquan, Nandao, Nangun Compulsory Routines: For each missing or additional vocalization or did not vocalize in accordance with the requirement",
+        value: 0.2,
+    },
+    83: {
+        en: "A static state (excluding balance techniques) which is held for longer than 2 seconds; During Taijiquan or Taijijian there is an obvious unmethodical pause prior to the execution of Degree of Difficulty technique; Performing non-offensive or non-defensive actions that disrupts the routine's rhythm before executing the Degree of Difficulty techniques",
+        value: 0.1,
+    },
+    84: {
+        en: "For Changquan type and Nanquan Type events (including weapon routines), movements done in averted directions exceeding 90 degrees; For Taijiquan and Taijijian events, movements done in averted directions exceeding 45 degrees",
+        value: 0.1,
+    },
+    85: {
+        en: "Between 2 groups of Degree of Difficulty techniques, there are less than 2 complete technique movements",
+        value: 0.1,
+    },
+    86: {
+        en: "Events Requiring Musical Accompaniment: No music or music which includes vocals/lyrics",
+        value: 0.5,
+    },
+    90: {
+        en: "Attack goes wide or off target area; Footwork/Stance, Leg Technique not meeting the requirements; Jumping technique, Tumbling Technique not meeting the requirements; Weapon Technique not meeting the requirements",
+        value: 0.1,
+    },
+    91: {
+        en: "Motionless state held for more than 3 seconds; Jumping technique, Tumbling Technique not meeting the requirements",
+        value: 0.1,
+    },
+    92: {
+        en: "Duration without attack and defense exceeds 3 seconds; Weapon Technique not meeting the requirements",
+        value: 0.1,
+    },
+    93: {
+        en: "Misses in attack or defense; Misses in attack or defense during sparring content",
+        value: 0.1,
+    },
+    94: {
+        en: "Waiting for partner to attack; Waiting for partner to attack during sparring content",
+        value: 0.1,
+    },
+    95: {
+        en: "Mishit on Partner/s; Mishit on Partner/s during sparring content",
+        value: 0.1,
+    },
+    96: {
+        en: "Single technique not executed uniformly",
+        value: 0.1,
+    },
+    97: {
+        en: "Group formation not uniform",
+        value: 0.1,
+    },
+};
 // TODO: Allow user to press [z | x] to mark next skill
 class NanduPanel extends ViewObject {
     lineMax = 4;
@@ -1775,28 +2049,30 @@ class NanduPanel extends ViewObject {
                     return;
                 }
                 let combo = this.parseNanduCombo(val);
-                // start a new row
-                rowCount++;
-                let rowItemCount = 0;
-                let row = this.newRow(sectionLabel, rowCount);
-                sectionBody.append(row);
-                this.addNanduComponent(
-                    sectionLabel,
-                    rowCount,
-                    rowItemCount,
-                    combo.base.code,
-                    combo.base.name
-                );
-                rowItemCount++;
-                for (let n of combo.connections) {
+                for (let nandu of combo) {
+                    // start a new row
+                    rowCount++;
+                    let rowItemCount = 0;
+                    let row = this.newRow(sectionLabel, rowCount);
+                    sectionBody.append(row);
                     this.addNanduComponent(
                         sectionLabel,
                         rowCount,
                         rowItemCount,
-                        n.code,
-                        n.name
+                        nandu.base.code,
+                        nandu.base.name
                     );
                     rowItemCount++;
+                    for (let n of nandu.connections) {
+                        this.addNanduComponent(
+                            sectionLabel,
+                            rowCount,
+                            rowItemCount,
+                            n.code,
+                            n.name
+                        );
+                        rowItemCount++;
+                    }
                 }
             });
         }
@@ -1837,72 +2113,175 @@ class NanduPanel extends ViewObject {
     }
 
     codes = {
-        "111A": { name: "standing leg to head", value: 0.2 },
-        "112A": { name: "side kick and hold leg", value: 0.2 },
-        "113A": { name: "backward balance", value: 0.2 },
-        "143A": { name: "low balance with leg forward", value: 0.2 },
-        "142A": { name: "low stepping on kick forward", value: 0.2 },
-        "132A": { name: "balance with sideward sole kick", value: 0.2 },
-        "133B": { name: "balance with arms spread", value: 0.3 },
-        "143B": { name: "low balance with leg behind support leg", value: 0.3 },
-        "112C": { name: "back kick and hold leg", value: 0.4 },
-        "113C": { name: "raise leg sideways with heel up", value: 0.4 },
-        "244A": { name: "540 front sweep", value: 0.2 },
-        "212A": { name: "parting kick and heel kick", value: 0.2 },
-        "244B": { name: "900 front sweep", value: 0.3 },
-        "323A": { name: "360 tornado kick", value: 0.2 },
-        "333A": { name: "butterfly", value: 0.2 },
-        "324A": { name: "360 lotus kick", value: 0.2 },
-        "335A": { name: "aerial cartwheel", value: 0.2 },
-        "312A": { name: "kick in flight", value: 0.2 },
-        "346A": { name: "backflip", value: 0.2 },
-        "323B": { name: "540 tornado kick", value: 0.3 },
-        "353B": { name: "360 butterfly", value: 0.3 },
-        "324B": { name: "540 lotus kick", value: 0.3 },
-        "355B": { name: "360 aerial cartwheel", value: 0.3 },
-        "312B": { name: "front kick in flight", value: 0.3 },
-        "322B": { name: "180 kick in flight", value: 0.3 },
-        "346B": { name: "single-step backflip (gainer)", value: 0.3 },
-        "355C": { name: "720 aerial cartwheel", value: 0.4 },
-        "323C": { name: "720 tornado kick", value: 0.4 },
-        "353C": { name: "720 butterfly", value: 0.4 },
-        "324C": { name: "720 lotus kick", value: 0.4 },
-        "324C": { name: "540 lotus kick", value: 0.4 },
-        "366C": { name: "360 single-step back butterfly", value: 0.4 },
-        "415A": { name: "double sidekick in flight", value: 0.2 },
-        "423A": { name: "360 tornado land on side", value: 0.2 },
-        "447C": { name: "kip-up", value: 0.4 },
-        "(A)": { name: "(connection)", value: 0.1 },
-        "1A": { name: "horse stance", value: 0.1 },
-        "2A": { name: "butterfly stance", value: 0.1 },
-        "3A": { name: "180 to standing with knee raised", value: 0.1 },
-        "4A": { name: "front split", value: 0.1 },
-        "6A": { name: "sitting position", value: 0.1 },
-        "7A": { name: "bow stance", value: 0.1 },
-        "8A": { name: "throw and catch", value: 0.1 },
-        "9A": { name: "land on takeoff foot", value: 0.1 },
-        "(B)": { name: "(connection)", value: 0.15 },
-        "1B": { name: "horse stance", value: 0.15 },
-        "2B": { name: "butterfly stance", value: 0.15 },
-        "3B": { name: "stand with knee raised", value: 0.15 },
-        "4B": { name: "front split", value: 0.15 },
-        "5B": { name: "dragons dive", value: 0.15 },
-        "8B": { name: "throw and catch", value: 0.15 },
-        "9B": { name: "land on takeoff foot", value: 0.15 },
-        "(C)": { name: "(connection)", value: 0.2 },
-        "1C": { name: "horse stance", value: 0.2 },
-        "2C": { name: "butterfly stance", value: 0.2 },
-        "3C": { name: "stand with knee raised", value: 0.2 },
-        "5C": { name: "dragons dive", value: 0.2 },
-        "1D": { name: "horse stance", value: 0.25 },
-        "3D": { name: "stand with knee raised", value: 0.25 },
-        "4D": { name: "front split", value: 0.25 },
+        general: {
+            "111A": {
+                en: "Grasp the foot and bring it to head level with the leg held vertically while remaining standing",
+                value: 0.2,
+            },
+            "133B": {
+                en: "Forward Leaning Balance with Arms Outspread",
+                value: 0.3,
+            },
+            "112A": {
+                en: "Side kick up to catch the foot at head level with the leg held vertically while remaining standing",
+                value: 0.2,
+            },
+            "123A": { en: "Backward Leaning Balance", value: 0.2 },
+            "153A": { en: "Exploring the Ocean Balance", value: 0.2 },
+            "163A": { en: "Gazing at the Moon Balance", value: 0.2 },
+            "244A": { en: "Front Sweep 540°", value: 0.2 },
+            "244B": { en: "Front Sweep 900°", value: 0.3 },
+            "312A": { en: "Jumping Front Slap Kick", value: 0.2 },
+            "312B": { en: "Jumping Front Straight Kick", value: 0.3 },
+            "323A": { en: "Tornado Kick 360°", value: 0.2 },
+            "323B": { en: "Tornado Kick 540°", value: 0.3 },
+            "323C": { en: "Tornado Kick 630° (F)/720°", value: 0.4 },
+            "324A": { en: "Jumping Lotus Kick 360°", value: 0.2 },
+            "324B": { en: "Jumping Lotus Kick 540°", value: 0.3 },
+            "324C": { en: "Jumping Lotus Kick 630° (F)/720°", value: 0.4 },
+            "333A": { en: "Butterfly Kick", value: 0.2 },
+            "353B": { en: "Butterfly Twist 360°", value: 0.3 },
+            "353C": { en: "Butterfly Twist 720°", value: 0.4 },
+            "335A": { en: "Aerial Cartwheel", value: 0.2 },
+            "355B": { en: "Aerial Cartwheel Twist 360°", value: 0.3 },
+            "346A": { en: "No-Step Back Flip", value: 0.2 },
+            "346B": { en: "Single Step Back Flip", value: 0.3 },
+            "415A": { en: "Jumping Double Side Kick", value: 0.2 },
+            "423A": {
+                en: "Flying Cross Legged 360° Kick to Falling on Side",
+                value: 0.2,
+            },
+            "447A": { en: "Carp Kip-Up", value: 0.2 },
+        },
+        taijiquan: {
+            "142A": {
+                en: "Forward Stepping Kick with Low Step Balance",
+                value: 0.2,
+            },
+            "143A": {
+                en: "Low Balance with Leg Stretched Forward",
+                value: 0.2,
+            },
+            "143B": { en: "Low Balance with Leg Crossed Behind", value: 0.3 },
+            "212A": { en: "Parting Kick / Heel Kick", value: 0.2 },
+            "312A": { en: "Jumping Front Slap Kick", value: 0.2 },
+            "312B": { en: "Jumping Front Straight Kick", value: 0.3 },
+            "323A": { en: "Tornado Kick 180°", value: 0.2 },
+            "323B": { en: "Tornado Kick 360°", value: 0.3 },
+            "323C": { en: "Tornado Kick 450° (F)/540°", value: 0.4 },
+            "324B": { en: "Jumping Lotus Kick 360°", value: 0.3 },
+            "324C": { en: "Jumping Lotus Kick 450° (F)/540°", value: 0.4 },
+        },
     };
 
-    taiji_codes = {
-        "323B": { name: "360 tornado kick", value: 0.3 },
-        "324B": { name: "360 lotus kick", value: 0.3 },
-        "323C": { name: "540 tornado kick", value: 0.4 },
+    connections = {
+        changquan: {
+            "244A+6": { value: 0.1 },
+            "312A+6": { value: 0.1 },
+            "312A+323A": { value: 0.1 },
+            "312A+324A": { value: 0.1 },
+            "312A+353B": { value: 0.1 },
+            "323A+1": { value: 0.1 },
+            "323A+4": { value: 0.1 },
+            "323A+6": { value: 0.1 },
+            "323A+324A": { value: 0.1 },
+            "323A+353B": { value: 0.1 },
+            "324A+1": { value: 0.1 },
+            "324A+4": { value: 0.1 },
+            "324A+6": { value: 0.1 },
+            "324A+7": { value: 0.1 },
+            "333A+353B": { value: 0.1 },
+            "333A+6": { value: 0.1 },
+            "335A+4": { value: 0.1 },
+            "335A+353B": { value: 0.1 },
+            "312A+9": { value: 0.1 },
+            "445A+9": { value: 0.1 },
+            "312A+335A": { value: 0.15 },
+            "312A+323B": { value: 0.15 },
+            "312A+324B": { value: 0.15 },
+            "323A+3": { value: 0.15 },
+            "323A+324B": { value: 0.15 },
+            "323B+1": { value: 0.15 },
+            "323B+4": { value: 0.15 },
+            "323B+6": { value: 0.15 },
+            "324A+3": { value: 0.15 },
+            "324B+1": { value: 0.15 },
+            "324B+6": { value: 0.15 },
+            "333A+244A": { value: 0.15 },
+            "353B+4": { value: 0.15 },
+            "353B+323B": { value: 0.15 },
+            "335A+323B": { value: 0.15 },
+            "323A+9": { value: 0.15 },
+            "324A+9": { value: 0.15 },
+            "312A+323C": { value: 0.2 },
+            "312A+324C": { value: 0.2 },
+            "312A+353C": { value: 0.2 },
+            "323A+353C": { value: 0.2 },
+            "323B+3": { value: 0.2 },
+            "323B+324B": { value: 0.2 },
+            "323C+1": { value: 0.2 },
+            "323C+6": { value: 0.2 },
+            "324B+0": { value: 0.2 },
+            "324B+3": { value: 0.2 },
+            "324C+6": { value: 0.2 },
+            "333A+353C": { value: 0.2 },
+            "353B+323C": { value: 0.2 },
+            "335A+323C": { value: 0.2 },
+            "335A+353C": { value: 0.2 },
+            "323B+324C": { value: 0.25 },
+            "323C+4": { value: 0.25 },
+            "324C+1": { value: 0.25 },
+            "353C+4": { value: 0.25 },
+        },
+        nanquan: {
+            "312A+3": { value: 0.1 },
+            "323A+1": { value: 0.1 },
+            "323A+2": { value: 0.1 },
+            "323A+312A": { value: 0.1 },
+            "323A+324A": { value: 0.1 },
+            "324A+1": { value: 0.1 },
+            "324A+346A": { value: 0.1 },
+            "335A+10": { value: 0.1 },
+            "346A+2": { value: 0.1 },
+            "312A+346B": { value: 0.15 },
+            "323A+324B": { value: 0.15 },
+            "323B+1": { value: 0.15 },
+            "323B+2": { value: 0.15 },
+            "324A+346B": { value: 0.15 },
+            "324B+1": { value: 0.15 },
+            "346B+2": { value: 0.15 },
+            "447A+2": { value: 0.15 },
+            "323A+3": { value: 0.2 },
+            "323A+346B": { value: 0.2 },
+            "323B+324B": { value: 0.2 },
+            "324A+3": { value: 0.2 },
+            "324B+0": { value: 0.2 },
+            "324B+346B": { value: 0.2 },
+            "346B+11": { value: 0.2 },
+            "323C+1": { value: 0.25 },
+            "324C+1": { value: 0.25 },
+            "323B+324C": { value: 0.2 },
+        },
+        taijiquan: {
+            "142A+3": { value: 0.1 },
+            "143A+3": { value: 0.1 },
+            "143A+212A": { value: 0.1 },
+            "312A+3": { value: 0.1 },
+            "312A+324B": { value: 0.1 },
+            "323A+3": { value: 0.1 },
+            "323B+8": { value: 0.1 },
+            "324B+8": { value: 0.1 },
+            "143B+3": { value: 0.15 },
+            "143B+212A": { value: 0.15 },
+            "312A+324C": { value: 0.15 },
+            "312B+8": { value: 0.15 },
+            "324B+5": { value: 0.15 },
+            "323B+3": { value: 0.2 },
+            "324B+3": { value: 0.2 },
+            "324C+5": { value: 0.2 },
+            "323C+3": { value: 0.25 },
+            "324C+3": { value: 0.25 },
+        },
     };
 
     parseNanduString(s) {
@@ -1910,47 +2289,52 @@ class NanduPanel extends ViewObject {
     }
 
     parseNanduCombo(s) {
-        // Possible formats: 312A+335A(B), 323A+4A, 415A, 323A+312A(A)+3A
-        // ex1: base: 323A, conn: (A); base: 312A, conn: 3A
-        // ex2: base: 312A, conn: (B); base: 335A, conn: none
+        // Possible formats: 312B+8,312A+324B+5;312A+3,323A+3;143B;
+        // ex1: base: 312B, conn: 312B+8
+        // ex2: base: 312A, conn: 312A+324B; base: 324B, conn: 324B+5
         let component_codes = s.split("+");
-        let base = this.getNanduComponent(component_codes[0].trim());
-        let connections = [];
-        if (component_codes.length > 1) {
-            for (let i = 1; i < component_codes.length; i++) {
-                let component = component_codes[i];
-                let dynIdx = component.indexOf("("); // Index of a dynamic connection -- eg: (A)
-                if (dynIdx != -1) {
-                    // get both parts
-                    connections.push(
-                        this.getNanduComponent(
-                            component.substring(dynIdx).trim()
-                        )
-                    );
-                    connections.push(
-                        this.getNanduComponent(
-                            component.substring(0, dynIdx).trim()
-                        )
-                    );
-                } else {
-                    connections.push(this.getNanduComponent(component.trim()));
-                }
-            }
+        let bases = [];
+        if (component_codes.length == 1) {
+            bases.push(new Nandu(this.getNanduBase(component_codes[0]), []));
+            return bases;
         }
-        return new Nandu(base, connections);
+        for (let i = 0; i + 1 < component_codes.length; i++) {
+            let base = this.getNanduBase(component_codes[i]);
+            let combo = component_codes[i] + "+" + component_codes[i + 1];
+            let connection = this.getNanduConnection(combo);
+            bases.push(new Nandu(base, [connection]));
+        }
+        return bases;
     }
 
-    getNanduComponent(code) {
-        let isTaiji = this.state.eventName.toLowerCase().indexOf("taiji") > 0;
+    getNanduBase(code) {
+        let isTaiji = this.state.eventName.toLowerCase().indexOf("taiji") > -1;
         if (isTaiji) {
             // Check for taiji specific nandu codes first
-            let t = this.taiji_codes[code];
+            let t = this.codes.taijiquan[code];
             if (t) {
                 return new NanduComponent(code, t.name, t.value);
             }
         }
-        let v = this.codes[code];
+        let v = this.codes.general[code];
         return new NanduComponent(code, v.name, v.value);
+    }
+    getNanduConnection(combo) {
+        let isTaiji = this.state.eventName.toLowerCase().indexOf("taiji") > -1;
+        if (isTaiji) {
+            let value = this.connections.taijiquan[combo];
+            return new NanduComponent(combo, "connection", value);
+        }
+        let isNanquan =
+            this.state.eventName.toLowerCase(" nq ") > -1 ||
+            this.state.eventName.toLowerCase(" ng ") > -1 ||
+            this.state.eventName.toLowerCase(" nd ") > -1;
+        if (isNanquan) {
+            let value = this.connections.nanquan[combo];
+            return new NanduComponent(combo, "connection", value);
+        }
+        let value = this.connections.changquan[combo];
+        return new NanduComponent(combo, "connection", value);
     }
 }
 
@@ -1976,9 +2360,10 @@ class DeductionResultPanel extends ViewObject {
 
     add(target) {
         let deductionsPanel = TPZ.renderHtml(
-            'Deductions: <div id="ded-time"></div>' +
+            "Deductions:" +
                 '<span id="deduction-results"></span>' +
-                '<table id="deduction-table"><caption>Codes</caption></table>'
+                '<table id="deduction-table"><caption>Codes</caption></table>' +
+                '<div id="ded-time"></div>'
         );
         TPZ.appendElements(target, deductionsPanel);
         DeductionTimeline.init("ded-time");
@@ -2060,6 +2445,25 @@ class NanduResultPanel extends ViewObject {
                 '<tbody id="nandu-results"></tbody></table>'
         );
         TPZ.appendElements(target, nanduPanel);
+    }
+
+    render(nandusheet) {
+        let header = TPZ.getElementById("nandu-codes");
+        for (let section of nandusheet) {
+            let combos = section.split(",");
+            for (let combo of combos) {
+                let components = combo.split("+");
+                for (let i in components) {
+                    let name = components[i];
+                    let cell = TPZ.renderHtml(`<th>${name}</th>`);
+                    header.append(cell);
+                    if (i == 0 && components.length > 2) {
+                        cell = TPZ.renderHtml(`<th>&nbsp;</th>`);
+                        header.append(cell);
+                    }
+                }
+            }
+        }
     }
 
     update() {

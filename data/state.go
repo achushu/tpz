@@ -43,6 +43,7 @@ type RingState struct {
 	judges    []*Judge
 	listeners []*Listener
 	mu        sync.RWMutex
+	scoreMu   sync.RWMutex
 }
 
 var (
@@ -189,7 +190,9 @@ func (r *RingState) SetCompetitor(newComp *Competitor, event *Event) {
 
 	// get any saved state
 	if scores, err := GetScores(routine.ID); err == nil {
+		r.scoreMu.Lock()
 		r.Scores = scores
+		r.scoreMu.Unlock()
 	} else {
 		out.Errorf("error retrieving scores for competitor %d: %s\n", r.Competitor.ID, err)
 	}
@@ -220,10 +223,8 @@ func (r *RingState) SetCompetitor(newComp *Competitor, event *Event) {
 				out.Errorf("error retrieving nandu sheet for competitor %d: %s\n", r.Competitor.ID, err)
 			}
 			nr, _ := GetNanduResults(routine.ID)
-			if nr != nil {
-				for judge, marks := range nr {
-					r.ParseNanduScores(judge, NanduMarksToSlice(marks))
-				}
+			for judge, marks := range nr {
+				r.ParseNanduScores(judge, NanduMarksToSlice(marks))
 			}
 		}
 	}
@@ -244,6 +245,8 @@ func (r *RingState) ClearScores() {
 }
 
 func (r *RingState) SetPerformanceScore(judgeTag string, score float64) {
+	r.scoreMu.Lock()
+	defer r.scoreMu.Unlock()
 	r.Scores[judgeTag] = &Score{
 		Routine: r.Routine.ID,
 		Judge:   judgeTag,
@@ -252,6 +255,8 @@ func (r *RingState) SetPerformanceScore(judgeTag string, score float64) {
 }
 
 func (r *RingState) PerformanceScores() []*Score {
+	r.scoreMu.Lock()
+	defer r.scoreMu.Unlock()
 	scores := make([]*Score, 0, len(r.Scores))
 	for _, v := range r.Scores {
 		scores = append(scores, v)

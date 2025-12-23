@@ -11,12 +11,17 @@ import (
 )
 
 var inputFiles = []string{
-	"input/collegiates-2025_ring1-AM.txt",
-	"input/collegiates-2025_ring1-PM.txt",
-	"input/collegiates-2025_ring2-AM.txt",
-	"input/collegiates-2025_ring2-PM.txt",
-	"input/collegiates-2025_ring3-AM.txt",
-	"input/collegiates-2025_ring3-PM.txt",
+	//	"input/pwc-2025-blue.csv",
+	//	"input/pwc-2025-green.csv",
+	//	"input/pwc-2025-iwuf-blue.csv",
+	//	"input/pwc-2025-iwuf-green.csv",
+	//	"input/uwg-2025-ring1-AM.txt",
+	//	"input/uwg-2025-ring1-PM.txt",
+	//	"input/uwg-2025-ring2-AM.txt",
+	//	"input/uwg-2025-ring2-PM.txt",
+	"input/pwc-2025-winter-friday.csv",
+	"input/pwc-2025-winter-saturday.csv",
+	"input/pwc-2025-winter-sunday.csv",
 }
 
 const (
@@ -92,7 +97,7 @@ func styleMap(styleName string) int {
 }
 
 func main() error {
-	fileType := UWG
+	fileType := PWC
 	var fmtFn func([]string) error
 
 	// remove previous output
@@ -198,7 +203,8 @@ func pwcFormat(files []string) (err error) {
 		for _, v := range records[1:] {
 			fName := strings.TrimSpace(v[fnIdx])
 			lName := strings.TrimSpace(v[lnIdx])
-			if fName == "" && lName == "" {
+			event := v[eventIdx]
+			if event == "" || (fName == "" && lName == "") {
 				continue
 			}
 			if fName[:2] == "XX" {
@@ -207,7 +213,6 @@ func pwcFormat(files []string) (err error) {
 			fullName := strings.ToTitle(fName + " " + lName)
 			gender := data.ToGender(v[genderIdx])
 			exp := data.ToExperience(v[expIdx])
-			event := v[eventIdx]
 
 			eventName := fmt.Sprintf("%s %s %s", exp.StringShort(), event, gender.StringShort())
 			eventName = strings.ToTitle(eventName)

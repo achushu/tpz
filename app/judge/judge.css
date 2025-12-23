@@ -1,7 +1,3 @@
-.navbar {
-    background-color: firebrick;
-}
-
 .footer {
   position: absolute;
   bottom: 0;
@@ -16,16 +12,6 @@
 
 #ping {
   padding-left: 1em;
-}
-
-.btn-theme {
-  color: #fff;
-  background-color: firebrick;
-  border-color: firebrick;
-}
-
-.btn-theme.active {
-  background-color: rgb(143, 26, 26);
 }
 
 .btn-group-vertical {
@@ -139,17 +125,13 @@
 
 .deduction-code {
   font-size: 2em;
-  width: 1.5em;
+  width: 2.0em;
   border-style: solid;
   margin-right: 10px;
 }
 
 .applied {
   font-weight: bold;
-}
-
-.deduction-focus {
-  border-color: firebrick;
 }
 
 .deduction-remove {

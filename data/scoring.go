@@ -25,7 +25,7 @@ func (r *RingState) CalculateScore() (result float64, components map[string]floa
 		perfScore := AdjustedAverage(scores)
 		result += perfScore
 		deductions := DetermineDeductions(r.Deductions)["result"]
-		techScore := ToTechnicalScore(deductions, r.Event.Style)
+		techScore := ToTechnicalScore(deductions, r.Event.Style, r.Event.Ruleset)
 		result += techScore
 		components = map[string]float64{
 			"a": techScore,
@@ -212,8 +212,11 @@ func DetermineDeductions(deductions map[string][]*DeductionMark) map[string][]De
 	return res
 }
 
-func ToTechnicalScore(deductions []DeductionResult, style Style) float64 {
+func ToTechnicalScore(deductions []DeductionResult, style Style, ruleset Ruleset) float64 {
 	techScore := 5.0
+	if ruleset == IWUFAB {
+		techScore = 7.0
+	}
 	for _, v := range deductions {
 		d := ToDeduction(v.Code, style)
 		techScore -= d.Value
@@ -271,7 +274,7 @@ func matchEarliestDeduction(deductions [][]*DeductionMark) ([]*DeductionMark, bo
 		for j, d := range dList {
 			// check that the timestamp is within range
 			if (d.Timestamp < cutoffTime) &&
-				d.Code == earliest.Code {
+				strings.EqualFold(d.Code, earliest.Code) {
 				// we have a match
 				matched = true
 				// remove it
@@ -354,7 +357,8 @@ func GetNanduSequence(sheet *Nandusheet, style Style) []NanduCode {
 	for _, section := range sections {
 		combos := parseNanduString(section)
 		for _, combo := range combos {
-			sequence = append(sequence, parseNanduCombo(combo, style)...)
+			nandu := parseNanduCombo(combo, style)
+			sequence = append(sequence, nandu...)
 		}
 	}
 	return sequence
@@ -365,44 +369,35 @@ func parseNanduString(s string) []string {
 }
 
 func parseNanduCombo(s string, style Style) []NanduCode {
-	// Possible formats: 312A+335A(B), 323A+4A, 415A, 323A+312A(A)+3A
-	// ex1: base: 323A, conn: (A); base: 312A, conn: 3A
-	// ex2: base: 312A, conn: (B); base: 335A, conn: none
+	// Possible formats: 312B+8,312A+324B+5;312A+3,323A+3;143B;
+	// ex1: base: 312B, conn: 312B+8
+	// ex2: base: 312A, conn: 312A+324B; base: 324B, conn: 324B+5
 	if s == "" {
 		return []NanduCode{}
 	}
 	components := strings.Split(s, "+")
-	base := ToNanduCode(components[0], style)
-	if base == InvalidNanduCode {
-		out.Errorln("data/state - ", "could not find nandu code ", components[0])
-	}
-	connections := make([]NanduCode, 0, 2)
-	if len(components) > 1 {
-		for i := 1; i < len(components); i++ {
-			component := components[i]
-			dynIdx := strings.Index(component, "(") // Index of a dynamic connection -- eg: (A)
-			if dynIdx > -1 {
-				// get both parts
-				c := ToNanduCode(component[dynIdx:], style)
-				if c == InvalidNanduCode {
-					out.Errorln("data/state - ", "could not find nandu code ", component[dynIdx:])
-				}
-				connections = append(connections, c)
-				c = ToNanduCode(component[:dynIdx], style)
-				if c == InvalidNanduCode {
-					out.Errorln("data/state - ", "could not find nandu code ", component[:dynIdx])
-				}
-				connections = append(connections, c)
-			} else {
-				c := ToNanduCode(component, style)
-				if c == InvalidNanduCode {
-					out.Errorln("data/state - ", "could not find nandu code ", component[:dynIdx])
-				}
-				connections = append(connections, c)
-			}
+	nandu := make([]NanduCode, 0, 4)
+	if len(components) == 1 {
+		base := ToNanduCode(components[0], style)
+		if base == InvalidNanduCode {
+			out.Errorln("data/state - ", "could not find nandu code ", components[0])
 		}
+		nandu = append(nandu, base)
+		return nandu
 	}
-	return append([]NanduCode{base}, connections...)
+	for i := 0; i+1 < len(components); i++ {
+		base := ToNanduCode(components[i], style)
+		if base == InvalidNanduCode {
+			out.Errorln("data/state - ", "could not find nandu code ", components[i])
+		}
+		combo := components[i] + "+" + components[i+1]
+		connection := ToNanduCode(combo, style)
+		if connection == InvalidNanduCode {
+			out.Errorln("data/state - ", "could not find nandu code ", combo)
+		}
+		nandu = append(nandu, base, connection)
+	}
+	return nandu
 }
 
 func DetermineNandu(judgeScores map[string][]Nandu) []Nandu {
